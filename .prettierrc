@@ -1,0 +1,16 @@
+{
+    "printWidth": 140,
+    "singleQuote": true,
+    "tabWidth": 4,
+    "overrides": [
+        {
+            "files": "*.json",
+            "options": {
+                "tabWidth": 4,
+                "printWidth": 250,
+                "parser": "json"
+            }
+        }
+    ],
+    "parser": "typescript"
+}
