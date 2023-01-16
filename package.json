@@ -1,0 +1,96 @@
+{
+  "name": "velocitas-cli",
+  "version": "0.0.1",
+  "description": "Lifecycle management of Velocitas Vehicle Applications",
+  "author": "Eclipse Velocitas Team",
+  "bin": {
+    "velocitas": "./bin/run"
+  },
+  "homepage": "https://github.com/eclipse-velocitas/velocitas-cli",
+  "license": "Apache-2.0",
+  "main": "dist/index.js",
+  "repository": "eclipse-velocitas/velocitas-cli",
+  "files": [
+    "/bin",
+    "/dist",
+    "/package-lock.json",
+    "/oclif.manifest.json"
+  ],
+  "dependencies": {
+    "@oclif/core": "^1.24.0",
+    "@oclif/plugin-help": "^5.1.23",
+    "@oclif/plugin-not-found": "^2.3.15",
+    "@oclif/plugin-plugins": "^2.1.12",
+    "axios": "0.27.2",
+    "decompress": "^4.2.1",
+    "recursive-copy": "^2.0.14",
+    "semver": "^7.3.8"
+  },
+  "devDependencies": {
+    "@oclif/test": "^2.2.21",
+    "@types/chai": "^4.3.4",
+    "@types/decompress": "^4.2.4",
+    "@types/fs-extra": "^11.0.1",
+    "@types/mocha": "^10.0.1",
+    "@types/mock-fs": "^4.13.1",
+    "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "^5.48.1",
+    "@typescript-eslint/parser": "^5.48.1",
+    "chai": "^4.3.7",
+    "eslint": "^8.32.0",
+    "mocha": "^10.2.0",
+    "mock-fs": "^5.2.0",
+    "mock-spawn": "^0.2.6",
+    "nyc": "^15.1.0",
+    "oclif": "^3.4.3",
+    "pkg": "^5.8.0",
+    "prettier": "^2.8.3",
+    "prettier-plugin-organize-imports": "^3.2.2",
+    "shx": "^0.3.4",
+    "sinon": "^15.0.1",
+    "ts-node": "^10.9.1",
+    "tslib": "^2.4.1",
+    "typescript": "^4.9.4"
+  },
+  "oclif": {
+    "bin": "velocitas",
+    "dirname": "velocitas",
+    "commands": "./dist/commands",
+    "plugins": [
+      "@oclif/plugin-help",
+      "@oclif/plugin-not-found"
+    ],
+    "topicSeparator": " ",
+    "topics": {
+      "hello": {
+        "description": "Say hello to the world and others"
+      },
+      "runtime": {
+        "description": "Create a new Vehicle App"
+      }
+    }
+  },
+  "pkg": {
+    "scripts": "dist/**/*.js",
+    "outputPath": "dist"
+  },
+  "scripts": {
+    "build": "shx rm -rf dist && tsc -b",
+    "lint": "eslint src --ext ts",
+    "postpack": "shx rm -f oclif.manifest.json",
+    "posttest": "npm run lint",
+    "prepack": "npm build && oclif manifest && oclif readme",
+    "test": "mocha \"test/**/*.test.ts\"",
+    "coverage": "nyc npm run test",
+    "version": "oclif readme && git add README.md",
+    "compile-exe": "rm -rf dist && tsc -b && pkg --target=$TARGET --compress=Brotli --output=velocitas-linux-$ARCH ."
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "bugs": "https://github.com/eclipse-velocitas/cli/issues",
+  "keywords": [
+    "oclif"
+  ],
+  "types": "dist/index.d.ts"
+}
