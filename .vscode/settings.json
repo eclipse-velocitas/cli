@@ -1,6 +1,5 @@
 {
     "editor.formatOnSave": true,
     "files.insertFinalNewline": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "sort-imports.on-save": false
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
 }
