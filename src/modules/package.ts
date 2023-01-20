@@ -12,12 +12,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import axios, { AxiosRequestHeaders } from 'axios';
-import decompress from 'decompress';
-import { existsSync, mkdirSync, readFileSync, rm } from 'node:fs';
-import { join } from 'node:path';
 import { Component, ComponentType, deserializeComponentJSON } from './component';
 import { PackageConfig, userHomeDir } from './project-config';
+import axios, { AxiosHeaders } from 'axios';
+import { existsSync, mkdirSync, readFileSync, rm } from 'node:fs';
+
+import decompress from 'decompress';
+import { join } from 'node:path';
 
 export const DEFAULT_PACKAGE_FOLDER_PATH = `${userHomeDir}/.velocitas/packages`;
 export const GITHUB_API_URL = 'https://api.github.com';
@@ -65,14 +66,11 @@ export function getPackageDirectory(packageName: string): string {
 
 export async function getPackageVersions(packageName: string): Promise<Array<VersionInfo>> {
     try {
-        const requestHeaders: AxiosRequestHeaders = {
-            accept: 'application/vnd.github+json',
-        };
+        const requestHeaders: AxiosHeaders = new AxiosHeaders();
+        requestHeaders.set('accept', 'application/vnd.github+json');
 
         if (process.env.GITHUB_API_TOKEN) {
-            Object.assign(requestHeaders, {
-                authorization: `Bearer ${process.env.GITHUB_API_TOKEN}`,
-            });
+            requestHeaders.set('authorization', `Bearer ${process.env.GITHUB_API_TOKEN}`);
         }
 
         const res = await axios.get(`${PACKAGE_REPO(packageName)}/tags`, {
