@@ -30,18 +30,18 @@ Velocitas project found!
     ];
 
     async run(): Promise<void> {
-        this.log(`Initializing Velocitas components ...`);
+        this.log(`Initializing Velocitas packages ...`);
         let config: ProjectConfig;
 
         if (ProjectConfig.isAvailable()) {
             config = ProjectConfig.read();
-            for (const component of config.packages) {
-                if (isPackageInstalled(component.name, component.version)) {
-                    this.log(`... '${component.name}:${component.version}' already initialized.`);
+            for (const packageConfig of config.packages) {
+                if (isPackageInstalled(packageConfig.name, packageConfig.version)) {
+                    this.log(`... '${packageConfig.name}:${packageConfig.version}' already initialized.`);
                     continue;
                 }
-                this.log(`... Downloading component: '${component.name}:${component.version}'`);
-                await downloadPackageVersion(component.name, component.version);
+                this.log(`... Downloading package: '${packageConfig.name}:${packageConfig.version}'`);
+                await downloadPackageVersion(packageConfig.name, packageConfig.version);
             }
         } else {
             this.log('... Creating .velocitas.json at the root of your repository.');

@@ -43,6 +43,8 @@ jobs:
   compile:
     uses: ./.github/workflows/build-exe.yml
     needs: [bump-version]
+    with:
+      ref: v${{ needs.bump-version.outputs.packageVersion }}
 
   create-release:
     runs-on: ubuntu-latest

@@ -12,8 +12,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import axios, { AxiosRequestHeaders } from 'axios';
+import axios, { AxiosHeaders, AxiosProxyConfig, RawAxiosRequestConfig } from 'axios';
 import decompress from 'decompress';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import { existsSync, mkdirSync, readFileSync, rm } from 'node:fs';
 import { join } from 'node:path';
 import { Component, ComponentType, deserializeComponentJSON } from './component';
@@ -24,6 +25,21 @@ export const GITHUB_API_URL = 'https://api.github.com';
 export const GITHUB_ORG_ENDPOINT = '/repos/eclipse-velocitas';
 
 const PACKAGE_REPO = (packageName: string) => `${GITHUB_API_URL}${GITHUB_ORG_ENDPOINT}/${packageName}`;
+
+function setProxy() {
+    let proxyConfig: { proxy?: AxiosProxyConfig | false; httpsAgent?: any } = { proxy: false };
+    if (process.env.HTTPS_PROXY || process.env.https_proxy) {
+        const proxy = process.env.HTTPS_PROXY || process.env.https_proxy;
+        proxyConfig.httpsAgent = new HttpsProxyAgent(proxy!);
+    }
+    return proxyConfig;
+}
+
+function setApiToken(requestHeaders: AxiosHeaders): void {
+    if (process.env.GITHUB_API_TOKEN) {
+        requestHeaders.set('authorization', process.env.GITHUB_API_TOKEN);
+    }
+}
 
 export interface PackageManifest {
     components: Array<Component>;
@@ -65,19 +81,12 @@ export function getPackageDirectory(packageName: string): string {
 
 export async function getPackageVersions(packageName: string): Promise<Array<VersionInfo>> {
     try {
-        const requestHeaders: AxiosRequestHeaders = {
-            accept: 'application/vnd.github+json',
-        };
+        const requestHeaders: AxiosHeaders = new AxiosHeaders();
+        requestHeaders.set('accept', 'application/vnd.github+json');
+        setApiToken(requestHeaders);
 
-        if (process.env.GITHUB_API_TOKEN) {
-            Object.assign(requestHeaders, {
-                authorization: `Bearer ${process.env.GITHUB_API_TOKEN}`,
-            });
-        }
-
-        const res = await axios.get(`${PACKAGE_REPO(packageName)}/tags`, {
-            headers: requestHeaders,
-        });
+        const requestConfig: RawAxiosRequestConfig = { headers: requestHeaders, ...setProxy() };
+        const res = await axios.get(`${PACKAGE_REPO(packageName)}/tags`, requestConfig);
 
         if (res.status !== 200) {
             console.log(res.statusText);
@@ -99,12 +108,12 @@ export async function getPackageVersions(packageName: string): Promise<Array<Ver
 export async function downloadPackageVersion(packageName: string, versionIdentifier: string): Promise<void> {
     try {
         const url = `${PACKAGE_REPO(packageName)}/zipball/refs/tags/${versionIdentifier}`;
+        const requestHeaders: AxiosHeaders = new AxiosHeaders();
+        requestHeaders.set('accept', 'application/vnd.github+json');
+        setApiToken(requestHeaders);
 
-        const res = await axios({
-            method: 'get',
-            url: url,
-            responseType: 'arraybuffer',
-        });
+        const requestConfig: RawAxiosRequestConfig = { headers: requestHeaders, responseType: 'arraybuffer', ...setProxy() };
+        const res = await axios.get(url, requestConfig);
 
         if (res.status !== 200) {
             console.log(res.statusText);
