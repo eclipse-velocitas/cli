@@ -18,6 +18,9 @@ import { GITHUB_API_URL, GITHUB_ORG_ENDPOINT } from '../../../src/modules/packag
 import { velocitasConfigMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore, userHomeDir } from '../../utils/mockfs';
 
+const GITHUB_API_TOKEN = 'MY_API_TOKEN';
+const HEADER_AUTHORIZATION = 'authorization';
+
 describe('init', () => {
     test.do(() => {
         mockFolders(true);
@@ -35,13 +38,13 @@ describe('init', () => {
             ).reply(200, [{ name: velocitasConfigMock.packages[1].version, tarball_url: 'test' }]);
         })
         .command(['init'])
-        .it('downloads components from preconfigured velocitas.json', (ctx) => {
-            expect(ctx.stdout).to.contain('Initializing Velocitas components ...');
+        .it('downloads packages from preconfigured velocitas.json', (ctx) => {
+            expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
             expect(ctx.stdout).to.contain(
-                `... Downloading component: '${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version}'`
+                `... Downloading package: '${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version}'`
             );
             expect(ctx.stdout).to.contain(
-                `... Downloading component: '${velocitasConfigMock.packages[1].name}:${velocitasConfigMock.packages[1].version}'`
+                `... Downloading package: '${velocitasConfigMock.packages[1].name}:${velocitasConfigMock.packages[1].version}'`
             );
             expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
             expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;
@@ -55,8 +58,8 @@ describe('init', () => {
         })
         .stdout()
         .command(['init'])
-        .it('skips downloading because component is already installed', (ctx) => {
-            expect(ctx.stdout).to.contain('Initializing Velocitas components ...');
+        .it('skips downloading because package is already installed', (ctx) => {
+            expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
             expect(ctx.stdout).to.contain(
                 `... '${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version}' already initialized.`
             );
@@ -76,8 +79,41 @@ describe('init', () => {
         .stdout()
         .command(['init'])
         .it('creates config file from default velocitas.json', (ctx) => {
-            expect(ctx.stdout).to.contain('Initializing Velocitas components ...');
+            expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
             expect(ctx.stdout).to.contain('... Creating .velocitas.json at the root of your repository.');
             expect(fs.existsSync(`${process.cwd()}/.velocitas.json`)).to.be.true;
+        });
+
+    test.do(() => {
+        mockFolders(true);
+    })
+        .finally(() => {
+            mockRestore();
+        })
+        .stdout()
+        .env({ GITHUB_API_TOKEN: GITHUB_API_TOKEN })
+        .nock(GITHUB_API_URL, (api) => {
+            api.matchHeader(HEADER_AUTHORIZATION, GITHUB_API_TOKEN)
+                .get(
+                    `${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/zipball/refs/tags/${velocitasConfigMock.packages[0].version}`
+                )
+                .reply(200, [{ name: velocitasConfigMock.packages[0].version, tarball_url: 'test' }]);
+            api.matchHeader(HEADER_AUTHORIZATION, GITHUB_API_TOKEN)
+                .get(
+                    `${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/zipball/refs/tags/${velocitasConfigMock.packages[0].version}`
+                )
+                .reply(200, [{ name: velocitasConfigMock.packages[1].version, tarball_url: 'test' }]);
+        })
+        .command(['init'])
+        .it('uses API token, if provided, to download packages', (ctx) => {
+            expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
+            expect(ctx.stdout).to.contain(
+                `... Downloading package: '${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version}'`
+            );
+            expect(ctx.stdout).to.contain(
+                `... Downloading package: '${velocitasConfigMock.packages[1].name}:${velocitasConfigMock.packages[1].version}'`
+            );
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;
         });
 });

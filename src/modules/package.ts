@@ -13,12 +13,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import axios, { AxiosHeaders, AxiosProxyConfig, RawAxiosRequestConfig } from 'axios';
-import decompress from 'decompress';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import { existsSync, mkdirSync, readFileSync, rm } from 'node:fs';
-import { join } from 'node:path';
 import { Component, ComponentType, deserializeComponentJSON } from './component';
 import { PackageConfig, userHomeDir } from './project-config';
+
+import decompress from 'decompress';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import { join } from 'node:path';
 
 export const DEFAULT_PACKAGE_FOLDER_PATH = `${userHomeDir}/.velocitas/packages`;
 export const GITHUB_API_URL = 'https://api.github.com';
@@ -33,6 +34,12 @@ function setProxy() {
         proxyConfig.httpsAgent = new HttpsProxyAgent(proxy!);
     }
     return proxyConfig;
+}
+
+function setApiToken(requestHeaders: AxiosHeaders): void {
+    if (process.env.GITHUB_API_TOKEN) {
+        requestHeaders.set('authorization', process.env.GITHUB_API_TOKEN);
+    }
 }
 
 export interface PackageManifest {
@@ -77,10 +84,7 @@ export async function getPackageVersions(packageName: string): Promise<Array<Ver
     try {
         const requestHeaders: AxiosHeaders = new AxiosHeaders();
         requestHeaders.set('accept', 'application/vnd.github+json');
-
-        if (process.env.GITHUB_API_TOKEN) {
-            requestHeaders.set('authorization', `Bearer ${process.env.GITHUB_API_TOKEN}`);
-        }
+        setApiToken(requestHeaders);
 
         const requestConfig: RawAxiosRequestConfig = { headers: requestHeaders, ...setProxy() };
         const res = await axios.get(`${PACKAGE_REPO(packageName)}/tags`, requestConfig);
@@ -105,7 +109,11 @@ export async function getPackageVersions(packageName: string): Promise<Array<Ver
 export async function downloadPackageVersion(packageName: string, versionIdentifier: string): Promise<void> {
     try {
         const url = `${PACKAGE_REPO(packageName)}/zipball/refs/tags/${versionIdentifier}`;
-        const requestConfig: RawAxiosRequestConfig = { responseType: 'arraybuffer', ...setProxy() };
+        const requestHeaders: AxiosHeaders = new AxiosHeaders();
+        requestHeaders.set('accept', 'application/vnd.github+json');
+        setApiToken(requestHeaders);
+
+        const requestConfig: RawAxiosRequestConfig = { headers: requestHeaders, responseType: 'arraybuffer', ...setProxy() };
         const res = await axios.get(url, requestConfig);
 
         if (res.status !== 200) {
