@@ -23,14 +23,12 @@ on:
         description: 'Commit ref to use'
         required: false
         type: string
-        default: ${{ github.sha }}
   workflow_dispatch:
     inputs: 
       ref:
         description: 'Commit ref to use'
         required: false
         type: string
-        default: ${{ github.sha }}
 
 jobs:
   compile:
