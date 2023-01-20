@@ -12,21 +12,28 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+import axios, { AxiosHeaders, AxiosProxyConfig, RawAxiosRequestConfig } from 'axios';
+import decompress from 'decompress';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import { existsSync, mkdirSync, readFileSync, rm } from 'node:fs';
+import { join } from 'node:path';
 import { Component, ComponentType, deserializeComponentJSON } from './component';
 import { PackageConfig, userHomeDir } from './project-config';
-import axios, { AxiosHeaders } from 'axios';
-import { existsSync, mkdirSync, readFileSync, rm } from 'node:fs';
-
-import decompress from 'decompress';
-import { join } from 'node:path';
-
-const HttpsProxyAgent = require('https-proxy-agent');
 
 export const DEFAULT_PACKAGE_FOLDER_PATH = `${userHomeDir}/.velocitas/packages`;
 export const GITHUB_API_URL = 'https://api.github.com';
 export const GITHUB_ORG_ENDPOINT = '/repos/eclipse-velocitas';
 
 const PACKAGE_REPO = (packageName: string) => `${GITHUB_API_URL}${GITHUB_ORG_ENDPOINT}/${packageName}`;
+
+function setProxy() {
+    let proxyConfig: { proxy?: AxiosProxyConfig | false; httpsAgent?: any } = { proxy: false };
+    if (process.env.HTTPS_PROXY || process.env.https_proxy) {
+        const proxy = process.env.HTTPS_PROXY || process.env.https_proxy;
+        proxyConfig.httpsAgent = new HttpsProxyAgent(proxy!);
+    }
+    return proxyConfig;
+}
 
 export interface PackageManifest {
     components: Array<Component>;
@@ -75,14 +82,8 @@ export async function getPackageVersions(packageName: string): Promise<Array<Ver
             requestHeaders.set('authorization', `Bearer ${process.env.GITHUB_API_TOKEN}`);
         }
 
-        const res = await axios.get(`${PACKAGE_REPO(packageName)}/tags`, {
-            headers: requestHeaders,
-            proxy: {
-                protocol: 'http',
-                host: 'localhost',
-                port: 5865
-              }
-        });
+        const requestConfig: RawAxiosRequestConfig = { headers: requestHeaders, ...setProxy() };
+        const res = await axios.get(`${PACKAGE_REPO(packageName)}/tags`, requestConfig);
 
         if (res.status !== 200) {
             console.log(res.statusText);
@@ -104,11 +105,9 @@ export async function getPackageVersions(packageName: string): Promise<Array<Ver
 export async function downloadPackageVersion(packageName: string, versionIdentifier: string): Promise<void> {
     try {
         const url = `${PACKAGE_REPO(packageName)}/zipball/refs/tags/${versionIdentifier}`;
-        const res = await axios.get(url, {
-            responseType: 'arraybuffer',
-            httpsAgent: new HttpsProxyAgent('http://host.docker.internal:5865'),
-            proxy: false,
-        });
+        const requestConfig: RawAxiosRequestConfig = { responseType: 'arraybuffer', ...setProxy() };
+        const res = await axios.get(url, requestConfig);
+
         if (res.status !== 200) {
             console.log(res.statusText);
             return;
