@@ -13,13 +13,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import axios, { AxiosHeaders, AxiosProxyConfig, RawAxiosRequestConfig } from 'axios';
-import { existsSync, mkdirSync, readFileSync, rm } from 'node:fs';
-import { Component, ComponentType, deserializeComponentJSON } from './component';
-import { PackageConfig, userHomeDir } from './project-config';
-
 import decompress from 'decompress';
 import { HttpsProxyAgent } from 'https-proxy-agent';
+import { existsSync, mkdirSync, readFileSync, rm } from 'node:fs';
 import { join } from 'node:path';
+import { Component, ComponentType, deserializeComponentJSON } from './component';
+import { PackageConfig, userHomeDir } from './project-config';
 
 export const DEFAULT_PACKAGE_FOLDER_PATH = `${userHomeDir}/.velocitas/packages`;
 export const GITHUB_API_URL = 'https://api.github.com';
