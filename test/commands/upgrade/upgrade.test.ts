@@ -22,6 +22,8 @@ import { mockFolders, mockRestore, userHomeDir } from '../../utils/mockfs';
 
 const GITHUB_ORG_ENDPOINT = packageModule.GITHUB_ORG_ENDPOINT;
 const GITHUB_API_URL = packageModule.GITHUB_API_URL;
+const GITHUB_API_TOKEN = 'MY_API_TOKEN';
+const HEADER_AUTHORIZATION = 'authorization';
 
 describe('upgrade', () => {
     const mockedNewVersion = 'v2.0.0';
@@ -236,6 +238,47 @@ describe('upgrade', () => {
         .stub(CliUx.ux, 'prompt', () => async () => 'y')
         .command(['upgrade'])
         .it('checking for upgrades - can be updated - download', (ctx) => {
+            expect(ctx.stdout).to.contain('Checking for updates!');
+            expect(ctx.stdout).to.contain(
+                `... '${velocitasConfigMock.packages[0].name}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersion}`
+            );
+            expect(ctx.stdout).to.contain(
+                `... '${velocitasConfigMock.packages[1].name}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersion}`
+            );
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;
+            const newVelocitasConfig: ProjectConfig = JSON.parse(
+                fs.readFileSync(`${process.cwd()}/.velocitas.json`, { encoding: 'utf8', flag: 'r' })
+            );
+            expect(newVelocitasConfig.packages[0].version).to.be.equal(mockedNewVersion);
+            expect(newVelocitasConfig.packages[1].version).to.be.equal(mockedNewVersion);
+        });
+
+    test.do(() => {
+        mockFolders(true, true);
+    })
+        .finally(() => {
+            mockRestore();
+        })
+        .stdout()
+        .env({ GITHUB_API_TOKEN: GITHUB_API_TOKEN })
+        .nock(GITHUB_API_URL, (api) => {
+            api.matchHeader(HEADER_AUTHORIZATION, `Bearer ${GITHUB_API_TOKEN}`)
+                .get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/tags`)
+                .reply(200, [{ name: mockedNewVersion, tarball_url: 'test' }]);
+            api.matchHeader(HEADER_AUTHORIZATION, `Bearer ${GITHUB_API_TOKEN}`)
+                .get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/zipball/refs/tags/${mockedNewVersion}`)
+                .reply(200, [{ name: mockedNewVersion, tarball_url: 'test' }]);
+            api.matchHeader(HEADER_AUTHORIZATION, `Bearer ${GITHUB_API_TOKEN}`)
+                .get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/tags`)
+                .reply(200, [{ name: mockedNewVersion, tarball_url: 'test' }]);
+            api.matchHeader(HEADER_AUTHORIZATION, `Bearer ${GITHUB_API_TOKEN}`)
+                .get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/zipball/refs/tags/${mockedNewVersion}`)
+                .reply(200, [{ name: mockedNewVersion, tarball_url: 'test' }]);
+        })
+        .stub(CliUx.ux, 'prompt', () => async () => 'y')
+        .command(['upgrade'])
+        .it('checking for upgrades - can be updated - download, with API token', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
             expect(ctx.stdout).to.contain(
                 `... '${velocitasConfigMock.packages[0].name}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersion}`
