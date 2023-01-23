@@ -39,22 +39,32 @@ class ReplaceVariablesStream extends Transform {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     _transform(chunk: any, _: string, callback: TransformCallback) {
         let result = this._variables.substitute(chunk.toString());
+        let noticeComment: string;
         const notice = 'This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json';
         const shebang = '#!/bin/bash';
+        const xmlDeclarationRegExp = new RegExp(`\\<\\?xml\\s+version=\\"[0-9A-Za-z.]+\\"\\s+\\?>`);
 
         if (this._firstChunk) {
             if (['.txt'].includes(this._fileExt)) {
                 result = `${notice}\n${result}`;
             } else if (['.md', '.html', '.htm', '.xml', '.tpl'].includes(this._fileExt)) {
-                result = `<!-- ${notice} -->\n${result}`;
-            } else if (['.yaml', '.yml', '.sh'].includes(this._fileExt)) {
-                if (result.startsWith(shebang)) {
-                    result = `${result.slice(0, shebang.length)}\n# ${notice}${result.slice(shebang.length)}`;
+                noticeComment = `<!-- ${notice} -->`;
+                const xmlDeclarationArray = xmlDeclarationRegExp.exec(result);
+                if (xmlDeclarationArray !== null && result.startsWith(xmlDeclarationArray[0])) {
+                    result = this._injectNoticeAfterStartLine(result, xmlDeclarationArray[0], noticeComment);
                 } else {
-                    result = `# ${notice}\n${result}`;
+                    result = `${noticeComment}\n${result}`;
+                }
+            } else if (['.yaml', '.yml', '.sh'].includes(this._fileExt)) {
+                noticeComment = `# ${notice}`;
+                if (result.startsWith(shebang)) {
+                    result = this._injectNoticeAfterStartLine(result, shebang, noticeComment);
+                } else {
+                    result = `${noticeComment}\n${result}`;
                 }
             } else if (['.json'].includes(this._fileExt)) {
-                result = `// ${notice}\n${result}`;
+                noticeComment = `// ${notice}`;
+                result = `${noticeComment}\n${result}`;
             }
 
             this._firstChunk = false;
@@ -62,6 +72,10 @@ class ReplaceVariablesStream extends Transform {
 
         this.push(result);
         callback();
+    }
+
+    private _injectNoticeAfterStartLine(result: string, startingLine: string, noticeComment: string) {
+        return `${result.slice(0, startingLine.length)}\n${noticeComment}${result.slice(startingLine.length)}`;
     }
 }
 
