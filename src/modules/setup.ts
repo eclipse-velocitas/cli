@@ -39,22 +39,31 @@ class ReplaceVariablesStream extends Transform {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     _transform(chunk: any, _: string, callback: TransformCallback) {
         let result = this._variables.substitute(chunk.toString());
+        let noticeComment: string;
         const notice = 'This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json';
         const shebang = '#!/bin/bash';
+        const tplStart = '<?xml version="1.0" ?>';
 
         if (this._firstChunk) {
             if (['.txt'].includes(this._fileExt)) {
                 result = `${notice}\n${result}`;
             } else if (['.md', '.html', '.htm', '.xml', '.tpl'].includes(this._fileExt)) {
-                result = `<!-- ${notice} -->\n${result}`;
-            } else if (['.yaml', '.yml', '.sh'].includes(this._fileExt)) {
-                if (result.startsWith(shebang)) {
-                    result = `${result.slice(0, shebang.length)}\n# ${notice}${result.slice(shebang.length)}`;
+                noticeComment = `<!-- ${notice} -->`;
+                if (result.startsWith(tplStart)) {
+                    result = this._formatResultForException(result, tplStart, noticeComment);
                 } else {
-                    result = `# ${notice}\n${result}`;
+                    result = `${noticeComment}\n${result}`;
+                }
+            } else if (['.yaml', '.yml', '.sh'].includes(this._fileExt)) {
+                noticeComment = `# ${notice}`;
+                if (result.startsWith(shebang)) {
+                    result = this._formatResultForException(result, shebang, noticeComment);
+                } else {
+                    result = `${noticeComment}\n${result}`;
                 }
             } else if (['.json'].includes(this._fileExt)) {
-                result = `// ${notice}\n${result}`;
+                noticeComment = `// ${notice}`;
+                result = `${noticeComment}\n${result}`;
             }
 
             this._firstChunk = false;
@@ -62,6 +71,10 @@ class ReplaceVariablesStream extends Transform {
 
         this.push(result);
         callback();
+    }
+
+    private _formatResultForException(result: string, startingLine: string, noticeComment: string) {
+        return `${result.slice(0, startingLine.length)}\n${noticeComment}${result.slice(startingLine.length)}`;
     }
 }
 
