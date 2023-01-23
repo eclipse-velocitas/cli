@@ -42,22 +42,23 @@ class ReplaceVariablesStream extends Transform {
         let noticeComment: string;
         const notice = 'This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json';
         const shebang = '#!/bin/bash';
-        const tplStart = '<?xml version="1.0" ?>';
+        const xmlDeclarationRegExp = new RegExp(`\\<\\?xml version\\=\\"[0-9]\\.[0-9]\\".*.\\?\\>`);
 
         if (this._firstChunk) {
             if (['.txt'].includes(this._fileExt)) {
                 result = `${notice}\n${result}`;
             } else if (['.md', '.html', '.htm', '.xml', '.tpl'].includes(this._fileExt)) {
                 noticeComment = `<!-- ${notice} -->`;
-                if (result.startsWith(tplStart)) {
-                    result = this._formatResultForException(result, tplStart, noticeComment);
+                const xmlDeclarationArray = xmlDeclarationRegExp.exec(result);
+                if (xmlDeclarationArray !== null && result.startsWith(xmlDeclarationArray[0])) {
+                    result = this._injectNoticeAfterStartLine(result, xmlDeclarationArray[0], noticeComment);
                 } else {
                     result = `${noticeComment}\n${result}`;
                 }
             } else if (['.yaml', '.yml', '.sh'].includes(this._fileExt)) {
                 noticeComment = `# ${notice}`;
                 if (result.startsWith(shebang)) {
-                    result = this._formatResultForException(result, shebang, noticeComment);
+                    result = this._injectNoticeAfterStartLine(result, shebang, noticeComment);
                 } else {
                     result = `${noticeComment}\n${result}`;
                 }
@@ -73,7 +74,7 @@ class ReplaceVariablesStream extends Transform {
         callback();
     }
 
-    private _formatResultForException(result: string, startingLine: string, noticeComment: string) {
+    private _injectNoticeAfterStartLine(result: string, startingLine: string, noticeComment: string) {
         return `${result.slice(0, startingLine.length)}\n${noticeComment}${result.slice(startingLine.length)}`;
     }
 }
