@@ -42,7 +42,7 @@ class ReplaceVariablesStream extends Transform {
         let noticeComment: string;
         const notice = 'This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json';
         const shebang = '#!/bin/bash';
-        const xmlDeclarationRegExp = new RegExp(`\\<\\?xml\\s+version=\\"[0-9A-Za-z.]+\\"\\s+\\?>`);
+        const xmlDeclarationRegExp = new RegExp(`\\<\\?xml\\s.*?\\s\\?\\>`);
 
         if (this._firstChunk) {
             if (['.txt'].includes(this._fileExt)) {
