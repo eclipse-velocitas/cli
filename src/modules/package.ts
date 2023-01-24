@@ -12,7 +12,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import axios, { AxiosProxyConfig, AxiosRequestConfig, AxiosRequestHeaders } from 'axios';
+import axios, { AxiosProxyConfig, AxiosRequestConfig, AxiosRequestHeaders, AxiosResponse } from 'axios';
+import axiosRetry from 'axios-retry';
 import decompress from 'decompress';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { existsSync, mkdirSync, readFileSync, rm } from 'node:fs';
@@ -111,14 +112,7 @@ export async function getPackageVersions(packageName: string): Promise<Array<Ver
 
 export async function downloadPackageVersion(packageName: string, versionIdentifier: string): Promise<void> {
     try {
-        const url = `${PACKAGE_REPO(packageName)}/zipball/refs/tags/${versionIdentifier}`;
-        const requestHeaders: AxiosRequestHeaders = {
-            accept: 'application/vnd.github+json',
-        };
-        setApiToken(requestHeaders);
-
-        const requestConfig: AxiosRequestConfig = { headers: requestHeaders, responseType: 'arraybuffer', ...setProxy() };
-        const res = await axios.get(url, requestConfig);
+        const res = await downloadPackageRequest(packageName, versionIdentifier);
 
         if (res.status !== 200) {
             console.log(res.statusText);
@@ -148,4 +142,33 @@ export function isPackageInstalled(packageName: string, versionIdentifier: strin
         return false;
     }
     return true;
+}
+
+async function downloadPackageRequest(packageName: string, versionIdentifier: string): Promise<AxiosResponse<any, any>> {
+    const defaultUrl = `${PACKAGE_REPO(packageName)}/zipball/refs/tags/${versionIdentifier}`;
+    const fallbackUrl = `${PACKAGE_REPO(packageName)}/zipball/${versionIdentifier}`;
+    const requestHeaders: AxiosRequestHeaders = {
+        accept: 'application/vnd.github+json',
+    };
+    setApiToken(requestHeaders);
+
+    axiosRetry(axios, {
+        retries: 3,
+        retryCondition: (error) => {
+            if (error.response?.status === 404) {
+                console.log(`Did not find tag '${versionIdentifier}' in '${packageName}' - looking for branch ...`);
+                return true;
+            }
+            return false;
+        },
+        onRetry: (_retryCount, _error, requestConfig) => {
+            requestConfig.url = fallbackUrl;
+            return requestConfig;
+        },
+    });
+
+    const requestConfig: AxiosRequestConfig = { headers: requestHeaders, responseType: 'arraybuffer', ...setProxy() };
+    const res = await axios.get(defaultUrl, requestConfig);
+
+    return res;
 }
