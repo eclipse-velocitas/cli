@@ -31,6 +31,7 @@ Checking for updates!
 
     static flags = {
         'dry-run': Flags.boolean({ description: 'Check which packages can be upgraded', required: false }),
+        verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false }),
     };
 
     async run(): Promise<void> {
@@ -51,7 +52,7 @@ Checking for updates!
                         }
                         const response = await CliUx.ux.prompt(`... Do you want to download them? [y/n]`, { default: 'y' });
                         if (response === 'y') {
-                            await downloadPackageVersion(packageConfig.name, latestVersion);
+                            await downloadPackageVersion(packageConfig.name, latestVersion, flags.verbose);
                         }
                         continue;
                     }
@@ -65,7 +66,7 @@ Checking for updates!
                 }
                 const response = await CliUx.ux.prompt(`... Do you wish to continue? [y/n]`, { default: 'y' });
                 if (response === 'y') {
-                    await downloadPackageVersion(packageConfig.name, latestVersion);
+                    await downloadPackageVersion(packageConfig.name, latestVersion, flags.verbose);
                     packageConfig.version = latestVersion;
                     projectConfig.write();
                 }
