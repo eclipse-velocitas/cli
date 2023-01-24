@@ -110,9 +110,9 @@ export async function getPackageVersions(packageName: string): Promise<Array<Ver
     return new Array<VersionInfo>();
 }
 
-export async function downloadPackageVersion(packageName: string, versionIdentifier: string): Promise<void> {
+export async function downloadPackageVersion(packageName: string, versionIdentifier: string, verbose?: boolean): Promise<void> {
     try {
-        const res = await downloadPackageRequest(packageName, versionIdentifier);
+        const res = await downloadPackageRequest(packageName, versionIdentifier, verbose);
 
         if (res.status !== 200) {
             console.log(res.statusText);
@@ -144,7 +144,7 @@ export function isPackageInstalled(packageName: string, versionIdentifier: strin
     return true;
 }
 
-async function downloadPackageRequest(packageName: string, versionIdentifier: string): Promise<AxiosResponse<any, any>> {
+async function downloadPackageRequest(packageName: string, versionIdentifier: string, verbose?: boolean): Promise<AxiosResponse<any, any>> {
     const defaultUrl = `${PACKAGE_REPO(packageName)}/zipball/refs/tags/${versionIdentifier}`;
     const fallbackUrl = `${PACKAGE_REPO(packageName)}/zipball/${versionIdentifier}`;
     const requestHeaders: AxiosRequestHeaders = {
@@ -153,15 +153,20 @@ async function downloadPackageRequest(packageName: string, versionIdentifier: st
     setApiToken(requestHeaders);
 
     axiosRetry(axios, {
-        retries: 3,
+        retries: 1,
         retryCondition: (error) => {
             if (error.response?.status === 404) {
-                console.log(`Did not find tag '${versionIdentifier}' in '${packageName}' - looking for branch ...`);
+                if (verbose) {
+                    console.log(`Did not find tag '${versionIdentifier}' in '${packageName}' - looking for branch ...`);
+                }
                 return true;
             }
             return false;
         },
         onRetry: (_retryCount, _error, requestConfig) => {
+            if (verbose) {
+                console.log(`Try using fallback URL '${fallbackUrl}' to download package ...`);
+            }
             requestConfig.url = fallbackUrl;
             return requestConfig;
         },
@@ -169,6 +174,10 @@ async function downloadPackageRequest(packageName: string, versionIdentifier: st
 
     const requestConfig: AxiosRequestConfig = { headers: requestHeaders, responseType: 'arraybuffer', ...setProxy() };
     const res = await axios.get(defaultUrl, requestConfig);
+
+    if (verbose) {
+        console.log(`Succesfully downloaded package: '${packageName}:${versionIdentifier}'`);
+    }
 
     return res;
 }

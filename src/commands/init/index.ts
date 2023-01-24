@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { Command } from '@oclif/core';
+import { Command, Flags } from '@oclif/core';
 import { downloadPackageVersion, isPackageInstalled } from '../../modules/package';
 import { ProjectConfig } from '../../modules/project-config';
 
@@ -29,7 +29,13 @@ Velocitas project found!
 ... 'devenv-github-templates:v1.0.1' already initialized.`,
     ];
 
+    static flags = {
+        verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Start the verbose logging', required: false }),
+    };
+
     async run(): Promise<void> {
+        const { flags } = await this.parse(Init);
+
         this.log(`Initializing Velocitas packages ...`);
         let config: ProjectConfig;
 
@@ -41,7 +47,7 @@ Velocitas project found!
                     continue;
                 }
                 this.log(`... Downloading package: '${packageConfig.name}:${packageConfig.version}'`);
-                await downloadPackageVersion(packageConfig.name, packageConfig.version);
+                await downloadPackageVersion(packageConfig.name, packageConfig.version, flags.verbose);
             }
         } else {
             this.log('... Creating .velocitas.json at the root of your repository.');

@@ -17,6 +17,7 @@
 |@typescript-eslint/eslint-plugin|5.48.1|MIT|
 |@typescript-eslint/parser|5.48.1|unknown|
 |axios|0.27.2|MIT|
+|axios-retry|3.4.0|MIT|
 |chai|4.3.7|MIT|
 |decompress|4.2.1|MIT|
 |eslint|8.32.0|MIT|

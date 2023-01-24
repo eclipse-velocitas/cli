@@ -32,6 +32,46 @@ describe('init', () => {
         .nock(GITHUB_API_URL, (api) => {
             api.get(
                 `${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/zipball/refs/tags/${velocitasConfigMock.packages[0].version}`
+            ).reply(404, [{ name: velocitasConfigMock.packages[0].version, tarball_url: 'test' }]);
+            api.get(
+                `${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/zipball/${velocitasConfigMock.packages[0].version}`
+            ).reply(200, [{ name: velocitasConfigMock.packages[0].version, tarball_url: 'test' }]);
+            api.get(
+                `${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/zipball/refs/tags/${velocitasConfigMock.packages[0].version}`
+            ).reply(200, [{ name: velocitasConfigMock.packages[1].version, tarball_url: 'test' }]);
+        })
+        .command(['init', '-v'])
+        .it('retries downloading package from fallback url', (ctx) => {
+            expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
+            expect(ctx.stdout).to.contain(
+                `... Downloading package: '${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version}'`
+            );
+            expect(ctx.stdout).to.contain(
+                `Did not find tag '${velocitasConfigMock.packages[0].version}' in '${velocitasConfigMock.packages[0].name}' - looking for branch ...`
+            );
+            expect(ctx.stdout).to.contain(
+                `Succesfully downloaded package: '${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version}'`
+            );
+            expect(ctx.stdout).to.contain(
+                `... Downloading package: '${velocitasConfigMock.packages[1].name}:${velocitasConfigMock.packages[1].version}'`
+            );
+            expect(ctx.stdout).to.contain(
+                `Succesfully downloaded package: '${velocitasConfigMock.packages[1].name}:${velocitasConfigMock.packages[1].version}'`
+            );
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;
+        });
+
+    test.do(() => {
+        mockFolders(true);
+    })
+        .finally(() => {
+            mockRestore();
+        })
+        .stdout()
+        .nock(GITHUB_API_URL, (api) => {
+            api.get(
+                `${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/zipball/refs/tags/${velocitasConfigMock.packages[0].version}`
             ).reply(200, [{ name: velocitasConfigMock.packages[0].version, tarball_url: 'test' }]);
             api.get(
                 `${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/zipball/refs/tags/${velocitasConfigMock.packages[0].version}`
