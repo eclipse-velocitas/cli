@@ -30,7 +30,7 @@ Velocitas project found!
     ];
 
     static flags = {
-        verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Start the verbose logging', required: false }),
+        verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false }),
     };
 
     async run(): Promise<void> {
