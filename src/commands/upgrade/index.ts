@@ -31,7 +31,7 @@ Checking for updates!
 
     static flags = {
         'dry-run': Flags.boolean({ description: 'Check which packages can be upgraded', required: false }),
-        verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Start the verbose logging', required: false }),
+        verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false }),
     };
 
     async run(): Promise<void> {
