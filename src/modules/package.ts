@@ -65,7 +65,7 @@ export function readPackageManifest(packageConfig: PackageConfig): PackageManife
         );
         return config;
     } catch (error) {
-        console.log(`Cannot find component ${packageConfig.name}:${packageConfig.version}. Please update or init first!`);
+        console.log(`Cannot find component ${packageConfig.name}:${packageConfig.version}. Please upgrade or init first!`);
         throw new Error(`Cannot find component ${packageConfig.name}:${packageConfig.version}`);
     }
 }
