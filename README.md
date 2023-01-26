@@ -197,7 +197,7 @@ _See code: [dist/commands/upgrade/index.ts](./src/commands/update/index.ts)_
 
 ### Environment variables
 
-* `VELOCITAS_HOME` specifing this env variable will output all velocitas related data to `$VELOCITAS_HOME/.velocitas` instead of instead of `$userHome/.velocitas`.
+* `VELOCITAS_HOME` specifing this env variable will output all velocitas related data to `$VELOCITAS_HOME/.velocitas` instead of `$userHome/.velocitas`.
 
 ## Contribution
 - [GitHub Issues](https://github.com/eclipse-velocitas/velocitas-cli/issues)
