@@ -19,7 +19,8 @@ import { PackageConfig } from '../../src/modules/project-config';
 
 describe('package - module', () => {
     let envCache: any;
-    beforeEach(() => {
+    before(() => {
+        envCache = process.env;
         const mockfsConf: any = {
             '/my/custom/path/.velocitas/packages': {
                 TestPackage: {
@@ -30,9 +31,6 @@ describe('package - module', () => {
             },
         };
         mockfs(mockfsConf, { createCwd: false });
-    });
-    before(() => {
-        envCache = process.env;
     });
     describe('Package manifest', () => {
         it('should be loaded from VELOCITAS_HOME', () => {
@@ -47,5 +45,6 @@ describe('package - module', () => {
     });
     after(() => {
         process.env = envCache;
+        mockfs.restore();
     });
 });
