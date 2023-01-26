@@ -17,11 +17,11 @@ import axiosRetry from 'axios-retry';
 import decompress from 'decompress';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { existsSync, mkdirSync, readFileSync, rm } from 'node:fs';
+import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { Component, ComponentType, deserializeComponentJSON } from './component';
-import { PackageConfig, userHomeDir } from './project-config';
+import { PackageConfig } from './project-config';
 
-export const DEFAULT_PACKAGE_FOLDER_PATH = `${userHomeDir}/.velocitas/packages`;
 export const GITHUB_API_URL = 'https://api.github.com';
 export const GITHUB_ORG_ENDPOINT = '/repos/eclipse-velocitas';
 
@@ -59,10 +59,14 @@ export class VersionInfo {
     }
 }
 
+function getPackageFolderPath(): string {
+    return join(process.env.VELOCITAS_HOME ? process.env.VELOCITAS_HOME : homedir(), '.velocitas', 'packages');
+}
+
 export function readPackageManifest(packageConfig: PackageConfig): PackageManifest {
     try {
         const config: PackageManifest = deserializeComponentJSON(
-            readFileSync(join(DEFAULT_PACKAGE_FOLDER_PATH, packageConfig.name, packageConfig.version, 'manifest.json'), 'utf-8')
+            readFileSync(join(getPackageFolderPath(), packageConfig.name, packageConfig.version, 'manifest.json'), 'utf-8')
         );
         return config;
     } catch (error) {
@@ -80,7 +84,7 @@ export function getComponentByType(packageManifest: PackageManifest, type: Compo
 }
 
 export function getPackageDirectory(packageName: string): string {
-    return join(DEFAULT_PACKAGE_FOLDER_PATH, packageName);
+    return join(getPackageFolderPath(), packageName);
 }
 
 export async function getPackageVersions(packageName: string): Promise<Array<VersionInfo>> {
@@ -120,10 +124,10 @@ export async function downloadPackageVersion(packageName: string, versionIdentif
         }
         const packageDir = join(getPackageDirectory(packageName), versionIdentifier);
         rm(packageDir, { recursive: true, force: true }, (_) => {});
-        if (!existsSync(`${DEFAULT_PACKAGE_FOLDER_PATH}/${packageName}`)) {
-            mkdirSync(`${DEFAULT_PACKAGE_FOLDER_PATH}/${packageName}`, { recursive: true });
+        if (!existsSync(`${getPackageFolderPath()}/${packageName}`)) {
+            mkdirSync(`${getPackageFolderPath()}/${packageName}`, { recursive: true });
         }
-        await decompress(res.data, `${DEFAULT_PACKAGE_FOLDER_PATH}/${packageName}`, {
+        await decompress(res.data, `${getPackageFolderPath()}/${packageName}`, {
             map: (file) => {
                 file.path = `${versionIdentifier}/${file.path}`;
                 return file;
@@ -137,7 +141,7 @@ export async function downloadPackageVersion(packageName: string, versionIdentif
 }
 
 export function isPackageInstalled(packageName: string, versionIdentifier: string): boolean {
-    const packageDir = `${DEFAULT_PACKAGE_FOLDER_PATH}/${packageName}/${versionIdentifier}`;
+    const packageDir = `${getPackageFolderPath()}/${packageName}/${versionIdentifier}`;
     if (!existsSync(packageDir)) {
         return false;
     }

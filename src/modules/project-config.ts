@@ -13,9 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PathLike, readFileSync, writeFileSync } from 'node:fs';
-import * as os from 'os';
 
-export const userHomeDir = os.homedir();
 export const DEFAULT_CONFIG_FILE_PATH = './.velocitas.json';
 
 export class PackageConfig {
