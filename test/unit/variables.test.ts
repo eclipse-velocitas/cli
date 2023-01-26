@@ -21,7 +21,7 @@ import { VariableCollection } from '../../src/modules/variables';
 let projectConfig: ProjectConfig;
 let packageConfig: PackageConfig;
 let componentConfig: ComponentConfig;
-let component: SetupComponent;
+let componentManifest: SetupComponent;
 let variablesObject: { [key: string]: any };
 let variablesMap: Map<string, any>;
 
@@ -37,21 +37,25 @@ describe('variables - module', () => {
 
         packageConfig = { name: 'test-component', version: 'v1.1.1', variables: variablesMap, components: [] };
         componentConfig = { id: 'test-component', variables: variablesMap };
-        component = {
+        componentManifest = {
             id: 'test-component',
             files: [{ src: 'src/test', dst: '.test', condition: '' }],
             variables: [
                 {
                     name: 'testString',
                     type: 'string',
-                    required: true,
                     description: 'Required string variable',
                 },
                 {
                     name: 'testNumber',
                     type: 'number',
-                    required: true,
                     description: 'Required number variable',
+                },
+                {
+                    name: 'testWithDefault',
+                    type: 'string',
+                    description: 'Non-required variable with default value',
+                    default: 'Foo',
                 },
             ],
             type: ComponentType.setup,
@@ -59,39 +63,45 @@ describe('variables - module', () => {
     });
     describe('VariableCollection', () => {
         it('should build a VariableCollection with given mocks', () => {
-            const variableCollection = VariableCollection.build(projectConfig, packageConfig, componentConfig, component);
+            const variableCollection = VariableCollection.build(projectConfig, packageConfig, componentConfig, componentManifest);
             expect(variableCollection).to.exist;
             expect(variableCollection).to.be.an.instanceof(VariableCollection);
         });
         it('should skip verifyGivenVariables when component does not expect variables', () => {
-            component.variables = [];
-            const variableCollection = VariableCollection.build(projectConfig, packageConfig, componentConfig, component);
+            componentManifest.variables = [];
+            const variableCollection = VariableCollection.build(projectConfig, packageConfig, componentConfig, componentManifest);
             expect(variableCollection).to.exist;
             expect(variableCollection).to.be.an.instanceof(VariableCollection);
         });
         it('should throw an error when component expects required variables which are not configured', () => {
             projectConfig.packages[0].variables = new Map();
+            projectConfig.packages[0].variables.set('testWithNoDefault', 'someValue');
             projectConfig.variables = new Map();
             packageConfig.variables = new Map();
             componentConfig.variables = new Map();
             let expectedErrorMessage: string = '';
             expectedErrorMessage += `'${projectConfig.packages[0].name}' has issues with its configured variables:\n`;
             expectedErrorMessage += `Is missing required variables:\n`;
-            expectedErrorMessage += `* '${component.variables[0].name}'\n`;
-            expectedErrorMessage += `\tType: ${component.variables[0].type}\n`;
-            expectedErrorMessage += `\t${component.variables[0].description}\n`;
-            expectedErrorMessage += `* '${component.variables[1].name}'\n`;
-            expectedErrorMessage += `\tType: ${component.variables[1].type}\n`;
-            expectedErrorMessage += `\t${component.variables[1].description}`;
-            expect(() => VariableCollection.build(projectConfig, packageConfig, componentConfig, component)).to.throw(expectedErrorMessage);
+            expectedErrorMessage += `* '${componentManifest.variables[0].name}'\n`;
+            expectedErrorMessage += `\tType: ${componentManifest.variables[0].type}\n`;
+            expectedErrorMessage += `\t${componentManifest.variables[0].description}\n`;
+            expectedErrorMessage += `* '${componentManifest.variables[1].name}'\n`;
+            expectedErrorMessage += `\tType: ${componentManifest.variables[1].type}\n`;
+            expectedErrorMessage += `\t${componentManifest.variables[1].description}`;
+            expect(() => VariableCollection.build(projectConfig, packageConfig, componentConfig, componentManifest)).to.throw(
+                expectedErrorMessage
+            );
         });
         it('should throw an error when exposed component variable has wrong type', () => {
             projectConfig.packages[0].variables.set('testNumber', 'wrongType');
+            projectConfig.packages[0].variables.set('testWithNoDefault', 'someValue');
             let expectedErrorMessage: string = '';
             expectedErrorMessage += `'${projectConfig.packages[0].name}' has issues with its configured variables:\n`;
             expectedErrorMessage += `Has wrongly typed variables:\n`;
-            expectedErrorMessage += `* '${component.variables[1].name}' has wrong type! Expected ${component.variables[1].type} but got string`;
-            expect(() => VariableCollection.build(projectConfig, packageConfig, componentConfig, component)).to.throw(expectedErrorMessage);
+            expectedErrorMessage += `* '${componentManifest.variables[1].name}' has wrong type! Expected ${componentManifest.variables[1].type} but got string`;
+            expect(() => VariableCollection.build(projectConfig, packageConfig, componentConfig, componentManifest)).to.throw(
+                expectedErrorMessage
+            );
         });
         it('should throw an error when unused variables are configured', () => {
             // Can be uncommented when

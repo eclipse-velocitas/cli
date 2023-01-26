@@ -84,7 +84,10 @@ $ velocitas component --get-path devenv-runtime-local
                         this.log(`${' '.repeat(12)}${exposedVariable.name}`);
                         this.log(`${' '.repeat(16)}type: ${exposedVariable.type}`);
                         this.log(`${' '.repeat(16)}description: ${exposedVariable.description}`);
-                        this.log(`${' '.repeat(16)}required: ${exposedVariable.required ? exposedVariable.required : false}`);
+                        this.log(`${' '.repeat(16)}required: ${exposedVariable.default ? false : true}`);
+                        if (exposedVariable.default) {
+                            this.log(`${' '.repeat(16)}default: ${exposedVariable.default}`);
+                        }
                     }
                 }
             }

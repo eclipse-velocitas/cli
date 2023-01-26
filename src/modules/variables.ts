@@ -18,8 +18,8 @@ import { ComponentConfig, PackageConfig, ProjectConfig } from './project-config'
 export interface VariableDefinition {
     name: string;
     description: string;
-    required: boolean;
     type: string;
+    default?: string;
 }
 
 export class VariableCollection {
@@ -53,6 +53,12 @@ export class VariableCollection {
         }
 
         verifyVariables(map, component);
+
+        for (const variableDef of component.variables) {
+            if (!map.has(variableDef.name) && variableDef.default) {
+                map.set(variableDef.name, variableDef.default);
+            }
+        }
 
         return new VariableCollection(map);
     }
@@ -93,7 +99,7 @@ function verifyGivenVariables(
     for (const componentExposedVariable of variableDefinitions) {
         const configuredValue = configuredVars.get(componentExposedVariable.name);
         if (!configuredValue) {
-            if (componentExposedVariable.required) {
+            if (!componentExposedVariable.default) {
                 missingVars.push(componentExposedVariable);
             }
         } else {
