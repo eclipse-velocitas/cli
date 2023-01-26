@@ -75,7 +75,6 @@ describe('variables - module', () => {
         });
         it('should throw an error when component expects required variables which are not configured', () => {
             projectConfig.packages[0].variables = new Map();
-            projectConfig.packages[0].variables.set('testWithNoDefault', 'someValue');
             projectConfig.variables = new Map();
             packageConfig.variables = new Map();
             componentConfig.variables = new Map();
@@ -94,7 +93,6 @@ describe('variables - module', () => {
         });
         it('should throw an error when exposed component variable has wrong type', () => {
             projectConfig.packages[0].variables.set('testNumber', 'wrongType');
-            projectConfig.packages[0].variables.set('testWithNoDefault', 'someValue');
             let expectedErrorMessage: string = '';
             expectedErrorMessage += `'${projectConfig.packages[0].name}' has issues with its configured variables:\n`;
             expectedErrorMessage += `Has wrongly typed variables:\n`;
