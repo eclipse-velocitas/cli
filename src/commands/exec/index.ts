@@ -13,50 +13,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Command, Flags } from '@oclif/core';
-import { spawn, SpawnOptions } from 'node:child_process';
-import { join } from 'node:path';
 import { readAppManifest } from '../../modules/app-manifest';
-import { Component, ComponentType, DeployComponent, findComponentByName, ProgramSpec, RuntimeComponent } from '../../modules/component';
-import { getPackageDirectory } from '../../modules/package';
-import { ComponentConfig, PackageConfig, ProjectConfig } from '../../modules/project-config';
-import { createEnvVars } from '../../modules/runtime';
-import { VariableCollection } from '../../modules/variables';
-
-function findProgramSpec(
-    projectConfig: ProjectConfig,
-    componentName: string,
-    programId: string
-): [PackageConfig, ComponentConfig, Component, ProgramSpec] | undefined {
-    const component = findComponentByName(projectConfig, componentName);
-
-    var result: [PackageConfig, ComponentConfig, Component, ProgramSpec] | undefined;
-
-    if (component[2].type === ComponentType.runtime) {
-        var runtimeComp = component[2] as RuntimeComponent;
-        var programSpec = runtimeComp.programs.find((programSpec) => programSpec.id === programId);
-        if (!programSpec) {
-            programSpec = runtimeComp.programs.find((programSpec) => programSpec.id === programId);
-        }
-
-        if (programSpec) {
-            result = [component[0], component[1], runtimeComp, programSpec];
-        }
-    } else if (component[2].type === ComponentType.deployment) {
-        var deployComp = component[2] as DeployComponent;
-        programSpec = deployComp.programs.find((programSpec) => programSpec.id === programId);
-        if (!programSpec) {
-            programSpec = deployComp.programs.find((programSpec) => programSpec.id === programId);
-        }
-
-        if (programSpec) {
-            result = [component[0], component[1], deployComp, programSpec];
-        }
-    } else {
-        throw Error(`${componentName} is not a runtime or deployment component!`);
-    }
-
-    return result;
-}
+import { ExecSpec, findComponentByName } from '../../modules/component';
+import { runExecSpec } from '../../modules/exec';
+import { ProjectConfig } from '../../modules/project-config';
+import { createEnvVars, VariableCollection } from '../../modules/variables';
 
 export default class Exec extends Command {
     static description = 'Executes a script contained in one of your installed components.';
@@ -72,10 +33,10 @@ Executing script...
     static args = [
         { name: 'component', description: 'The component which provides the program', required: true },
         { name: 'id', description: 'ID of the program to execute', required: true },
-        { name: 'args', description: 'Additional arguments for the program' },
     ];
 
     static flags = {
+        verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false }),
         args: Flags.string({ description: 'Args for the executed program', required: false }),
     };
 
@@ -84,32 +45,21 @@ Executing script...
 
         const projectConfig = ProjectConfig.read();
 
-        const componentAndProgram = findProgramSpec(projectConfig, args.component, args.id);
+        const execArgs: string[] = flags.args ? flags.args.split(' ') : [];
 
-        if (!componentAndProgram) {
-            this.error(`Program with ID '${args.id}' not found in '${args.component}'`);
-        }
+        const execSpec: ExecSpec = {
+            id: args.id,
+            args: execArgs,
+        };
 
         const appManifestData = readAppManifest();
 
-        const variables = VariableCollection.build(projectConfig, componentAndProgram[0], componentAndProgram[1], componentAndProgram[2]);
+        const [packageConfig, componentConfig, component] = findComponentByName(projectConfig, args.component);
 
-        const envVars = createEnvVars(appManifestData[0], variables);
+        const variables = VariableCollection.build(projectConfig, packageConfig, componentConfig, component);
 
-        const spawnOptions: SpawnOptions = {
-            env: envVars,
-            stdio: 'inherit',
-        };
+        const envVars = createEnvVars(variables, appManifestData[0]);
 
-        let programArgs: Array<string> = new Array<string>();
-        if (flags.args) {
-            programArgs = flags.args.split(' ');
-            console.log(programArgs);
-        }
-        const process = spawn(
-            join(getPackageDirectory(componentAndProgram[0].name), componentAndProgram[0].version, componentAndProgram[3].executable),
-            programArgs,
-            spawnOptions
-        );
+        await runExecSpec(execSpec, args.component, projectConfig, envVars, flags.verbose);
     }
 }

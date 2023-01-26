@@ -24,6 +24,7 @@ import { PackageConfig } from './project-config';
 
 export const GITHUB_API_URL = 'https://api.github.com';
 export const GITHUB_ORG_ENDPOINT = '/repos/eclipse-velocitas';
+export const MANIFEST_FILE_NAME = 'manifest.json';
 
 const PACKAGE_REPO = (packageName: string) => `${GITHUB_API_URL}${GITHUB_ORG_ENDPOINT}/${packageName}`;
 
@@ -59,14 +60,18 @@ export class VersionInfo {
     }
 }
 
+export function getVelocitasRoot(): string {
+    return join(process.env.VELOCITAS_HOME ? process.env.VELOCITAS_HOME : homedir(), '.velocitas');
+}
+
 function getPackageFolderPath(): string {
-    return join(process.env.VELOCITAS_HOME ? process.env.VELOCITAS_HOME : homedir(), '.velocitas', 'packages');
+    return join(getVelocitasRoot(), 'packages');
 }
 
 export function readPackageManifest(packageConfig: PackageConfig): PackageManifest {
     try {
         const config: PackageManifest = deserializeComponentJSON(
-            readFileSync(join(getPackageFolderPath(), packageConfig.name, packageConfig.version, 'manifest.json'), 'utf-8')
+            readFileSync(join(getPackageFolderPath(), packageConfig.name, packageConfig.version, MANIFEST_FILE_NAME), 'utf-8')
         );
         return config;
     } catch (error) {
@@ -133,9 +138,11 @@ export async function downloadPackageVersion(packageName: string, versionIdentif
                 return file;
             },
             strip: 1,
+        }).catch((reason) => {
+            console.error(reason);
         });
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
     return;
 }

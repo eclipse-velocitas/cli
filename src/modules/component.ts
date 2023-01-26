@@ -28,13 +28,14 @@ function serializable<T extends IComponent>(constructor: T) {
 export interface ProgramSpec {
     id: string;
     executable: string;
+    args: Array<string>;
 }
 
 export interface ExecSpec {
     id: string;
     args: Array<string>;
-    startupLine: string;
-    dependsOn: string;
+    startupLine?: string;
+    dependsOn?: string;
 }
 
 export enum ComponentType {
@@ -43,20 +44,33 @@ export enum ComponentType {
     setup = 'setup',
 }
 
+// Interface definition for implementing components
 export interface Component {
+    // Unique ID of the component. Needs to be unique over all installed components.
     id: string;
+
+    // A list of all variable definitions exposed by this component.
     variables: Array<VariableDefinition>;
+
+    // A list of programs exposed by this component.
+    programs?: Array<ProgramSpec>;
+
+    // Hook which is called after the component has been initialized.
+    onPostInit?: Array<ExecSpec>;
+
+    // The type of the component.
     readonly type: ComponentType;
 }
 
 @serializable
 export class RuntimeComponent implements Component {
-    id: string = '';
-    alias: string = '';
-    programs: Array<ProgramSpec> = new Array<ProgramSpec>();
-    start: Array<ExecSpec> = new Array<ExecSpec>();
-    stop: Array<ExecSpec> = new Array<ExecSpec>();
-    variables: Array<VariableDefinition> = new Array<VariableDefinition>();
+    id = '';
+    alias = '';
+    programs = new Array<ProgramSpec>();
+    start = new Array<ExecSpec>();
+    stop = new Array<ExecSpec>();
+    variables = new Array<VariableDefinition>();
+    onPostInit? = new Array<ExecSpec>();
     readonly type = ComponentType.runtime;
 }
 
@@ -68,20 +82,25 @@ export interface FileSpec {
 
 @serializable
 export class SetupComponent implements Component {
-    id: string = '';
-    files: Array<FileSpec> = new Array<FileSpec>();
-    variables: Array<VariableDefinition> = new Array<VariableDefinition>();
+    id = '';
+    files = new Array<FileSpec>();
+    variables = new Array<VariableDefinition>();
+    programs? = new Array<ProgramSpec>();
+    onPostInit? = new Array<ExecSpec>();
+    // called after the component has completed its synchronization
+    onPostSync? = new Array<ExecSpec>();
     readonly type = ComponentType.setup;
 }
 
 @serializable
 export class DeployComponent implements Component {
-    id: string = '';
-    alias: string = '';
-    programs: Array<ProgramSpec> = new Array<ProgramSpec>();
-    start: Array<ExecSpec> = new Array<ExecSpec>();
-    stop: Array<ExecSpec> = new Array<ExecSpec>();
-    variables: Array<VariableDefinition> = new Array<VariableDefinition>();
+    id = '';
+    alias = '';
+    programs = new Array<ProgramSpec>();
+    start = new Array<ExecSpec>();
+    stop = new Array<ExecSpec>();
+    variables = new Array<VariableDefinition>();
+    onPostInit? = new Array<ExecSpec>();
     readonly type = ComponentType.deployment;
 }
 

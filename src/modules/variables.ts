@@ -12,7 +12,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+import { realpathSync } from 'node:fs';
+import { cwd } from 'node:process';
+import { AppManifest } from './app-manifest';
 import { Component } from './component';
+import { mapReplacer } from './helpers';
+import { ProjectCache } from './project-cache';
 import { ComponentConfig, PackageConfig, ProjectConfig } from './project-config';
 
 export interface VariableDefinition {
@@ -162,4 +167,40 @@ function buildErrorMessageForComponent(
         }
     }
     return errorMessage;
+}
+
+export function createEnvVars(variables: VariableCollection, appManifestData?: AppManifest): NodeJS.ProcessEnv {
+    const projectCache = ProjectCache.read();
+
+    const envVars = Object.assign({}, process.env, {
+        VELOCITAS_WORKSPACE_DIR: cwd(),
+        VELOCITAS_PROJECT_CACHE_DATA: JSON.stringify(projectCache.raw(), mapReplacer),
+        VELOCITAS_PROJECT_CACHE_DIR: ProjectCache.getCacheDir(realpathSync(process.cwd())),
+    });
+
+    if (appManifestData) {
+        Object.assign(envVars, {
+            VELOCITAS_APP_MANIFEST: JSON.stringify(appManifestData),
+        });
+
+        for (const service of appManifestData.dependencies.services) {
+            Object.assign(envVars, {
+                [`${service.name.toUpperCase()}_IMAGE`]: service.image,
+                [`${service.name.toUpperCase()}_TAG`]: service.version,
+            });
+        }
+
+        for (const service of appManifestData.dependencies.runtime) {
+            Object.assign(envVars, {
+                [`${service.name.toUpperCase()}_IMAGE`]: service.image,
+                [`${service.name.toUpperCase()}_TAG`]: service.version,
+            });
+        }
+    }
+
+    if (variables) {
+        Object.assign(envVars, variables.asEnvVars());
+    }
+
+    return envVars;
 }

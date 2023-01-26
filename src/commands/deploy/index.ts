@@ -19,8 +19,7 @@ import { readAppManifest } from '../../modules/app-manifest';
 import { ComponentType, DeployComponent, findComponentsByType, getComponentConfig } from '../../modules/component';
 import { getPackageDirectory } from '../../modules/package';
 import { ProjectConfig } from '../../modules/project-config';
-import { createEnvVars } from '../../modules/runtime';
-import { VariableCollection } from '../../modules/variables';
+import { createEnvVars, VariableCollection } from '../../modules/variables';
 
 export default class Deploy extends Command {
     static description = 'Deploys your Vehicle App to a runtime';
@@ -45,7 +44,7 @@ Deploying app to runtime 'local'...
         const appManifestData = readAppManifest();
 
         const variables = VariableCollection.build(projectConfig, deployment[0], componentConfig, deployment[2]);
-        const envVars = createEnvVars(appManifestData[0], variables);
+        const envVars = createEnvVars(variables, appManifestData[0]);
         const runtimeVersion = projectConfig.packages.find((c) => c.name === deployment![0].name)?.version;
 
         const proc = spawn(join(getPackageDirectory(deployment[0].name), runtimeVersion!, deployment[2].start[0].id), [], {

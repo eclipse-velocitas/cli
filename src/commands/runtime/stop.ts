@@ -16,8 +16,8 @@ import { Command } from '@oclif/core';
 import { readAppManifest } from '../../modules/app-manifest';
 import { ComponentType, findComponentsByType, getComponentConfig, RuntimeComponent } from '../../modules/component';
 import { ProjectConfig } from '../../modules/project-config';
-import { createEnvVars, RuntimeArgs, RuntimeSpawnOptions, spawnProcessesInOrder } from '../../modules/runtime';
-import { VariableCollection } from '../../modules/variables';
+import { RuntimeArgs, RuntimeSpawnOptions, spawnProcessesInOrder } from '../../modules/runtime';
+import { createEnvVars, VariableCollection } from '../../modules/variables';
 
 export default class Stop extends Command {
     static description = 'Stops a specific runtime';
@@ -45,7 +45,7 @@ Stopping runtime 'local'
 
         const appManifestData = readAppManifest();
 
-        const envVars = createEnvVars(appManifestData[0], variables);
+        const envVars = createEnvVars(variables, appManifestData[0]);
 
         const runtimeSpawnOptions: RuntimeSpawnOptions = {
             config: projectConfig,

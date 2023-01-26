@@ -13,17 +13,37 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
-import { runtimeComponentManifestMock, setupComponentManifestMock } from '../../utils/mockConfig';
+import { existsSync } from 'fs';
+import { ProjectCache } from '../../../src/modules/project-cache';
+import { runtimeComponentManifestMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore } from '../../utils/mockfs';
 // @ts-ignore: declaration file
 import mockSpawn from 'mock-spawn';
+import { getCacheData, writeCacheData } from '../../helpers/cache';
+
+function echoProgram() {
+    return function (this: any, cb: any) {
+        this.stdout.write(`Echo program: ${this.args}\n`);
+        return cb(0);
+    };
+}
+
+function cacheProgram() {
+    return function (this: any, cb: any) {
+        this.stdout.write(`foo = bar >> VELOCITAS_CACHE\n`);
+        this.stdout.write(`x=y >>  VELOCITAS_CACHE\n`);
+        this.stdout.write(`0123='random' >> VELOCITAS_CACHE\n`);
+        this.stdout.write(`var="asdc' >> VELOCITAS_CACHE\n`);
+        return cb(0);
+    };
+}
 
 describe('exec', () => {
     test.do(() => {
         mockFolders(true, true);
         const execSpawn = mockSpawn();
         require('child_process').spawn = execSpawn;
-        execSpawn.setDefault(execSpawn.simple(0 /* exit code */, 'Execute Script Test' /* stdout */));
+        execSpawn.setStrategy(echoProgram);
     })
         .finally(() => {
             mockRestore();
@@ -35,14 +55,14 @@ describe('exec', () => {
             `${runtimeComponentManifestMock.components[0].programs[0].id}`,
         ])
         .it('executes a runtime script', (ctx) => {
-            // placeholder
+            expect(ctx.stdout.trim()).to.contain(`Echo program:`);
         });
 
     test.do(() => {
         mockFolders(true, true);
         const execSpawn = mockSpawn();
         require('child_process').spawn = execSpawn;
-        execSpawn.setDefault(execSpawn.simple(0 /* exit code */, 'Execute Script Test' /* stdout */));
+        execSpawn.setStrategy(echoProgram);
     })
         .finally(() => {
             mockRestore();
@@ -56,14 +76,14 @@ describe('exec', () => {
             `additionalArgument`,
         ])
         .it('executes a runtime script with additional arguments', (ctx) => {
-            expect(ctx.stdout).to.contain(`additionalArgument`);
+            expect(ctx.stdout.trim()).to.contain(`Echo program: additionalArgument`);
         });
 
     test.do(() => {
         mockFolders(true, true);
         const execSpawn = mockSpawn();
-        require('child_process').spawn = execSpawn;
-        execSpawn.setDefault(execSpawn.simple(0 /* exit code */, 'Execute Script Test' /* stdout */));
+        require('child_process').spawnSync = execSpawn;
+        execSpawn.setDefault(echoProgram);
     })
         .finally(() => {
             mockRestore();
@@ -85,19 +105,10 @@ describe('exec', () => {
             mockRestore();
         })
         .stdout()
-        .command(['exec', `${setupComponentManifestMock.components[0].id}`, `${setupComponentManifestMock.components[0].id}`])
-        .catch(`${setupComponentManifestMock.components[0].id} is not a runtime or deployment component!`)
-        .it('throws error when component is not of type runtime or deployment');
-
-    test.do(() => {
-        mockFolders(true, true);
-    })
-        .finally(() => {
-            mockRestore();
-        })
-        .stdout()
         .command(['exec', `${runtimeComponentManifestMock.components[0].id}`, 'unknown-script'])
-        .catch(`Program with ID 'unknown-script' not found in '${runtimeComponentManifestMock.components[0].id}'`)
+        .catch(
+            `No program found for item 'unknown-script' referenced in program list of '${runtimeComponentManifestMock.components[0].id}'`
+        )
         .it('throws error when program is not found in specified runtime component');
 
     test.do(() => {
@@ -108,6 +119,63 @@ describe('exec', () => {
         })
         .stdout()
         .command(['exec', `${runtimeComponentManifestMock.components[1].id}`, 'unknown-script'])
-        .catch(`Program with ID 'unknown-script' not found in '${runtimeComponentManifestMock.components[1].id}'`)
+        .catch(
+            `No program found for item 'unknown-script' referenced in program list of '${runtimeComponentManifestMock.components[1].id}'`
+        )
         .it('throws error when program is not found in specified deployment component');
+
+    test.do(() => {
+        mockFolders(true, true);
+        const execSpawn = mockSpawn();
+        require('child_process').spawn = execSpawn;
+        execSpawn.setStrategy(cacheProgram);
+    })
+        .finally(() => {
+            mockRestore();
+        })
+        .stdout()
+        .command(['exec', runtimeComponentManifestMock.components[0].id, runtimeComponentManifestMock.components[0].programs[0].id])
+        .it('captures variables output to VELOCITAS_CACHE', (ctx) => {
+            expect(ctx.stdout.trim()).to.contain('foo = bar >> VELOCITAS_CACHE');
+            expect(ctx.stdout.trim()).to.contain('x=y >>  VELOCITAS_CACHE');
+            expect(ctx.stdout.trim()).to.contain("0123='random' >> VELOCITAS_CACHE");
+            expect(ctx.stdout.trim()).to.contain(`var="asdc' >> VELOCITAS_CACHE`);
+            expect(existsSync(ProjectCache.getCacheDir())).to.be.true;
+
+            const cacheData = getCacheData();
+            expect(cacheData).to.include.keys('foo');
+            expect(cacheData).to.include.keys('x');
+            expect(cacheData).to.include.keys('0123');
+            expect(cacheData).to.not.include.keys('var');
+
+            expect(cacheData.foo).to.be.equal('bar');
+            expect(cacheData.x).to.be.equal('y');
+            expect(cacheData['0123']).to.be.equal('random');
+        });
+
+    test.do(() => {
+        mockFolders(true, true);
+        const execSpawn = mockSpawn();
+        require('child_process').spawn = execSpawn;
+        execSpawn.setStrategy(
+            () =>
+                function (this: any, cb: any) {
+                    this.stdout.write(this.opts.env['VELOCITAS_PROJECT_CACHE_DATA'] + '\n');
+                    this.stdout.write(this.opts.env['VELOCITAS_PROJECT_CACHE_DIR'] + '\n');
+                    return cb(0);
+                }
+        );
+
+        writeCacheData({ foo: 'bar' });
+    })
+        .finally(() => {
+            mockRestore();
+        })
+        .stdout()
+        .command(['exec', runtimeComponentManifestMock.components[0].id, runtimeComponentManifestMock.components[0].programs[0].id])
+        .it('should make cache available as env vars', (ctx) => {
+            const lines = ctx.stdout.trim().split('\n');
+            expect(lines[0]).to.equal('{"foo":"bar"}');
+            expect(lines[1]).to.contain('.velocitas/projects/');
+        });
 });
