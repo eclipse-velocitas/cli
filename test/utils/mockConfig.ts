@@ -89,25 +89,21 @@ export const setupComponentManifestMock = {
                 {
                     name: 'language',
                     type: 'string',
-                    required: true,
                     description: "The programming language of the project. Either 'python' or 'cpp'",
                 },
                 {
                     name: 'repoType',
                     type: 'string',
-                    required: true,
                     description: "The type of the repository: 'app' or 'sdk'",
                 },
                 {
                     name: 'appManifestPath',
                     type: 'string',
-                    required: true,
                     description: 'Path of the AppManifest file, relative to the .velocitas.json',
                 },
                 {
                     name: 'githubRepoId',
                     type: 'string',
-                    required: true,
                     description: 'The id of the repository, e.g. myOrg/myRepo.',
                 },
             ],
