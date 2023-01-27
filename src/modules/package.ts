@@ -22,8 +22,9 @@ import { join } from 'node:path';
 import { Component, ComponentType, deserializeComponentJSON } from './component';
 import { PackageConfig } from './project-config';
 
+export const GITHUB_ORG = 'eclipse-velocitas';
 export const GITHUB_API_URL = 'https://api.github.com';
-export const GITHUB_ORG_ENDPOINT = '/repos/eclipse-velocitas';
+export const GITHUB_ORG_ENDPOINT = `/repos/${GITHUB_ORG}`;
 export const MANIFEST_FILE_NAME = 'manifest.json';
 
 const PACKAGE_REPO = (packageName: string) => `${GITHUB_API_URL}${GITHUB_ORG_ENDPOINT}/${packageName}`;
@@ -68,6 +69,10 @@ function getPackageFolderPath(): string {
     return join(getVelocitasRoot(), 'packages');
 }
 
+export function getPackageRepo(packageName: string): string {
+    return `${GITHUB_API_URL}${GITHUB_ORG_ENDPOINT}/${packageName}`;
+}
+
 export function readPackageManifest(packageConfig: PackageConfig): PackageManifest {
     try {
         const config: PackageManifest = deserializeComponentJSON(
@@ -100,7 +105,7 @@ export async function getPackageVersions(packageName: string): Promise<Array<Ver
         setApiToken(requestHeaders);
 
         const requestConfig: AxiosRequestConfig = { headers: requestHeaders, ...setProxy() };
-        const res = await axios.get(`${PACKAGE_REPO(packageName)}/tags`, requestConfig);
+        const res = await axios.get(`${getPackageRepo(packageName)}/tags`, requestConfig);
 
         if (res.status !== 200) {
             console.log(res.statusText);
