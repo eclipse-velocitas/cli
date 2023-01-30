@@ -149,35 +149,41 @@ export function isPackageInstalled(packageName: string, versionIdentifier: strin
 }
 
 async function downloadPackageRequest(packageName: string, versionIdentifier: string, verbose?: boolean): Promise<AxiosResponse<any, any>> {
-    const defaultUrl = `${PACKAGE_REPO(packageName)}/zipball/refs/tags/${versionIdentifier}`;
-    const fallbackUrl = `${PACKAGE_REPO(packageName)}/zipball/${versionIdentifier}`;
+    const baseUrl = PACKAGE_REPO(packageName);
+    const tagEndpoint = `/zipball/refs/tags/${versionIdentifier}`;
+    const branchEndpoint = `/zipball/${versionIdentifier}`;
+
     const requestHeaders: AxiosRequestHeaders = {
         accept: 'application/vnd.github+json',
     };
     setApiToken(requestHeaders);
+    const requestConfig: AxiosRequestConfig = { headers: requestHeaders, responseType: 'arraybuffer', ...setProxy() };
 
-    axiosRetry(axios, {
-        retries: 1,
-        retryCondition: (error) => {
-            if (error.response?.status === 404) {
-                if (verbose) {
-                    console.log(`Did not find tag '${versionIdentifier}' in '${packageName}' - looking for branch ...`);
+    const packageClient = axios.create({
+        baseURL: baseUrl,
+        ...requestConfig,
+    });
+    axiosRetry(packageClient, { retries: 1 });
+
+    const res = await packageClient.get(tagEndpoint, {
+        'axios-retry': {
+            retryCondition: (error) => {
+                if (error.response?.status === 404) {
+                    if (verbose) {
+                        console.log(`Did not find tag '${versionIdentifier}' in '${packageName}' - looking for branch ...`);
+                    }
+                    return true;
                 }
-                return true;
-            }
-            return false;
-        },
-        onRetry: (_retryCount, _error, requestConfig) => {
-            if (verbose) {
-                console.log(`Try using fallback URL '${fallbackUrl}' to download package ...`);
-            }
-            requestConfig.url = fallbackUrl;
-            return requestConfig;
+                return false;
+            },
+            onRetry: (_retryCount, _error, requestConfig) => {
+                if (verbose) {
+                    console.log(`Try using fallback URL '${baseUrl}${branchEndpoint}' to download package ...`);
+                }
+                requestConfig.url = branchEndpoint;
+            },
         },
     });
-
-    const requestConfig: AxiosRequestConfig = { headers: requestHeaders, responseType: 'arraybuffer', ...setProxy() };
-    const res = await axios.get(defaultUrl, requestConfig);
 
     if (verbose) {
         console.log(`Succesfully downloaded package: '${packageName}:${versionIdentifier}'`);
