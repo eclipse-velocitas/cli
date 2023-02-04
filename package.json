@@ -28,7 +28,7 @@
     "semver": "^7.3.8"
   },
   "devDependencies": {
-    "@oclif/test": "^2.2.21",
+    "@oclif/test": "^2.3.4",
     "@types/chai": "^4.3.4",
     "@types/decompress": "^4.2.4",
     "@types/fs-extra": "^11.0.1",
