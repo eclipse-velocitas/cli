@@ -8,6 +8,7 @@
 |@oclif/plugin-not-found|2.3.17|MIT|
 |@oclif/plugin-plugins|2.2.4|MIT|
 |@oclif/test|2.3.3|MIT|
+|@types/archiver|5.3.1|MIT|
 |@types/chai|4.3.4|MIT|
 |@types/decompress|4.2.4|MIT|
 |@types/fs-extra|11.0.1|MIT|
@@ -16,6 +17,7 @@
 |@types/node|18.11.18|MIT|
 |@typescript-eslint/eslint-plugin|5.49.0|MIT|
 |@typescript-eslint/parser|5.49.0|unknown|
+|archiver|5.3.1|MIT|
 |axios|0.27.2|MIT|
 |axios-retry|3.4.0|unknown|
 |chai|4.3.7|MIT|
@@ -36,7 +38,7 @@
 |ts-node|10.9.1|MIT|
 |tslib|2.4.1|BSD Zero Clause License|
 |typescript|4.9.4|Apache 2.0|
-|velocitas-cli|0.2.0|Apache 2.0|
+|velocitas-cli|0.2.1|Apache 2.0|
 ## Workflows
 | Dependency | Version | License |
 |:-----------|:-------:|--------:|
