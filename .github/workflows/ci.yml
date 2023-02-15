@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Robert Bosch GmbH
+# Copyright (c) 2023 Robert Bosch GmbH and Microsoft Corporation
 #
 # This program and the accompanying materials are made available under the
 # terms of the Apache License, Version 2.0 which is available at
@@ -12,10 +12,15 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-name: Run tests
+name: CI
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   workflow_dispatch:
   push:
+    # Run only on branches/commits and not tags
     branches:
       - main
   pull_request:
@@ -23,6 +28,17 @@ on:
       - main
 
 jobs:
+  lint-job:
+    name: "Run linters"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run Linters
+        uses: ./.github/actions/pre-commit-action
+
   cli-tests:
     strategy:
       matrix:

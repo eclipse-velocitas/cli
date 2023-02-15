@@ -13,8 +13,36 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Command, Flags } from '@oclif/core';
-import { downloadPackageVersion, isPackageInstalled } from '../../modules/package';
-import { ProjectConfig } from '../../modules/project-config';
+import { AppManifest, readAppManifest } from '../../modules/app-manifest';
+import { Component } from '../../modules/component';
+import { runExecSpec } from '../../modules/exec';
+import { downloadPackageVersion, isPackageInstalled, readPackageManifest } from '../../modules/package';
+import { ComponentConfig, PackageConfig, ProjectConfig } from '../../modules/project-config';
+import { createEnvVars, VariableCollection } from '../../modules/variables';
+
+async function runPostInitHook(
+    component: Component,
+    packageConfig: PackageConfig,
+    projectConfig: ProjectConfig,
+    appManifest: AppManifest,
+    verbose?: boolean
+) {
+    if (!component.onPostInit || component.onPostInit.length === 0) {
+        return;
+    }
+
+    console.log(`Running post init hook for ${component.id}`);
+
+    const maybeComponentConfig = packageConfig.components?.find((c) => c.id === component.id);
+    const componentConfig = maybeComponentConfig ? maybeComponentConfig : new ComponentConfig();
+    const variables = VariableCollection.build(projectConfig, packageConfig, componentConfig, component);
+
+    for (const execSpec of component.onPostInit) {
+        console.log(`Running '${execSpec.id}'`);
+        const envVars = createEnvVars(variables, appManifest);
+        await runExecSpec(execSpec, component.id, projectConfig, envVars, verbose);
+    }
+}
 
 export default class Init extends Command {
     static description = 'Initializes Velocitas Vehicle App';
@@ -31,28 +59,39 @@ Velocitas project found!
 
     static flags = {
         verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false }),
+        force: Flags.boolean({ char: 'f', aliases: ['force'], description: 'Force (re-)download packages', required: false }),
     };
 
     async run(): Promise<void> {
         const { flags } = await this.parse(Init);
 
         this.log(`Initializing Velocitas packages ...`);
-        let config: ProjectConfig;
+        let projectConfig: ProjectConfig;
+
+        const appManifestData = readAppManifest();
 
         if (ProjectConfig.isAvailable()) {
-            config = ProjectConfig.read();
-            for (const packageConfig of config.packages) {
-                if (isPackageInstalled(packageConfig.name, packageConfig.version)) {
+            projectConfig = ProjectConfig.read();
+
+            for (const packageConfig of projectConfig.packages) {
+                if (!flags.force && isPackageInstalled(packageConfig.name, packageConfig.version)) {
                     this.log(`... '${packageConfig.name}:${packageConfig.version}' already initialized.`);
                     continue;
                 }
+
                 this.log(`... Downloading package: '${packageConfig.name}:${packageConfig.version}'`);
                 await downloadPackageVersion(packageConfig.name, packageConfig.version, flags.verbose);
+
+                const packageManifest = readPackageManifest(packageConfig);
+
+                for (const component of packageManifest.components) {
+                    await runPostInitHook(component, packageConfig, projectConfig, appManifestData[0], flags.verbose);
+                }
             }
         } else {
             this.log('... Creating .velocitas.json at the root of your repository.');
-            config = new ProjectConfig();
-            config.write();
+            projectConfig = new ProjectConfig();
+            projectConfig.write();
         }
     }
 }

@@ -16,8 +16,8 @@ import { Command, Flags } from '@oclif/core';
 import { readAppManifest } from '../../modules/app-manifest';
 import { ComponentType, findComponentsByType, getComponentConfig, RuntimeComponent } from '../../modules/component';
 import { ProjectConfig } from '../../modules/project-config';
-import { createEnvVars, RuntimeArgs, RuntimeFlags, RuntimeSpawnOptions, spawnProcessesInOrder } from '../../modules/runtime';
-import { VariableCollection } from '../../modules/variables';
+import { RuntimeArgs, RuntimeFlags, RuntimeSpawnOptions, spawnProcessesInOrder } from '../../modules/runtime';
+import { createEnvVars, VariableCollection } from '../../modules/variables';
 
 export default class Start extends Command {
     static description = 'Starts a specific runtime';
@@ -48,7 +48,7 @@ Starting runtime 'local'
 
         const appManifestData = readAppManifest();
 
-        const envVars = createEnvVars(appManifestData[0], variables);
+        const envVars = createEnvVars(variables, appManifestData[0]);
 
         const runtimeSpawnOptions: RuntimeSpawnOptions = {
             config: projectConfig,

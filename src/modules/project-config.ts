@@ -13,6 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PathLike, readFileSync, writeFileSync } from 'node:fs';
+import { mapReplacer } from './helpers';
 
 export const DEFAULT_CONFIG_FILE_PATH = './.velocitas.json';
 
@@ -28,21 +29,6 @@ export class PackageConfig {
 
     // per-component configuration
     components: Array<ComponentConfig> = new Array<ComponentConfig>();
-}
-
-// custom replacer to serialize Map<k,v>
-function customReplacer(key: string, value: any) {
-    if (value instanceof Map) {
-        var obj = {};
-        for (const [k, v] of value) {
-            Object.assign(obj, {
-                [k]: v,
-            });
-        }
-        return obj;
-    } else {
-        return value;
-    }
 }
 
 export class ProjectConfig {
@@ -92,7 +78,7 @@ export class ProjectConfig {
     }
 
     write(path: PathLike = DEFAULT_CONFIG_FILE_PATH): void {
-        const configString = `${JSON.stringify(this, customReplacer, 4)}\n`;
+        const configString = `${JSON.stringify(this, mapReplacer, 4)}\n`;
         writeFileSync(path, configString, 'utf-8');
     }
 }

@@ -18,8 +18,8 @@ import * as path from 'path';
 import { appManifestMock, runtimeComponentManifestMock, setupComponentManifestMock, velocitasConfigMock } from './mockConfig';
 
 export const userHomeDir = os.homedir();
-const runtimeComponent = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}/${velocitasConfigMock.packages[0].version}`;
-const setupComponent = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}/${velocitasConfigMock.packages[1].version}`;
+const runtimeComponentPath = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}/${velocitasConfigMock.packages[0].version}`;
+const setupComponentPath = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}/${velocitasConfigMock.packages[1].version}`;
 
 export const mockFolders = (withVelocitasConfig: boolean = false, withInstalledComponents: boolean = false) => {
     const mockfsConf: any = {
@@ -29,24 +29,19 @@ export const mockFolders = (withVelocitasConfig: boolean = false, withInstalledC
         test: mockfs.load(path.resolve(__dirname, '../../test')),
         node_modules: mockfs.load(path.resolve(__dirname, '../../node_modules')),
         app: {
-            'AppManifest.json': mockfs.file({
-                content: `${JSON.stringify(appManifestMock)}`,
-            }),
+            'AppManifest.json': JSON.stringify(appManifestMock),
         },
     };
     if (withVelocitasConfig) {
-        mockfsConf['.velocitas.json'] = `${JSON.stringify(velocitasConfigMock)}`;
+        mockfsConf['.velocitas.json'] = JSON.stringify(velocitasConfigMock);
     }
     if (withInstalledComponents) {
-        mockfsConf[runtimeComponent] = {
-            'manifest.json': mockfs.file({
-                content: `${JSON.stringify(runtimeComponentManifestMock)}`,
-            }),
+        mockfsConf[runtimeComponentPath] = {
+            'manifest.json': JSON.stringify(runtimeComponentManifestMock),
+            src: {},
         };
-        mockfsConf[setupComponent] = {
-            'manifest.json': mockfs.file({
-                content: `${JSON.stringify(setupComponentManifestMock)}`,
-            }),
+        mockfsConf[setupComponentPath] = {
+            'manifest.json': JSON.stringify(setupComponentManifestMock),
         };
     }
     mockfs(mockfsConf, { createCwd: false });

@@ -7,7 +7,7 @@ Velocitas CLI
 The CLI implements the [lifecyle management](link-to-velocitas-docs) concept of the development environment of
 a Vehicle App.
 
-It allows *us* to take care of the development environment while *you* focus on the business logic of your vehicle application. 
+It allows *us* to take care of the development environment while *you* focus on the business logic of your vehicle application.
 
 
 # Contents

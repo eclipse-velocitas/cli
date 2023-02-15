@@ -14,12 +14,9 @@
 
 import { ChildProcess, spawn, SpawnOptions } from 'node:child_process';
 import { join } from 'node:path';
-import { cwd } from 'node:process';
-import { AppManifest } from './app-manifest';
 import { ExecSpec, RuntimeComponent } from './component';
 import { getPackageDirectory } from './package';
 import { PackageConfig, ProjectConfig } from './project-config';
-import { VariableCollection } from './variables';
 
 enum ProcessState {
     terminated,
@@ -64,33 +61,6 @@ class ProcessInfo {
 
         return this.exitCode === 0;
     }
-}
-
-export function createEnvVars(appManifestData: AppManifest, variables: VariableCollection): NodeJS.ProcessEnv {
-    const envVars = Object.assign({}, process.env, {
-        VELOCITAS_WORKSPACE_DIR: cwd(),
-        VELOCITAS_APP_MANIFEST: JSON.stringify(appManifestData),
-    });
-
-    for (const service of appManifestData.dependencies.services) {
-        Object.assign(envVars, {
-            [`${service.name.toUpperCase()}_IMAGE`]: service.image,
-            [`${service.name.toUpperCase()}_TAG`]: service.version,
-        });
-    }
-
-    for (const service of appManifestData.dependencies.runtime) {
-        Object.assign(envVars, {
-            [`${service.name.toUpperCase()}_IMAGE`]: service.image,
-            [`${service.name.toUpperCase()}_TAG`]: service.version,
-        });
-    }
-
-    if (variables) {
-        Object.assign(envVars, variables.asEnvVars());
-    }
-
-    return envVars;
 }
 
 function delay(milliseconds: number) {
