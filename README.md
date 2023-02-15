@@ -1,61 +1,48 @@
-# velocitas-cli
+Velocitas CLI - The package manager for your project
+=================================
 
+[![CI Workflow](https://github.com/eclipse-velocitas/cli/actions/workflows/ci.yml/badge.svg#branch=main)](https://github.com/eclipse-velocitas/cli/actions/workflows/ci.yml)
 [![License: Apache](https://img.shields.io/badge/License-Apache-yellow.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
-Velocitas CLI
-=================
+<!-- toc -->
+* [Introduction](#introduction)
+* [Commands](#commands)
+* [Installation](#installation)
+* [Configuration](#configuration)
+* [Features](#features)
+* [Contribution](#contribution)
+<!-- tocstop -->
+
+# Introduction
+
 The CLI implements the [lifecyle management](link-to-velocitas-docs) concept of the development environment of
 a Vehicle App.
 
 It allows *us* to take care of the development environment while *you* focus on the business logic of your vehicle application.
 
-
-# Contents
-
-<!-- toc -->
-* [Contents](#contents)
-* [Usage](#usage)
-* [Commands](#commands)
-<!-- tocstop -->
-
-# Usage
-<!-- usage -->
-```sh-session
-$ npm install -g velocitas-cli
-$ velocitas COMMAND
-running command...
-$ velocitas --version
-velocitas-cli/0.1.0 darwin-x64 node-v18.12.1
-$ velocitas --help [COMMAND]
-USAGE
-  $ velocitas COMMAND
-...
-```
-<!-- usagestop -->
 # Commands
 <!-- commands -->
-<!-- no toc -->
-- [`exec COMPONENT ID [ARGS]`](#velocitas-exec-component-id-args)
-- [`help [COMMAND]`](#velocitas-help-command)
-- [`init`](#velocitas-init)
-- [`package [NAME]`](#velocitas-package-name)
-- [`sync`](#velocitas-sync)
-- [`upgrade`](#velocitas-upgrade)
+* [`velocitas exec COMPONENT ID`](#velocitas-exec-component-id)
+* [`velocitas help [COMMANDS]`](#velocitas-help-commands)
+* [`velocitas init`](#velocitas-init)
+* [`velocitas package [NAME]`](#velocitas-package-name)
+* [`velocitas sync`](#velocitas-sync)
+* [`velocitas upgrade`](#velocitas-upgrade)
 
-## `velocitas exec COMPONENT ID [ARGS]`
+## `velocitas exec COMPONENT ID`
 
 Executes a script contained in one of your installed components.
 
 ```
 USAGE
-  $ velocitas exec [COMPONENT] [ID] [ARGS] [--args <value>]
+  $ velocitas exec [COMPONENT] [ID] [-v] [--args <value>]
 
 ARGUMENTS
   COMPONENT  The component which provides the program
   ID         ID of the program to execute
-  ARGS       Additional arguments for the program
 
 FLAGS
+  -v, --verbose   Enable verbose logging
   --args=<value>  Args for the executed program
 
 DESCRIPTION
@@ -66,18 +53,18 @@ EXAMPLES
   Executing script...
 ```
 
-_See code: [dist/commands/exec/index.ts](./src/commands/exec/index.ts)_
+_See code: [dist/commands/exec/index.ts](https://github.com/eclipse-velocitas/velocitas-cli/blob/v0.2.1/dist/commands/exec/index.ts)_
 
-## `velocitas help [COMMAND]`
+## `velocitas help [COMMANDS]`
 
 Display help for velocitas.
 
 ```
 USAGE
-  $ velocitas help [COMMAND] [-n]
+  $ velocitas help [COMMANDS] [-n]
 
 ARGUMENTS
-  COMMAND  Command to show help for.
+  COMMANDS  Command to show help for.
 
 FLAGS
   -n, --nested-commands  Include all nested commands in the output.
@@ -86,7 +73,7 @@ DESCRIPTION
   Display help for velocitas.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.19/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.1/src/commands/help.ts)_
 
 ## `velocitas init`
 
@@ -94,7 +81,11 @@ Initializes Velocitas Vehicle App
 
 ```
 USAGE
-  $ velocitas init
+  $ velocitas init [-v] [-f]
+
+FLAGS
+  -f, --force    Force (re-)download packages
+  -v, --verbose  Enable verbose logging
 
 DESCRIPTION
   Initializes Velocitas Vehicle App
@@ -109,11 +100,11 @@ EXAMPLES
   ... 'devenv-github-templates:v1.0.1' already initialized.
 ```
 
-_See code: [dist/commands/init/index.ts](./src/commands/init/index.ts)_
+_See code: [dist/commands/init/index.ts](https://github.com/eclipse-velocitas/velocitas-cli/blob/v0.2.1/dist/commands/init/index.ts)_
 
 ## `velocitas package [NAME]`
 
-Prints information about components
+Prints information about packages
 
 ```
 USAGE
@@ -126,7 +117,7 @@ FLAGS
   -p, --getPath  Print the path of the package
 
 DESCRIPTION
-  Prints information about components
+  Prints information about packages
 
 EXAMPLES
   $ velocitas package devenv-runtime-local
@@ -140,12 +131,11 @@ EXAMPLES
                       type: string
                       description: some basic description
                       required: false
-
   $ velocitas component --get-path devenv-runtime-local
   /home/vscode/.velocitas/packages/devenv-runtime-local/v1.0.12
 ```
 
-_See code: [dist/commands/package/index.ts](./src/commands/package/index.ts)_
+_See code: [dist/commands/package/index.ts](https://github.com/eclipse-velocitas/velocitas-cli/blob/v0.2.1/dist/commands/package/index.ts)_
 
 ## `velocitas sync`
 
@@ -165,21 +155,22 @@ EXAMPLES
   ... syncing 'devenv-github-templates'
 ```
 
-_See code: [dist/commands/sync/index.ts](./src/commands/sync/index.ts)_
+_See code: [dist/commands/sync/index.ts](https://github.com/eclipse-velocitas/velocitas-cli/blob/v0.2.1/dist/commands/sync/index.ts)_
 
 ## `velocitas upgrade`
 
-Upgrade Velocitas components.
+Updates Velocitas components.
 
 ```
 USAGE
-  $ velocitas upgrade [--dry-run]
+  $ velocitas upgrade [--dry-run] [-v]
 
 FLAGS
-  --dry-run  Check which components can be updated
+  -v, --verbose  Enable verbose logging
+  --dry-run      Check which packages can be upgraded
 
 DESCRIPTION
-  Upgrades Velocitas components.
+  Updates Velocitas components.
 
 EXAMPLES
   $ velocitas upgrade
@@ -190,16 +181,47 @@ EXAMPLES
   ... 'devenv-github-templates' is up to date!
 ```
 
-_See code: [dist/commands/upgrade/index.ts](./src/commands/update/index.ts)_
+_See code: [dist/commands/upgrade/index.ts](https://github.com/eclipse-velocitas/velocitas-cli/blob/v0.2.1/dist/commands/upgrade/index.ts)_
 <!-- commandsstop -->
 
-## Configuration
+# Installation
 
-### Environment variables
+There are 2 ways to get ahold of the CLI.
+
+## NPM
+
+---
+
+**Prerequisites**
+* NodeJS >= 18
+* NPM
+* Linux environment (others may work, but are untested)
+
+---
+
+**Steps**
+1. Clone this repo
+2. cd into the cloned repo
+3. Run the following command:
+
+```sh-session
+$ npm install -g velocitas-cli
+```
+
+## Obtaining prebuilt binaries
+
+In case you do not want to install NodeJS on your system, you can obtain prebuilt binaries of the CLI which have no dependency to NodeJS. These can be found [here](https://github.com/eclipse-velocitas/cli/releases).
+
+# Configuration
+## Changing default VELOCITAS_HOME directory
 
 * `VELOCITAS_HOME` specifing this env variable will output all velocitas related data to `$VELOCITAS_HOME/.velocitas` instead of `$userHome/.velocitas`.
+# Features
 
-## Contribution
-- [GitHub Issues](https://github.com/eclipse-velocitas/velocitas-cli/issues)
+* [Variables](./docs/features/VARIABLES.md)
+* [Project cache](./docs/features/PROJECT-CACHE.md)
+
+# Contribution
+- [GitHub Issues](https://github.com/eclipse-velocitas/cli/issues)
 - [Mailing List](https://accounts.eclipse.org/mailing-list/velocitas-dev)
 - [Contribution](https://eclipse-velocitas.github.io/velocitas-docs/docs/contribution/)

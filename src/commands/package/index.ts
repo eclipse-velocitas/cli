@@ -90,6 +90,16 @@ $ velocitas component --get-path devenv-runtime-local
                         }
                     }
                 }
+                if (component.programs && component.programs.length > 0) {
+                    this.log(`${' '.repeat(8)}programs:`);
+                    for (const exposedProgram of component.programs) {
+                        this.log(`${' '.repeat(12)}id: ${exposedProgram.id}`);
+                        this.log(`${' '.repeat(16)}executable: ${exposedProgram.executable}`);
+                        if (exposedProgram.args && exposedProgram.args.length > 0) {
+                            this.log(`${' '.repeat(16)}default args: ${exposedProgram.args}`);
+                        }
+                    }
+                }
             }
             this.log('');
         }
