@@ -160,8 +160,8 @@ describe('exec', () => {
         execSpawn.setStrategy(
             () =>
                 function (this: any, cb: any) {
-                    this.stdout.write(this.opts.env['VELOCITAS_PROJECT_CACHE_DATA'] + '\n');
-                    this.stdout.write(this.opts.env['VELOCITAS_PROJECT_CACHE_DIR'] + '\n');
+                    this.stdout.write(this.opts.env['VELOCITAS_CACHE_DATA'] + '\n');
+                    this.stdout.write(this.opts.env['VELOCITAS_CACHE_DIR'] + '\n');
                     return cb(0);
                 }
         );

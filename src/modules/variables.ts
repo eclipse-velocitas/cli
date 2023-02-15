@@ -174,8 +174,8 @@ export function createEnvVars(variables: VariableCollection, appManifestData?: A
 
     const envVars = Object.assign({}, process.env, {
         VELOCITAS_WORKSPACE_DIR: cwd(),
-        VELOCITAS_PROJECT_CACHE_DATA: JSON.stringify(projectCache.raw(), mapReplacer),
-        VELOCITAS_PROJECT_CACHE_DIR: ProjectCache.getCacheDir(realpathSync(process.cwd())),
+        VELOCITAS_CACHE_DATA: JSON.stringify(projectCache.raw(), mapReplacer),
+        VELOCITAS_CACHE_DIR: ProjectCache.getCacheDir(realpathSync(process.cwd())),
     });
 
     if (appManifestData) {
