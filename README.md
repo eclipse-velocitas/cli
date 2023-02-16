@@ -20,6 +20,14 @@ a Vehicle App.
 
 It allows *us* to take care of the development environment while *you* focus on the business logic of your vehicle application.
 
+# Solution
+
+Once created from either template or any other means of project creation, your new _Vehicle App_ repository is in isolation. It contains much more than just your app's source code - things you ideally do not want to worry about (i.e. CI/CD workflows, runtimes, build systems, devContainer configuration, ...). Pulling in changes from the mainline without breaking your custom changes is tedious and error prone. And there are no mechanisms of getting notified about updates to the mainline that potentially fixes a bug or introduces a long sought for feature.
+
+This is where the CLI comes in - it manages everything in your repo which is not related to your _Vehicle App_'s source code as packages which are maintained by the Velocitas team. The CLI allows you to download the latest versions and integrate the latest changes with ease.
+
+It also comes on a mix and match basis: You need more than the native, default runtime? Simply add the k3d runtime to your project. Ever want to migrate from Github to Gitee? Simply switch packages.
+
 # Commands
 <!-- commands -->
 * [`velocitas exec COMPONENT ID`](#velocitas-exec-component-id)

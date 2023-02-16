@@ -72,3 +72,9 @@ Examples:
     "dst": "."
 }
 ```
+
+## `programs` - list of program specification
+
+## `onPostInit` - list of exec specs
+
+## `onPostSync` - list of exec specs
