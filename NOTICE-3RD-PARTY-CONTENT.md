@@ -4,40 +4,40 @@
 | Dependency | Version | License |
 |:-----------|:-------:|--------:|
 |@oclif/core|1.26.1|MIT|
-|@oclif/plugin-help|5.2.1|MIT|
-|@oclif/plugin-not-found|2.3.17|MIT|
-|@oclif/plugin-plugins|2.2.4|MIT|
-|@oclif/test|2.3.3|MIT|
+|@oclif/plugin-help|5.2.4|MIT|
+|@oclif/plugin-not-found|2.3.20|MIT|
+|@oclif/plugin-plugins|2.3.2|MIT|
+|@oclif/test|2.3.6|MIT|
 |@types/archiver|5.3.1|MIT|
 |@types/chai|4.3.4|MIT|
 |@types/decompress|4.2.4|MIT|
 |@types/fs-extra|11.0.1|MIT|
 |@types/mocha|10.0.1|MIT|
 |@types/mock-fs|4.13.1|MIT|
-|@types/node|18.11.18|MIT|
-|@typescript-eslint/eslint-plugin|5.49.0|MIT|
-|@typescript-eslint/parser|5.49.0|unknown|
+|@types/node|18.13.0|MIT|
+|@typescript-eslint/eslint-plugin|5.52.0|MIT|
+|@typescript-eslint/parser|5.52.0|unknown|
 |archiver|5.3.1|MIT|
 |axios|0.27.2|MIT|
 |axios-retry|3.4.0|unknown|
 |chai|4.3.7|MIT|
 |decompress|4.2.1|MIT|
-|eslint|8.32.0|MIT|
+|eslint|8.34.0|MIT|
 |mocha|10.2.0|ISC<br/>MIT|
 |mock-fs|5.2.0|MIT|
 |mock-spawn|0.2.6|New BSD|
 |nyc|15.1.0|ISC<br/>MIT|
-|oclif|3.6.1|MIT|
+|oclif|3.6.4|MIT|
 |pkg|5.8.0|MIT|
-|prettier|2.8.3|Apache 2.0|
+|prettier|2.8.4|Apache 2.0|
 |prettier-plugin-organize-imports|3.2.2|MIT|
 |recursive-copy|2.0.14|ISC|
 |semver|7.3.8|ISC|
 |shx|0.3.4|MIT|
 |sinon|15.0.1|MIT|
 |ts-node|10.9.1|MIT|
-|tslib|2.4.1|BSD Zero Clause License|
-|typescript|4.9.4|Apache 2.0|
+|tslib|2.5.0|BSD Zero Clause License|
+|typescript|4.9.5|Apache 2.0|
 |velocitas-cli|0.2.1|Apache 2.0|
 ## Workflows
 | Dependency | Version | License |
