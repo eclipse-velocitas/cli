@@ -62,7 +62,7 @@ export async function runExecSpec(
     verbose?: boolean
 ) {
     if (verbose) {
-        console.info(`Starting ${componentId}/${execSpec.id}`);
+        console.info(`Starting ${componentId}/${execSpec.ref}`);
     }
 
     const [packageConfig, , component] = findComponentByName(projectConfig, componentId);
@@ -71,9 +71,9 @@ export async function runExecSpec(
         throw new Error(`Component '${componentId}' has no exposed programs!`);
     }
 
-    const programSpec = component.programs.find((prog) => prog.id === execSpec.id);
+    const programSpec = component.programs.find((prog) => prog.id === execSpec.ref);
     if (!programSpec) {
-        throw new Error(`No program found for item '${execSpec.id}' referenced in program list of '${component.id}'`);
+        throw new Error(`No program found for item '${execSpec.ref}' referenced in program list of '${component.id}'`);
     }
 
     const cwd = join(getPackageDirectory(packageConfig.name), packageConfig.version);

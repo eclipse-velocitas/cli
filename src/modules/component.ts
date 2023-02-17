@@ -32,7 +32,7 @@ export interface ProgramSpec {
 }
 
 export interface ExecSpec {
-    id: string;
+    ref: string;
     args: Array<string>;
     startupLine?: string;
     dependsOn?: string;
@@ -87,8 +87,6 @@ export class SetupComponent implements Component {
     variables = new Array<VariableDefinition>();
     programs? = new Array<ProgramSpec>();
     onPostInit? = new Array<ExecSpec>();
-    // called after the component has completed its synchronization
-    onPostSync? = new Array<ExecSpec>();
     readonly type = ComponentType.setup;
 }
 
