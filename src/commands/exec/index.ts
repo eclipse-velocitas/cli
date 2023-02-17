@@ -32,7 +32,7 @@ Executing script...
 
     static args = [
         { name: 'component', description: 'The component which provides the program', required: true },
-        { name: 'id', description: 'ID of the program to execute', required: true },
+        { name: 'ref', description: 'Reference to the ID of the program to execute', required: true },
     ];
 
     static flags = {
@@ -48,7 +48,7 @@ Executing script...
         const execArgs: string[] = flags.args ? flags.args.split(' ') : [];
 
         const execSpec: ExecSpec = {
-            id: args.id,
+            ref: args.ref,
             args: execArgs,
         };
 

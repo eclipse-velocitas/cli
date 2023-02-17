@@ -38,7 +38,7 @@ async function runPostInitHook(
     const variables = VariableCollection.build(projectConfig, packageConfig, componentConfig, component);
 
     for (const execSpec of component.onPostInit) {
-        console.log(`Running '${execSpec.id}'`);
+        console.log(`Running '${execSpec.ref}'`);
         const envVars = createEnvVars(variables, appManifest);
         await runExecSpec(execSpec, component.id, projectConfig, envVars, verbose);
     }
