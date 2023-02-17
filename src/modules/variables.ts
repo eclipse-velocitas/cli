@@ -24,7 +24,7 @@ export interface VariableDefinition {
     name: string;
     description: string;
     type: string;
-    default?: string;
+    default?: any;
 }
 
 export class VariableCollection {

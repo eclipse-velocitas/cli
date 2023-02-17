@@ -1,4 +1,4 @@
-Velocitas CLI - The package manager for your project
+Velocitas CLI - The project manager for your Vehicle Apps
 =================================
 
 [![CI Workflow](https://github.com/eclipse-velocitas/cli/actions/workflows/ci.yml/badge.svg#branch=main)](https://github.com/eclipse-velocitas/cli/actions/workflows/ci.yml)
@@ -6,10 +6,13 @@ Velocitas CLI - The package manager for your project
 
 <!-- toc -->
 * [Introduction](#introduction)
+* [Problem](#problem)
+* [Solution](#solution)
+* [Getting started](#getting-started)
 * [Commands](#commands)
 * [Installation](#installation)
 * [Configuration](#configuration)
-* [Features](#features)
+* [Advanced topics](#advanced-topics)
 * [Contribution](#contribution)
 <!-- tocstop -->
 
@@ -20,13 +23,35 @@ a Vehicle App.
 
 It allows *us* to take care of the development environment while *you* focus on the business logic of your vehicle application.
 
+# Problem
+
+Once created from either template or any other means of project creation, your new _Vehicle App_ repository is in isolation. It contains much more than just your app's source code - things you ideally do not want to worry about (i.e. CI/CD workflows, runtimes, build systems, devContainer configuration, ...). Pulling in changes from the mainline without breaking your custom changes is tedious and error prone. Moreover there are no mechanisms of getting notified about updates to the mainline that potentially fixes a bug or introduces a long sought for feature.
+
 # Solution
 
-Once created from either template or any other means of project creation, your new _Vehicle App_ repository is in isolation. It contains much more than just your app's source code - things you ideally do not want to worry about (i.e. CI/CD workflows, runtimes, build systems, devContainer configuration, ...). Pulling in changes from the mainline without breaking your custom changes is tedious and error prone. And there are no mechanisms of getting notified about updates to the mainline that potentially fixes a bug or introduces a long sought for feature.
+This is where the CLI comes in - it manages everything in your repo which is not related to your _Vehicle App_'s source code as packages which are maintained by the _Velocitas_ team. The CLI allows you to download the latest versions and integrate the latest changes with ease.
 
-This is where the CLI comes in - it manages everything in your repo which is not related to your _Vehicle App_'s source code as packages which are maintained by the Velocitas team. The CLI allows you to download the latest versions and integrate the latest changes with ease.
+It also comes on a mix and match basis: You need more than the native, default runtime? Simply add the kubernetes runtime to your project. Ever want to migrate from Github to Gitee? Simply switch packages.
 
-It also comes on a mix and match basis: You need more than the native, default runtime? Simply add the k3d runtime to your project. Ever want to migrate from Github to Gitee? Simply switch packages.
+This is enabled by 3 main features the CLI provides:
+
+* **Packages may expose programs** - These programs can be implemented in any scripting or programing language as long as the host has access to the runtime or binary of the program. The CLI masks these behind IDs. See [the exec command](#velocitas-exec-component-id) for details.
+* **Packages may synchronize files into your repository** - Unlike programs, some files cannot live outside of your checked in repository. This especially applies for Github workflows. These need to be synchronized into your repository and checked in. To do this, the CLI provides [the sync command](#velocitas-sync).
+* **Executed programs or synchronized files have access to variables** - More often than not, program configuration or places in static files need to be substituted by user-provided values. E.g. the `LOG_LEVEL` of a runtime service or the `REPO_URL` for links in Markdown files. Therefore the CLI parses all static files it synchronizes and substitutes all occurrences of values that match the following expression and are a defined variable: `${{ variableName }}`. For invoked programs, all defined variables are exposed as ENV variables for the program to use. See the [variables feature](./docs/features/VARIABLES.md) for details.
+
+# Getting started
+
+The CLI manages packages - each of which is simply a git repository with a `manifest.json` at its root. There is no central package registry. Any git repository can be referenced as a package. The ones currently maintained by the Eclipse Velocitas team can be found [here](https://github.com/eclipse-velocitas/?q=devenv).
+
+When starting a new project from scratch, use the command `velocitas init`. This command will create a fresh `.velocitas.json` inside the current working directory with a few default packages already referenced and download. Feel free to adjust these packages to suite your needs.
+
+If you use one of our [template repositories](https://github.com/eclipse-velocitas/?type=template) to kick-start your project, your project already comes with a `.velocitas.json`. Check out the repo and execute `velocitas init` in your new repository. This will download and initialize all referenced packages.
+
+Should one of your packages provide files to be synchronized into your repository, call `velocitas sync` to synchronize files. **Warning:** This will overwrite any changes you have made to the files manually! Affected files are prefixed with an auto generated notice:
+
+```
+This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json
+```
 
 # Commands
 <!-- commands -->
@@ -143,8 +168,6 @@ EXAMPLES
   /home/vscode/.velocitas/packages/devenv-runtime-local/v1.0.12
 ```
 
-_See code: [dist/commands/package/index.ts](https://github.com/eclipse-velocitas/velocitas-cli/blob/v0.2.1/dist/commands/package/index.ts)_
-
 ## `velocitas sync`
 
 Syncs Velocitas components into your repo.
@@ -188,8 +211,6 @@ EXAMPLES
   ... 'devenv-github-workflows' is up to date!
   ... 'devenv-github-templates' is up to date!
 ```
-
-_See code: [dist/commands/upgrade/index.ts](https://github.com/eclipse-velocitas/velocitas-cli/blob/v0.2.1/dist/commands/upgrade/index.ts)_
 <!-- commandsstop -->
 
 # Installation
@@ -224,8 +245,9 @@ In case you do not want to install NodeJS on your system, you can obtain prebuil
 ## Changing default VELOCITAS_HOME directory
 
 * `VELOCITAS_HOME` specifing this env variable will output all velocitas related data to `$VELOCITAS_HOME/.velocitas` instead of `$userHome/.velocitas`.
-# Features
+# Advanced topics
 
+* [Package development](./docs/features/PACKAGES.md)
 * [Variables](./docs/features/VARIABLES.md)
 * [Project cache](./docs/features/PROJECT-CACHE.md)
 

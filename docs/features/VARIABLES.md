@@ -18,4 +18,5 @@ Which variables are available from your packages can be viewed by either the `pa
 |:-----|:--------|:------------|
 | `VELOCITAS_WORKSPACE_DIR` | `/workspaces/vehicle-app-cpp-template` | Absolute path to the workspace of the current project. |
 | `VELOCITAS_CACHE_DATA` | `{ "my_key": "my_value", "foo": 5, "bar": "baz" }` |Holds the entire cache data as JSON-string. It is up to the programs to decide which keys they want to access. |
-| `VELOCITAS_CACHE_DIR` |    `/home/vscode/.velocitas/projects/dc6cefc9655021ae1be77a452b9367ab` |Absolute path to the project's cache directory. Can be used to store temporary files for the project. |
+| `VELOCITAS_CACHE_DIR` |    `/home/vscode/.velocitas/projects/dc6cefc9655021ae1be77a452b9367ab` | Absolute path to the project's cache directory. Can be used to store temporary files for the project. |
+| `VELOCITAS_APP_MANIFEST` | `{ "name": "SeatAdjuster", "Dockerfile": "./app/Dockerfile" }` | The contents of your VehicleApp's AppManifest as a JSON string.
