@@ -66,4 +66,4 @@ print(f"{my_cache_value}")
 
 ## Environment variables exposed by the CLI
 
-The following cache related environment variables are available to all programs started by the CLI.
+For a list of all cache variables exposed by the CLI, have a look at the variable overview [here](./VARIABLES.md).

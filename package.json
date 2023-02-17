@@ -6,16 +6,16 @@
   "bin": {
     "velocitas": "./bin/run"
   },
-  "homepage": "https://github.com/eclipse-velocitas/velocitas-cli",
+  "homepage": "https://github.com/eclipse-velocitas/cli",
   "license": "Apache-2.0",
   "main": "dist/index.js",
-  "repository": "eclipse-velocitas/velocitas-cli",
   "files": [
     "/bin",
     "/dist",
     "/package-lock.json",
     "/oclif.manifest.json"
   ],
+  "repository": "eclipse-velocitas/cli",
   "dependencies": {
     "@oclif/core": "^1.24.0",
     "@oclif/plugin-help": "^5.2.4",
@@ -58,7 +58,7 @@
   "oclif": {
     "bin": "velocitas",
     "dirname": "velocitas",
-    "commands": "./dist/commands",
+    "commands": "./src/commands",
     "plugins": [
       "@oclif/plugin-help",
       "@oclif/plugin-not-found"
@@ -71,7 +71,8 @@
       "runtime": {
         "description": "Create a new Vehicle App"
       }
-    }
+    },
+    "repositoryPrefix": "<%- commandPath %>"
   },
   "pkg": {
     "scripts": "dist/**/*.js",

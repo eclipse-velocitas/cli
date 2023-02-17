@@ -2,7 +2,7 @@
 
 The CLI exposes variables to files copied via the `files` entry in a component manifest, the `condition` field of a file specification inside of the `files` entry and programs executed via the `exec` command. These variables are either built-in or are exposed by your project's components located in your project's packages.
 
-Which variables are available from your packages can be viewed by either the `packages` command which lists all of your installed packages and their exposed variables or the.
+Which variables are available from your packages can be viewed by the `packages` command which lists all of your installed packages and their exposed variables.
 
 ---
 

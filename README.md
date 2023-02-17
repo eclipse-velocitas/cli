@@ -53,6 +53,36 @@ Should one of your packages provide files to be synchronized into your repositor
 This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json
 ```
 
+## Project configuration
+
+An exemplary project configuration (`.velocitas.json`) looks like this:
+
+```json
+{
+  "packages": [
+    {
+      "name": "package-A",
+      "version": "v1.0.0"
+    },
+    {
+      "name": "package-B",
+      "version": "v2.3.1-dev"
+    }
+  ],
+  "variables": {
+    "repoUrl": "https://github.com/eclipse-velocitas/cli",
+    "copyrightYear": 2023,
+    "autoGenerateVehicleModel": true
+  }
+}
+```
+
+As mentioned previously, a package simply is a git repository. The `name` attribute of a package is used to identify the git repository which holds the package. `name` is currently resolved to `https://github.com/eclipse-velocitas/<name>`. In a future feature addition, we will allow arbitrary git repository URLs in the name field. The `version` attribute specifies a tag, a branch or a SHA of the repository.
+
+The `variables` block holds user configured values for the packages and their contained components. It is a global variable definition. Should two components share the same variable name, both can be set with one line in this global block. Package-wide or component-wide variable configuration to avoid name clashes is also possible.
+
+Click [here](./docs/PROJECT-CONFIG.md) for an in-depth overview of the project configuration.
+
 # Commands
 <!-- commands -->
 * [`velocitas exec COMPONENT ID`](#velocitas-exec-component-id)
@@ -86,7 +116,7 @@ EXAMPLES
   Executing script...
 ```
 
-_See code: [dist/commands/exec/index.ts](https://github.com/eclipse-velocitas/velocitas-cli/blob/v0.2.1/dist/commands/exec/index.ts)_
+_See code: [src/commands/exec/index.ts](src/commands/exec/index.ts)_
 
 ## `velocitas help [COMMANDS]`
 
@@ -133,7 +163,7 @@ EXAMPLES
   ... 'devenv-github-templates:v1.0.1' already initialized.
 ```
 
-_See code: [dist/commands/init/index.ts](https://github.com/eclipse-velocitas/velocitas-cli/blob/v0.2.1/dist/commands/init/index.ts)_
+_See code: [src/commands/init/index.ts](src/commands/init/index.ts)_
 
 ## `velocitas package [NAME]`
 
@@ -168,6 +198,8 @@ EXAMPLES
   /home/vscode/.velocitas/packages/devenv-runtime-local/v1.0.12
 ```
 
+_See code: [src/commands/package/index.ts](src/commands/package/index.ts)_
+
 ## `velocitas sync`
 
 Syncs Velocitas components into your repo.
@@ -186,7 +218,7 @@ EXAMPLES
   ... syncing 'devenv-github-templates'
 ```
 
-_See code: [dist/commands/sync/index.ts](https://github.com/eclipse-velocitas/velocitas-cli/blob/v0.2.1/dist/commands/sync/index.ts)_
+_See code: [src/commands/sync/index.ts](src/commands/sync/index.ts)_
 
 ## `velocitas upgrade`
 
@@ -211,6 +243,8 @@ EXAMPLES
   ... 'devenv-github-workflows' is up to date!
   ... 'devenv-github-templates' is up to date!
 ```
+
+_See code: [src/commands/upgrade/index.ts](src/commands/upgrade/index.ts)_
 <!-- commandsstop -->
 
 # Installation
