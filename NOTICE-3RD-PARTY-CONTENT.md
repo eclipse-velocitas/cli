@@ -27,7 +27,7 @@
 |mock-fs|5.2.0|MIT|
 |mock-spawn|0.2.6|New BSD|
 |nyc|15.1.0|ISC<br/>MIT|
-|oclif|3.6.4|MIT|
+|oclif|3.6.5|MIT|
 |pkg|5.8.0|MIT|
 |prettier|2.8.4|Apache 2.0|
 |prettier-plugin-organize-imports|3.2.2|MIT|
