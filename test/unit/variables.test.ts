@@ -57,6 +57,12 @@ describe('variables - module', () => {
                     description: 'Non-required variable with default value',
                     default: 'Foo',
                 },
+                {
+                    name: 'testBooleanWithDefault',
+                    type: 'boolean',
+                    description: 'A bool with a default value',
+                    default: false,
+                },
             ],
             type: ComponentType.setup,
         };
