@@ -58,7 +58,7 @@ Executing script...
 
         const variables = VariableCollection.build(projectConfig, packageConfig, componentConfig, component);
 
-        const envVars = createEnvVars(variables, appManifestData[0]);
+        const envVars = createEnvVars(variables, appManifestData);
 
         await runExecSpec(execSpec, args.component, projectConfig, envVars, flags.verbose);
     }

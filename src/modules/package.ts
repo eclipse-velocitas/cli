@@ -28,7 +28,7 @@ export const MANIFEST_FILE_NAME = 'manifest.json';
 
 const PACKAGE_REPO = (packageName: string) => `${GITHUB_API_URL}${GITHUB_ORG_ENDPOINT}/${packageName}`;
 
-function setProxy() {
+export function setProxy() {
     let proxyConfig: { proxy?: AxiosProxyConfig | false; httpsAgent?: any } = { proxy: false };
     if (process.env.HTTPS_PROXY || process.env.https_proxy) {
         const proxyString = process.env.HTTPS_PROXY || process.env.https_proxy;
@@ -38,7 +38,7 @@ function setProxy() {
     return proxyConfig;
 }
 
-function setApiToken(requestHeaders: AxiosRequestHeaders): void {
+export function setApiToken(requestHeaders: AxiosRequestHeaders): void {
     if (process.env.GITHUB_API_TOKEN) {
         Object.assign(requestHeaders, {
             authorization: `Bearer ${process.env.GITHUB_API_TOKEN}`,

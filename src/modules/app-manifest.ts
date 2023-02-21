@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { cwd } from 'node:process';
 
@@ -48,7 +48,11 @@ export interface AppManifest {
     };
 }
 
-export function readAppManifest(): AppManifest[] {
-    const config: AppManifest[] = JSON.parse(readFileSync(resolve(cwd(), './app/AppManifest.json'), 'utf-8'));
-    return config;
+export function readAppManifest(): AppManifest {
+    const config: AppManifest[] = JSON.parse(readFileSync('./app/AppManifest.json', 'utf-8'));
+    return config[0];
+}
+
+export function writeAppManifest(manifest: AppManifest) {
+    writeFileSync('./app/AppManifest.json', JSON.stringify([manifest], undefined, 4) + '\n', 'utf-8');
 }

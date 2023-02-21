@@ -85,7 +85,7 @@ Velocitas project found!
                 const packageManifest = readPackageManifest(packageConfig);
 
                 for (const component of packageManifest.components) {
-                    await runPostInitHook(component, packageConfig, projectConfig, appManifestData[0], flags.verbose);
+                    await runPostInitHook(component, packageConfig, projectConfig, appManifestData, flags.verbose);
                 }
             }
         } else {
