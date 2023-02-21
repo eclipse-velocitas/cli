@@ -58,7 +58,7 @@
   "oclif": {
     "bin": "velocitas",
     "dirname": "velocitas",
-    "commands": "./src/commands",
+    "commands": "./dist/commands",
     "plugins": [
       "@oclif/plugin-help",
       "@oclif/plugin-not-found"
