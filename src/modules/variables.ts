@@ -104,7 +104,7 @@ function verifyGivenVariables(
     for (const componentExposedVariable of variableDefinitions) {
         const configuredValue = configuredVars.get(componentExposedVariable.name);
         if (!configuredValue) {
-            if (!componentExposedVariable.default) {
+            if (componentExposedVariable.default === undefined) {
                 missingVars.push(componentExposedVariable);
             }
         } else {
