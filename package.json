@@ -87,8 +87,8 @@
     "test": "mocha \"test/**/*.test.ts\"",
     "coverage": "nyc npm run test",
     "version": "oclif readme && git add README.md",
-    "system-test": "export VELOCITAS_PROCESS=\"./velocitas-$ARCH\" && mocha \"test/**/*.stest.ts\"",
-    "compile-exe": "npm run build && pkg --target=$TARGET --compress=Brotli --output=velocitas-$ARCH ."
+    "system-test": "export VELOCITAS_PROCESS=\"./velocitas-linux-$ARCH\" && mocha \"test/**/*.stest.ts\"",
+    "compile-exe": "npm run build && pkg --target=$TARGET --compress=Brotli --output=velocitas-linux-$ARCH ."
   },
   "engines": {
     "node": ">=18.0.0"
