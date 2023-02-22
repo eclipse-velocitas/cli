@@ -1,0 +1,14 @@
+{
+    "packages": [
+        {
+            "name": "devenv-runtime-local",
+            "version": "v1.0.2"
+        }
+    ],
+    "variables": {
+        "language": "python",
+        "repoType": "app",
+        "appManifestPath": "app/AppManifest.json",
+        "githubRepoId": "eclipse-velocitas/vehicle-app-python-template"
+    }
+}
