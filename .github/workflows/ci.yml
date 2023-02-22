@@ -56,8 +56,8 @@ jobs:
       - run: npm run build
       - run: npm run coverage
 
-  system-test:
-    name: "Run System test"
+  system-tests:
+    name: "Run system tests"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
