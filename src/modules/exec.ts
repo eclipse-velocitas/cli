@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { spawn, SpawnOptions } from 'node:child_process';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { ExecSpec, findComponentByName } from './component';
 import { getPackageDirectory } from './package';
 import { ProjectCache } from './project-cache';
@@ -85,9 +85,9 @@ export async function runExecSpec(
 
     const args = execSpec.args && execSpec.args.length > 0 ? execSpec.args : programSpec.args;
 
-    const result = await awaitSpawn(programSpec.executable, args, spawnOptions);
-
-    if (result !== 0) {
-        throw new Error(`Exit code is ${result}!`);
+    try {
+        await awaitSpawn(resolve(cwd, programSpec.executable), args, spawnOptions);
+    } catch (error) {
+        console.error(`There was an error during exec:\n${error}`);
     }
 }

@@ -55,3 +55,24 @@ jobs:
       - run: npm install
       - run: npm run build
       - run: npm run coverage
+
+  system-tests:
+    name: "Run system tests for ${{ matrix.language }}"
+    runs-on: ubuntu-latest
+    container: ghcr.io/eclipse-velocitas/devcontainer-base-images/${{ matrix.language }}:latest
+    strategy:
+      matrix:
+        language: ["python", "cpp"]
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: npm install .
+      - name: Compile EXE
+        run: TARGET=node18-linux-x64 ARCH=x64 npm run compile-exe
+      - name: Run system test
+        run: ARCH=x64 npm run system-test

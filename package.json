@@ -79,7 +79,7 @@
     "outputPath": "dist"
   },
   "scripts": {
-    "build": "shx rm -rf dist && tsc -b",
+    "build": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo && tsc -b",
     "lint": "eslint src --ext ts",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "npm run lint",
@@ -87,7 +87,8 @@
     "test": "mocha \"test/**/*.test.ts\"",
     "coverage": "nyc npm run test",
     "version": "oclif readme && git add README.md",
-    "compile-exe": "rm -rf dist && tsc -b && pkg --target=$TARGET --compress=Brotli --output=velocitas-linux-$ARCH ."
+    "system-test": "export VELOCITAS_PROCESS=\"./velocitas-$ARCH\" && mocha \"test/**/*.stest.ts\"",
+    "compile-exe": "npm run build && pkg --target=$TARGET --compress=Brotli --output=velocitas-$ARCH ."
   },
   "engines": {
     "node": ">=18.0.0"

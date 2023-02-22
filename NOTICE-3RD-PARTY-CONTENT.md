@@ -38,7 +38,7 @@
 |ts-node|10.9.1|MIT|
 |tslib|2.4.1|BSD Zero Clause License|
 |typescript|4.9.4|Apache 2.0|
-|velocitas-cli|0.3.0|Apache 2.0|
+|velocitas-cli|0.2.1|Apache 2.0|
 ## Workflows
 | Dependency | Version | License |
 |:-----------|:-------:|--------:|
