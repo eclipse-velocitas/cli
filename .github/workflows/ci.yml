@@ -57,8 +57,13 @@ jobs:
       - run: npm run coverage
 
   system-tests:
-    name: "Run system tests"
+    name: "Run system tests for ${{ matrix.language }}"
     runs-on: ubuntu-latest
+    container: ghcr.io/eclipse-velocitas/devcontainer-base-images/${{ matrix.language }}:latest
+    strategy:
+      matrix:
+        language: ["python", "cpp"]
+
     steps:
       - uses: actions/checkout@v3
         with:
