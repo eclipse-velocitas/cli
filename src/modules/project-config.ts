@@ -17,7 +17,8 @@ import { resolve } from 'node:path';
 import { cwd } from 'node:process';
 import { mapReplacer } from './helpers';
 
-export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), './.velocitas.json');
+export const DEFAULT_CONFIG_FILE_NAME = '.velocitas.json';
+export const DEFAULT_CONFIG_FILE_PATH = `./${DEFAULT_CONFIG_FILE_NAME}`;
 
 export class PackageConfig {
     // name of the package or URL to the package repository

@@ -14,7 +14,7 @@
 
 import axios, { AxiosRequestConfig, AxiosRequestHeaders } from 'axios';
 import decompress from 'decompress';
-import { mkdtempSync } from 'fs';
+import { mkdirSync, mkdtempSync } from 'fs';
 import { copySync } from 'fs-extra';
 import { tmpdir } from 'os';
 import { join } from 'path';
@@ -47,7 +47,6 @@ async function downloadLatestSdk(programmingLanguage: string): Promise<string> {
     }
 
     const tmpDir = mkdtempSync(join(tmpdir(), 'sdk-'));
-    console.log(`Tmpdir: ${tmpDir}`);
 
     await decompress(res.data, tmpDir, {
         strip: 1,
@@ -59,6 +58,11 @@ async function downloadLatestSdk(programmingLanguage: string): Promise<string> {
 }
 
 async function composeProject(appName: string, sdkDirectory: string, programmingLanguage: string) {
+    const projectDirectory = join('.', appName);
+    mkdirSync(projectDirectory);
+
+    process.chdir(projectDirectory);
+
     // TODO: prompt for example app to use
     const exampleName = 'seat-adjuster';
     copySync(join(sdkDirectory, 'examples', exampleName), './app');

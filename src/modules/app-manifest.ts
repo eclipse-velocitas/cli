@@ -48,11 +48,11 @@ export interface AppManifest {
     };
 }
 
-export function readAppManifest(): AppManifest {
-    const config: AppManifest[] = JSON.parse(readFileSync('./app/AppManifest.json', 'utf-8'));
+export function readAppManifest(appManifestPath: string = './app/AppManifest.json'): AppManifest {
+    const config: AppManifest[] = JSON.parse(readFileSync(appManifestPath, 'utf-8'));
     return config[0];
 }
 
-export function writeAppManifest(manifest: AppManifest) {
-    writeFileSync('./app/AppManifest.json', JSON.stringify([manifest], undefined, 4) + '\n', 'utf-8');
+export function writeAppManifest(manifest: AppManifest, appManifestPath: string = './app/AppManifest.json') {
+    writeFileSync(appManifestPath, JSON.stringify([manifest], undefined, 4) + '\n', 'utf-8');
 }
