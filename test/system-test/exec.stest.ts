@@ -14,8 +14,10 @@ describe('CLI command', () => {
         it('should be able to install dapr', () => {
             const packageOutput = spawnSync(VELOCITAS_PROCESS, ['package', 'devenv-runtime-local'], { encoding: 'utf-8' });
             const parsedPackageOutput = YAML.parse(packageOutput.stdout.toString());
-
-            for (const exposedProgramSpec of parsedPackageOutput['devenv-runtime-local'].components['runtime-local'].programs) {
+            const runtimeLocalComponent = parsedPackageOutput['devenv-runtime-local'].components.find(
+                (component: any) => component.id === 'runtime-local'
+            );
+            for (const exposedProgramSpec of runtimeLocalComponent.programs) {
                 console.log('Id of exposedProgramSpec ');
                 console.log(exposedProgramSpec.id);
             }
