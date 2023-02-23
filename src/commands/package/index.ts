@@ -72,7 +72,7 @@ $ velocitas component --get-path devenv-runtime-local
         for (const packageToPrint of packagesToPrint) {
             const packageManifest = readPackageManifest(packageToPrint);
 
-            this.log(`${packageToPrint.name}`);
+            this.log(`${packageToPrint.name}:`);
             this.log(`${' '.repeat(4)}version: ${packageToPrint.version}`);
             this.log(`${' '.repeat(4)}components:`);
             for (const component of packageManifest.components) {
@@ -81,22 +81,22 @@ $ velocitas component --get-path devenv-runtime-local
                 if (component.variables && component.variables.length > 0) {
                     this.log(`${' '.repeat(8)}variables:`);
                     for (const exposedVariable of component.variables) {
-                        this.log(`${' '.repeat(12)}${exposedVariable.name}`);
-                        this.log(`${' '.repeat(16)}type: ${exposedVariable.type}`);
-                        this.log(`${' '.repeat(16)}description: ${exposedVariable.description}`);
-                        this.log(`${' '.repeat(16)}required: ${exposedVariable.default ? false : true}`);
+                        this.log(`${' '.repeat(8)}- ${exposedVariable.name}:`);
+                        this.log(`${' '.repeat(12)}type: ${exposedVariable.type}`);
+                        this.log(`${' '.repeat(12)}description: "${exposedVariable.description}"`);
+                        this.log(`${' '.repeat(12)}required: ${exposedVariable.default ? false : true}`);
                         if (exposedVariable.default) {
-                            this.log(`${' '.repeat(16)}default: ${exposedVariable.default}`);
+                            this.log(`${' '.repeat(12)}default: ${exposedVariable.default}`);
                         }
                     }
                 }
                 if (component.programs && component.programs.length > 0) {
                     this.log(`${' '.repeat(8)}programs:`);
                     for (const exposedProgram of component.programs) {
-                        this.log(`${' '.repeat(12)}id: ${exposedProgram.id}`);
-                        this.log(`${' '.repeat(16)}executable: ${exposedProgram.executable}`);
+                        this.log(`${' '.repeat(8)}- id: ${exposedProgram.id}`);
+                        this.log(`${' '.repeat(10)}executable: ${exposedProgram.executable}`);
                         if (exposedProgram.args && exposedProgram.args.length > 0) {
-                            this.log(`${' '.repeat(16)}default args: ${exposedProgram.args}`);
+                            this.log(`${' '.repeat(10)}default-args: ${exposedProgram.args}`);
                         }
                     }
                 }

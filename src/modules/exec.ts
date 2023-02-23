@@ -86,7 +86,8 @@ export async function runExecSpec(
     const args = execSpec.args && execSpec.args.length > 0 ? execSpec.args : programSpec.args;
 
     try {
-        await awaitSpawn(resolve(cwd, programSpec.executable), args, spawnOptions);
+        const command = programSpec.executable.includes('/') ? resolve(cwd, programSpec.executable) : programSpec.executable;
+        await awaitSpawn(command, args, spawnOptions);
     } catch (error) {
         console.error(`There was an error during exec:\n${error}`);
     }
