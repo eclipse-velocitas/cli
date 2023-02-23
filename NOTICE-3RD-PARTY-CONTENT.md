@@ -39,6 +39,7 @@
 |tslib|2.4.1|BSD Zero Clause License|
 |typescript|4.9.4|Apache 2.0|
 |velocitas-cli|0.2.1|Apache 2.0|
+|yaml|2.2.1|ISC|
 ## Workflows
 | Dependency | Version | License |
 |:-----------|:-------:|--------:|
