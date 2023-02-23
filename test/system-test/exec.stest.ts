@@ -17,7 +17,7 @@ describe('CLI command', () => {
             const runtimeLocalComponent = parsedPackageOutput['devenv-runtime-local'].components.find(
                 (component: any) => component.id === 'runtime-local'
             );
-            let spawnSuccesful: any;
+            let spawnSuccesful = false;
             for await (const exposedProgramSpec of runtimeLocalComponent.programs) {
                 console.log(`Try to spawn exposed program of 'runtime-local': ${exposedProgramSpec.id}`);
                 const processSpawn = spawn(VELOCITAS_PROCESS, ['exec', 'runtime-local', exposedProgramSpec.id], {
@@ -33,24 +33,16 @@ describe('CLI command', () => {
     });
 });
 
-const checkSpawn = async (exposedProgramSpecId: string, processSpawn: ChildProcess): Promise<boolean | undefined> => {
-    const spawnSucces = await new Promise((resolve, reject) => {
+const checkSpawn = async (exposedProgramSpecId: string, processSpawn: ChildProcess): Promise<boolean> => {
+    return new Promise((resolve, reject) => {
         processSpawn.on('spawn', () => {
             console.log(`Spawned ${exposedProgramSpecId} succesfully - killing process`);
             processSpawn.kill();
             resolve;
         });
-    });
-    const spawnError = await new Promise((resolve, reject) => {
         processSpawn.on('error', () => {
             console.log(`Spawning ${exposedProgramSpecId} resulted in an error`);
-            resolve;
+            reject;
         });
     });
-    if (spawnError) {
-        return false;
-    }
-    if (spawnSucces) {
-        return true;
-    }
 };
