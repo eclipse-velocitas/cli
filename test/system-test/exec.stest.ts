@@ -20,13 +20,12 @@ describe('CLI command', () => {
             for (const exposedProgramSpec of runtimeLocalComponent.programs) {
                 console.log('Id of exposedProgramSpec ');
                 console.log(exposedProgramSpec.id);
+                const output = spawnSync(VELOCITAS_PROCESS, ['exec', 'runtime-local', exposedProgramSpec.id], {
+                    stdio: 'inherit',
+                });
+
+                expect(output.error).to.be.undefined;
             }
-
-            const output = spawnSync(VELOCITAS_PROCESS, ['exec', 'runtime-local', 'ensure-dapr'], {
-                stdio: 'inherit',
-            });
-
-            expect(output.error).to.be.undefined;
         });
     });
 });
