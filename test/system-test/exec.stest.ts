@@ -11,7 +11,7 @@ describe('CLI command', () => {
             process.chdir('./testbench/test-exec');
             spawnSync(VELOCITAS_PROCESS, ['init']);
         });
-        it('should be able to exec all exposed program specs of runtime-local', () => {
+        it('should be able to exec all exposed program specs of runtime-local', async () => {
             const packageOutput = spawnSync(VELOCITAS_PROCESS, ['package', 'devenv-runtime-local'], { encoding: 'utf-8' });
             const parsedPackageOutput = YAML.parse(packageOutput.stdout.toString());
             const runtimeLocalComponent = parsedPackageOutput['devenv-runtime-local'].components.find(
@@ -23,7 +23,7 @@ describe('CLI command', () => {
                 const processSpawn = spawn(VELOCITAS_PROCESS, ['exec', 'runtime-local', exposedProgramSpec.id], {
                     stdio: 'inherit',
                 });
-                spawnSuccesful = checkSpawn(exposedProgramSpec.id, processSpawn);
+                spawnSuccesful = await checkSpawn(exposedProgramSpec.id, processSpawn);
                 console.log('Continue with next exposed program');
                 continue;
             }
@@ -32,7 +32,7 @@ describe('CLI command', () => {
     });
 });
 
-const checkSpawn = (exposedProgramSpecId: string, processSpawn: ChildProcess): boolean => {
+const checkSpawn = async (exposedProgramSpecId: string, processSpawn: ChildProcess): Promise<boolean> => {
     processSpawn.on('spawn', () => {
         console.log(`Spawned ${exposedProgramSpecId} succesfully - killing process`);
         processSpawn.kill();
