@@ -18,12 +18,13 @@ describe('CLI command', () => {
                 (component: any) => component.id === 'runtime-local'
             );
             let spawnSuccesful = false;
-            for (const exposedProgramSpec of runtimeLocalComponent.programs) {
+            for await (const exposedProgramSpec of runtimeLocalComponent.programs) {
                 console.log(`Try to spawn exposed program of 'runtime-local': ${exposedProgramSpec.id}`);
                 const processSpawn = spawn(VELOCITAS_PROCESS, ['exec', 'runtime-local', exposedProgramSpec.id], {
                     stdio: 'inherit',
                 });
                 spawnSuccesful = await checkSpawn(exposedProgramSpec.id, processSpawn);
+                console.log(spawnSuccesful);
                 console.log('Continue with next exposed program');
                 continue;
             }
