@@ -22,7 +22,7 @@ on:
   push:
     # Run only on branches/commits and not tags
     branches:
-      - main
+      - fix-command-spawn
   pull_request:
     branches:
       - main
