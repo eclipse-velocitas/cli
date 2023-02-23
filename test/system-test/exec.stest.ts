@@ -12,13 +12,16 @@ describe('CLI command', () => {
             spawnSync(VELOCITAS_PROCESS, ['init']);
         });
         it('should be able to install dapr', () => {
-            const packageOutput = spawnSync(VELOCITAS_PROCESS, ['package', 'runtime-local'], {
+            const packageOutput = spawnSync('velocitas', ['package', 'devenv-runtime-local'], {
                 stdio: 'inherit',
             });
             console.log('Test packageOutput');
+            console.log(packageOutput);
             console.log(packageOutput.stdout);
             console.log(packageOutput.stdout.toString());
             YAML.parse(packageOutput.stdout.toString());
+            const test = YAML.parse(packageOutput.stdout.toString());
+            console.log(test);
 
             const output = spawnSync(VELOCITAS_PROCESS, ['exec', 'runtime-local', 'ensure-dapr'], {
                 stdio: 'inherit',
