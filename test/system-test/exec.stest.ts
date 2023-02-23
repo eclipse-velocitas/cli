@@ -1,4 +1,5 @@
-import { spawn, spawnSync } from 'child_process';
+import { expect } from 'chai';
+import { ChildProcess, spawn, spawnSync } from 'child_process';
 import { join } from 'path';
 import YAML from 'yaml';
 
@@ -16,17 +17,30 @@ describe('CLI command', () => {
             const runtimeLocalComponent = parsedPackageOutput['devenv-runtime-local'].components.find(
                 (component: any) => component.id === 'runtime-local'
             );
+            let spawnSuccesful = false;
             for (const exposedProgramSpec of runtimeLocalComponent.programs) {
                 console.log(`Try to spawn exposed program of 'runtime-local': ${exposedProgramSpec.id}`);
-                const output = spawn(VELOCITAS_PROCESS, ['exec', 'runtime-local', exposedProgramSpec.id], {
+                const processSpawn = spawn(VELOCITAS_PROCESS, ['exec', 'runtime-local', exposedProgramSpec.id], {
                     stdio: 'inherit',
                 });
-                output.on('spawn', () => {
-                    console.log(`Spawned ${exposedProgramSpec.id} succesfully - killing process`);
-                    output.kill();
-                });
-                // expect(output.error).to.be.undefined;
+                spawnSuccesful = checkSpawn(exposedProgramSpec.id, processSpawn);
+                console.log('Continue with next exposed program');
+                continue;
             }
+            expect(spawnSuccesful).to.be.true;
         });
     });
 });
+
+const checkSpawn = (exposedProgramSpecId: string, processSpawn: ChildProcess): boolean => {
+    processSpawn.on('spawn', () => {
+        console.log(`Spawned ${exposedProgramSpecId} succesfully - killing process`);
+        processSpawn.kill();
+        return true;
+    });
+    processSpawn.on('error', () => {
+        console.log(`Spawning ${exposedProgramSpecId} resulted in an error`);
+        return false;
+    });
+    return false;
+};
