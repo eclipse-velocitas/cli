@@ -38,11 +38,11 @@ const checkSpawn = async (exposedProgramSpecId: string, processSpawn: ChildProce
         processSpawn.on('spawn', () => {
             console.log(`Spawned ${exposedProgramSpecId} succesfully - killing process`);
             processSpawn.kill();
-            resolve;
+            return true;
         });
         processSpawn.on('error', () => {
             console.log(`Spawning ${exposedProgramSpecId} resulted in an error`);
-            reject;
+            return false;
         });
     });
 };
