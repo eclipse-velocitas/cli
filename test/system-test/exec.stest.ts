@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { ChildProcess, spawn, spawnSync } from 'child_process';
+import { spawn, spawnSync } from 'child_process';
 import { join } from 'path';
 import YAML from 'yaml';
 
@@ -20,10 +20,7 @@ describe('CLI command', () => {
             let spawnSuccesful = false;
             for (const exposedProgramSpec of runtimeLocalComponent.programs) {
                 console.log(`Try to spawn exposed program of 'runtime-local': ${exposedProgramSpec.id}`);
-                const processSpawn = spawn(VELOCITAS_PROCESS, ['exec', 'runtime-local', exposedProgramSpec.id], {
-                    stdio: 'inherit',
-                });
-                spawnSuccesful = await checkSpawn(exposedProgramSpec.id, processSpawn);
+                spawnSuccesful = await checkSpawn(exposedProgramSpec.id);
                 console.log(spawnSuccesful);
                 console.log('Continue with next exposed program');
                 continue;
@@ -33,21 +30,23 @@ describe('CLI command', () => {
     });
 });
 
-const checkSpawn = async (exposedProgramSpecId: string, processSpawn: ChildProcess): Promise<boolean> => {
-    let spawnCheck = true;
-    let processStatus = false;
-    while (spawnCheck) {
-        processSpawn.on('spawn', () => {
-            console.log(`Spawned ${exposedProgramSpecId} succesfully - killing process`);
-            processSpawn.kill();
-            processStatus = true;
-            spawnCheck = false;
-        });
-        processSpawn.on('error', () => {
-            console.log(`Spawning ${exposedProgramSpecId} resulted in an error`);
-            processStatus = false;
-            spawnCheck = false;
-        });
-    }
-    return processStatus;
+const checkSpawn = async (exposedProgramSpecId: string): Promise<boolean> => {
+    return new Promise((resolve, reject) => {
+        try {
+            const processSpawn = spawn(VELOCITAS_PROCESS, ['exec', 'runtime-local', exposedProgramSpecId], {
+                stdio: 'inherit',
+            });
+            processSpawn.on('spawn', () => {
+                console.log(`Spawned ${exposedProgramSpecId} succesfully - killing process`);
+                processSpawn.kill();
+                resolve(true);
+            });
+            processSpawn.on('error', () => {
+                console.log(`Spawning ${exposedProgramSpecId} resulted in an error`);
+                resolve(false);
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
 };
