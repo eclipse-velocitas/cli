@@ -1,4 +1,4 @@
-import { spawnSync } from 'child_process';
+import { spawn, spawnSync } from 'child_process';
 import { join } from 'path';
 import YAML from 'yaml';
 
@@ -17,12 +17,14 @@ describe('CLI command', () => {
                 (component: any) => component.id === 'runtime-local'
             );
             for (const exposedProgramSpec of runtimeLocalComponent.programs) {
-                console.log('Id of exposedProgramSpec ');
-                console.log(exposedProgramSpec.id);
-                const output = spawnSync(VELOCITAS_PROCESS, ['exec', 'runtime-local', exposedProgramSpec.id], {
+                console.log(`Try to spawn exposed program of 'runtime-local': ${exposedProgramSpec.id}`);
+                const output = spawn(VELOCITAS_PROCESS, ['exec', 'runtime-local', exposedProgramSpec.id], {
                     stdio: 'inherit',
                 });
-
+                output.on('spawn', () => {
+                    console.log(`Spawned ${exposedProgramSpec.id} succesfully - killing process`);
+                    output.kill();
+                });
                 // expect(output.error).to.be.undefined;
             }
         });
