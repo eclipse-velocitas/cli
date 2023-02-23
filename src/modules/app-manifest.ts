@@ -13,6 +13,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { cwd } from 'node:process';
 
 export interface DockerImageReference {
     name: string;
@@ -47,6 +49,6 @@ export interface AppManifest {
 }
 
 export function readAppManifest(): AppManifest[] {
-    const config: AppManifest[] = JSON.parse(readFileSync('./app/AppManifest.json', 'utf-8'));
+    const config: AppManifest[] = JSON.parse(readFileSync(resolve(cwd(), './app/AppManifest.json'), 'utf-8'));
     return config;
 }

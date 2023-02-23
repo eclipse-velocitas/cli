@@ -13,9 +13,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PathLike, readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { cwd } from 'node:process';
 import { mapReplacer } from './helpers';
 
-export const DEFAULT_CONFIG_FILE_PATH = './.velocitas.json';
+export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), './.velocitas.json');
 
 export class PackageConfig {
     // name of the package or URL to the package repository
