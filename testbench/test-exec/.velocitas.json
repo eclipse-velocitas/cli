@@ -3,6 +3,10 @@
         {
             "name": "devenv-runtime-local",
             "version": "v1.0.2"
+        },
+        {
+            "name": "test-package",
+            "version": "test-version"
         }
     ],
     "variables": {

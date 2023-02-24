@@ -1,0 +1,14 @@
+{
+    "components": [
+        {
+            "id": "test-component",
+            "type": "setup",
+            "programs": [
+                {
+                    "id": "echo-env",
+                    "executable": "./echo-env.sh"
+                }
+            ]
+        }
+    ]
+}
