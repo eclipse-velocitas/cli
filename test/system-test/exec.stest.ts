@@ -54,6 +54,12 @@ describe('CLI command', () => {
             expect(result.stdout).to.contain('VELOCITAS_CACHE_DATA=');
             expect(result.stdout).to.contain('VELOCITAS_CACHE_DIR=');
         });
+
+        it('should be able to run executables that are on the path', () => {
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'executable-on-path'], { encoding: 'utf-8' });
+
+            expect(result.stdout).to.be.equal('Hello World!\n');
+        });
     });
 });
 

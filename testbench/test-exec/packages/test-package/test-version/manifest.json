@@ -7,6 +7,11 @@
                 {
                     "id": "echo-env",
                     "executable": "./echo-env.sh"
+                },
+                {
+                    "id": "executable-on-path",
+                    "executable": "python3",
+                    "args": ["./hello-world.py"]
                 }
             ]
         }
