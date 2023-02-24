@@ -84,7 +84,7 @@ export async function runExecSpec(
     };
 
     let programArgs = programSpec.args ? programSpec.args : [];
-    if (execSpec.args !== undefined && execSpec.args.length > 0) {
+    if (execSpec.args && execSpec.args.length > 0) {
         programArgs = execSpec.args;
     }
 
