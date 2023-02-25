@@ -83,11 +83,14 @@ export async function runExecSpec(
         cwd: cwd,
     };
 
-    const args = execSpec.args && execSpec.args.length > 0 ? execSpec.args : programSpec.args;
+    let programArgs = programSpec.args ? programSpec.args : [];
+    if (execSpec.args && execSpec.args.length > 0) {
+        programArgs = execSpec.args;
+    }
 
     try {
         const command = programSpec.executable.includes('/') ? resolve(cwd, programSpec.executable) : programSpec.executable;
-        await awaitSpawn(command, args, spawnOptions);
+        await awaitSpawn(command, programArgs, spawnOptions);
     } catch (error) {
         console.error(`There was an error during exec:\n${error}`);
     }
