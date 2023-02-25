@@ -47,7 +47,7 @@
     "nyc": "^15.1.0",
     "oclif": "^3.4.3",
     "pkg": "^5.8.0",
-    "prettier": "^2.8.3",
+    "prettier": "^2.8.4",
     "prettier-plugin-organize-imports": "^3.2.2",
     "shx": "^0.3.4",
     "sinon": "^15.0.1",
