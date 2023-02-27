@@ -12,6 +12,21 @@
                     "id": "executable-on-path",
                     "executable": "python3",
                     "args": ["./hello-world.py"]
+                },
+                {
+                    "id": "set-cache",
+                    "executable": "python3",
+                    "args": ["./set-cache.py"]
+                },
+                {
+                    "id": "get-cache",
+                    "executable": "python3",
+                    "args": ["./get-cache.py"]
+                },
+                {
+                    "id": "tty",
+                    "executable": "docker",
+                    "args": ["run", "-it", "hello-world"]
                 }
             ]
         }
