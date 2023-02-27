@@ -1,3 +1,7 @@
+## [0.3.1](https://github.com/eclipse-velocitas/cli/compare/v0.3.0...v0.3.1) (2023-02-27)
+
+
+
 # [0.3.0](https://github.com/eclipse-velocitas/cli/compare/v0.2.1...v0.3.0) (2023-02-25)
 
 
@@ -25,4 +29,3 @@
 
 
 
-## [0.1.1](https://github.com/eclipse-velocitas/cli/compare/v0.1.0...v0.1.1) (2023-01-21)
