@@ -45,7 +45,7 @@
     "mock-fs": "^5.2.0",
     "mock-spawn": "^0.2.6",
     "nyc": "^15.1.0",
-    "oclif": "^3.4.3",
+    "oclif": "^3.7.0",
     "pkg": "^5.8.0",
     "prettier": "^2.8.3",
     "prettier-plugin-organize-imports": "^3.2.2",
