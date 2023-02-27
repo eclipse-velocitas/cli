@@ -60,6 +60,24 @@ describe('CLI command', () => {
 
             expect(result.stdout).to.be.equal('Hello World!\n');
         });
+
+        it('should be able to let programs set cache values', () => {
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'set-cache'], { encoding: 'utf-8' });
+
+            expect(result.error).to.be.undefined;
+        });
+
+        it('should be able to let programs get cache values', () => {
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'get-cache'], { encoding: 'utf-8' });
+
+            expect(result.stdout).to.be.equal('Cache value: my_cache_value\n');
+        });
+
+        it('should be able to run programs which read from stdin', () => {
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'tty'], { encoding: 'utf-8' });
+
+            expect(result.error).to.be.undefined;
+        });
     });
 });
 
