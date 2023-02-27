@@ -79,7 +79,7 @@ export async function runExecSpec(
     const cwd = join(getPackageDirectory(packageConfig.name), packageConfig.version);
     const spawnOptions: SpawnOptions = {
         env: envVars,
-        stdio: 'inherit',
+        stdio: ['inherit', 'pipe', 'pipe'],
         cwd: cwd,
     };
 

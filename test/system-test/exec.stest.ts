@@ -75,6 +75,8 @@ describe('CLI command', () => {
 
         it('should be able to run programs which read from stdin', () => {
             const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'tty'], { encoding: 'utf-8' });
+
+            expect(result.error).to.be.undefined;
         });
     });
 });
