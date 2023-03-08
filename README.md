@@ -1,4 +1,4 @@
-Velocitas CLI - The project manager for your Vehicle Apps
+Velocitas CLI - The project lifecycle manager for your Vehicle Apps
 =================================
 
 [![CI Workflow](https://github.com/eclipse-velocitas/cli/actions/workflows/ci.yml/badge.svg#branch=main)](https://github.com/eclipse-velocitas/cli/actions/workflows/ci.yml)
