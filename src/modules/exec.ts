@@ -18,6 +18,7 @@ import { ExecSpec, findComponentByName } from './component';
 import { getPackageDirectory } from './package';
 import { ProjectCache } from './project-cache';
 import { ProjectConfig } from './project-config';
+import { exec } from 'node:child_process';
 
 const CACHE_OUTPUT_REGEX: RegExp = /(\w+)\s*=\s*(\'.*?\'|\".*?\"|\w+)\s+\>\>\s+VELOCITAS_CACHE/;
 
@@ -50,8 +51,16 @@ async function awaitSpawn(
 
     ptyProcess.onData((data) => lineCapturer(projectCache, data));
 
+    process.stdin.on('data', ptyProcess.write.bind(ptyProcess));
+ 
     return new Promise((resolveFunc) => {
+        process.on('SIGINT', () => {
+            const spawnedTtyId = (ptyProcess as any)._pty.split('/dev/')[1];
+            exec(`pkill -t ${spawnedTtyId}`);
+        });
         ptyProcess.onExit((code) => {
+            process.stdin.unref();
+            ptyProcess.kill();
             resolveFunc(code);
             projectCache.write();
         });
