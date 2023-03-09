@@ -48,9 +48,6 @@ async function awaitSpawn(
     const projectCache = ProjectCache.read();
 
     var ptyProcess = spawn(command, args, {
-        name: 'velocitas-exec',
-        cols: 80,
-        rows: 30,
         cwd: cwd,
         env: env as any,
     });
