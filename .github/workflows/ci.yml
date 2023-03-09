@@ -22,39 +22,39 @@ on:
   push:
     # Run only on branches/commits and not tags
     branches:
-      - node-pty
+      - main
   pull_request:
     branches:
       - main
 
 jobs:
-  # lint-job:
-  #   name: "Run linters"
-  #   runs-on: ubuntu-latest
+  lint-job:
+    name: "Run linters"
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-  #     - name: Run Linters
-  #       uses: ./.github/actions/pre-commit-action
+      - name: Run Linters
+        uses: ./.github/actions/pre-commit-action
 
-  # cli-tests:
-  #   strategy:
-  #     matrix:
-  #       os: ["ubuntu-latest"]
-  #       node_version: [lts/-1, lts/*, latest]
-  #     fail-fast: false
-  #   runs-on: ${{ matrix.os }}
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: actions/setup-node@v3
-  #       with:
-  #         node-version: ${{ matrix.node_version }}
-  #         cache: npm
-  #     - run: npm install
-  #     - run: npm run build
-  #     - run: npm run coverage
+  cli-tests:
+    strategy:
+      matrix:
+        os: ["ubuntu-latest"]
+        node_version: [lts/-1, lts/*, latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: npm
+      - run: npm install
+      - run: npm run build
+      - run: npm run coverage
 
   system-tests:
     name: "Run system tests for ${{ matrix.language }}"

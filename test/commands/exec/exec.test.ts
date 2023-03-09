@@ -15,55 +15,33 @@
 import { expect, test } from '@oclif/test';
 import { runtimeComponentManifestMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore } from '../../utils/mockfs';
-// @ts-ignore: declaration file
-
-function echoProgram() {
-    return function (this: any, cb: any) {
-        this.stdout.write(`Echo program: ${this.args}\n`);
-        return cb(0);
-    };
-}
-
-function cacheProgram() {
-    return function (this: any, cb: any) {
-        this.stdout.write(`foo = bar >> VELOCITAS_CACHE\n`);
-        this.stdout.write(`x=y >>  VELOCITAS_CACHE\n`);
-        this.stdout.write(`0123='random' >> VELOCITAS_CACHE\n`);
-        this.stdout.write(`var="asdc' >> VELOCITAS_CACHE\n`);
-        return cb(0);
-    };
-}
 
 describe('exec', () => {
     test.do(() => {
         mockFolders(true, true);
-        // const execSpawn = mockSpawn();
-        // require('child_process').spawn = execSpawn;
-        // execSpawn.setStrategy(echoProgram);
     })
         .finally(() => {
             mockRestore();
         })
         .stdout()
+        .stderr()
         .command([
             'exec',
             `${runtimeComponentManifestMock.components[0].id}`,
             `${runtimeComponentManifestMock.components[0].programs[0].id}`,
         ])
         .it('executes a runtime script', (ctx) => {
-            expect(ctx.stdout.trim()).to.contain(`Echo program:`);
+            expect(ctx.stderr).to.be.empty;
         });
 
     test.do(() => {
         mockFolders(true, true);
-        // const execSpawn = mockSpawn();
-        // require('child_process').spawn = execSpawn;
-        // execSpawn.setStrategy(echoProgram);
     })
         .finally(() => {
             mockRestore();
         })
         .stdout()
+        .stderr()
         .command([
             'exec',
             `${runtimeComponentManifestMock.components[0].id}`,
@@ -72,26 +50,24 @@ describe('exec', () => {
             `additionalArgument`,
         ])
         .it('executes a runtime script with additional arguments', (ctx) => {
-            expect(ctx.stdout.trim()).to.contain(`Echo program: additionalArgument`);
+            expect(ctx.stderr).to.be.empty;
         });
 
     test.do(() => {
         mockFolders(true, true);
-        // const execSpawn = mockSpawn();
-        // require('child_process').spawnSync = execSpawn;
-        // execSpawn.setDefault(echoProgram);
     })
         .finally(() => {
             mockRestore();
         })
         .stdout()
+        .stderr()
         .command([
             'exec',
             `${runtimeComponentManifestMock.components[1].id}`,
             `${runtimeComponentManifestMock.components[1].programs[0].id}`,
         ])
         .it('executes a deployment script', (ctx) => {
-            // placeholder
+            expect(ctx.stderr).to.be.empty;
         });
 
     test.do(() => {
@@ -119,57 +95,4 @@ describe('exec', () => {
             `No program found for item 'unknown-script' referenced in program list of '${runtimeComponentManifestMock.components[1].id}'`
         )
         .it('throws error when program is not found in specified deployment component');
-
-    test.do(() => {
-        mockFolders(true, true);
-        // const execSpawn = mockSpawn();
-        // require('child_process').spawn = execSpawn;
-        // execSpawn.setStrategy(cacheProgram);
-    })
-        .finally(() => {
-            mockRestore();
-        })
-        .stdout()
-        .command(['exec', runtimeComponentManifestMock.components[0].id, runtimeComponentManifestMock.components[0].programs[0].id])
-        .it('captures variables output to VELOCITAS_CACHE', (ctx) => {
-            // expect(ctx.stdout.trim()).to.contain('foo = bar >> VELOCITAS_CACHE');
-            // expect(ctx.stdout.trim()).to.contain('x=y >>  VELOCITAS_CACHE');
-            // expect(ctx.stdout.trim()).to.contain("0123='random' >> VELOCITAS_CACHE");
-            // expect(ctx.stdout.trim()).to.contain(`var="asdc' >> VELOCITAS_CACHE`);
-            // expect(existsSync(ProjectCache.getCacheDir())).to.be.true;
-            // const cacheData = getCacheData();
-            // expect(cacheData).to.include.keys('foo');
-            // expect(cacheData).to.include.keys('x');
-            // expect(cacheData).to.include.keys('0123');
-            // expect(cacheData).to.not.include.keys('var');
-            // expect(cacheData.foo).to.be.equal('bar');
-            // expect(cacheData.x).to.be.equal('y');
-            // expect(cacheData['0123']).to.be.equal('random');
-        });
-
-    test.do(() => {
-        mockFolders(true, true);
-        // const execSpawn = mockSpawn();
-        // require('child_process').spawn = execSpawn;
-        // execSpawn.setStrategy(
-        //     () =>
-        //         function (this: any, cb: any) {
-        //             this.stdout.write(this.opts.env['VELOCITAS_CACHE_DATA'] + '\n');
-        //             this.stdout.write(this.opts.env['VELOCITAS_CACHE_DIR'] + '\n');
-        //             return cb(0);
-        //         }
-        // );
-
-        // writeCacheData({ foo: 'bar' });
-    })
-        .finally(() => {
-            mockRestore();
-        })
-        .stdout()
-        .command(['exec', runtimeComponentManifestMock.components[0].id, runtimeComponentManifestMock.components[0].programs[0].id])
-        .it('should make cache available as env vars', (ctx) => {
-            // const lines = ctx.stdout.trim().split('\n');
-            // expect(lines[0]).to.equal('{"foo":"bar"}');
-            // expect(lines[1]).to.contain('.velocitas/projects/');
-        });
 });

@@ -25,7 +25,6 @@
 |eslint|8.32.0|MIT|
 |mocha|10.2.0|ISC<br/>MIT|
 |mock-fs|5.2.0|MIT|
-|mock-spawn|0.2.6|New BSD|
 |nyc|15.1.0|ISC<br/>MIT|
 |oclif|3.6.1|MIT|
 |pkg|5.8.0|MIT|
