@@ -70,7 +70,16 @@ describe('CLI command', () => {
         it('should be able to let programs get cache values', () => {
             const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'get-cache'], { encoding: 'utf-8' });
 
-            expect(result.stdout).to.be.equal('Cache value: my_cache_value\r\n');
+            expect(result.stdout).to.contain('my_cache_key');
+            expect(result.stdout).to.contain('my_cache_value');
+            expect(result.stdout).to.contain('foo');
+            expect(result.stdout).to.contain('bar');
+            expect(result.stdout).to.contain('x');
+            expect(result.stdout).to.contain('y');
+            expect(result.stdout).to.contain('0123');
+            expect(result.stdout).to.contain('random');
+            expect(result.stdout).to.not.contain('var');
+            expect(result.stdout).to.not.contain('asdc');
         });
 
         it('should be able to run programs which read from stdin', () => {

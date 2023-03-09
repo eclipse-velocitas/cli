@@ -18,8 +18,7 @@ import { ProjectCache } from '../../../src/modules/project-cache';
 import { runtimeComponentManifestMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore } from '../../utils/mockfs';
 // @ts-ignore: declaration file
-import mockSpawn from 'mock-spawn';
-import { getCacheData, writeCacheData } from '../../helpers/cache';
+import { getCacheData } from '../../helpers/cache';
 
 function echoProgram() {
     return function (this: any, cb: any) {
@@ -41,9 +40,9 @@ function cacheProgram() {
 describe('exec', () => {
     test.do(() => {
         mockFolders(true, true);
-        const execSpawn = mockSpawn();
-        require('child_process').spawn = execSpawn;
-        execSpawn.setStrategy(echoProgram);
+        // const execSpawn = mockSpawn();
+        // require('child_process').spawn = execSpawn;
+        // execSpawn.setStrategy(echoProgram);
     })
         .finally(() => {
             mockRestore();
@@ -60,9 +59,9 @@ describe('exec', () => {
 
     test.do(() => {
         mockFolders(true, true);
-        const execSpawn = mockSpawn();
-        require('child_process').spawn = execSpawn;
-        execSpawn.setStrategy(echoProgram);
+        // const execSpawn = mockSpawn();
+        // require('child_process').spawn = execSpawn;
+        // execSpawn.setStrategy(echoProgram);
     })
         .finally(() => {
             mockRestore();
@@ -81,9 +80,9 @@ describe('exec', () => {
 
     test.do(() => {
         mockFolders(true, true);
-        const execSpawn = mockSpawn();
-        require('child_process').spawnSync = execSpawn;
-        execSpawn.setDefault(echoProgram);
+        // const execSpawn = mockSpawn();
+        // require('child_process').spawnSync = execSpawn;
+        // execSpawn.setDefault(echoProgram);
     })
         .finally(() => {
             mockRestore();
@@ -126,9 +125,9 @@ describe('exec', () => {
 
     test.do(() => {
         mockFolders(true, true);
-        const execSpawn = mockSpawn();
-        require('child_process').spawn = execSpawn;
-        execSpawn.setStrategy(cacheProgram);
+        // const execSpawn = mockSpawn();
+        // require('child_process').spawn = execSpawn;
+        // execSpawn.setStrategy(cacheProgram);
     })
         .finally(() => {
             mockRestore();
@@ -155,18 +154,18 @@ describe('exec', () => {
 
     test.do(() => {
         mockFolders(true, true);
-        const execSpawn = mockSpawn();
-        require('child_process').spawn = execSpawn;
-        execSpawn.setStrategy(
-            () =>
-                function (this: any, cb: any) {
-                    this.stdout.write(this.opts.env['VELOCITAS_CACHE_DATA'] + '\n');
-                    this.stdout.write(this.opts.env['VELOCITAS_CACHE_DIR'] + '\n');
-                    return cb(0);
-                }
-        );
+        // const execSpawn = mockSpawn();
+        // require('child_process').spawn = execSpawn;
+        // execSpawn.setStrategy(
+        //     () =>
+        //         function (this: any, cb: any) {
+        //             this.stdout.write(this.opts.env['VELOCITAS_CACHE_DATA'] + '\n');
+        //             this.stdout.write(this.opts.env['VELOCITAS_CACHE_DIR'] + '\n');
+        //             return cb(0);
+        //         }
+        // );
 
-        writeCacheData({ foo: 'bar' });
+        // writeCacheData({ foo: 'bar' });
     })
         .finally(() => {
             mockRestore();

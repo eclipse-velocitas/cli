@@ -1,1 +1,5 @@
 print("my_cache_key=my_cache_value >> VELOCITAS_CACHE")
+print("foo = bar >> VELOCITAS_CACHE")
+print("x=y >>  VELOCITAS_CACHE")
+print("0123='random' >> VELOCITAS_CACHE")
+print("var=\"asdc' >> VELOCITAS_CACHE")
