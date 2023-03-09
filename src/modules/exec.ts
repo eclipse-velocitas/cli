@@ -24,12 +24,18 @@ const CACHE_OUTPUT_REGEX: RegExp = /(\w+)\s*=\s*(\'.*?\'|\".*?\"|\w+)\s+\>\>\s+V
 
 const lineCapturer = (projectCache: ProjectCache, data: string) => {
     process.stdout.write(data);
+    for (let line of data.toString().split('\n')) {
+        let lineTrimmed = (line as string).trim();
 
-    const result = CACHE_OUTPUT_REGEX.exec(data);
-    if (result && result.length > 0) {
-        const key = result[1];
-        const value = result[2].replaceAll("'", '').replaceAll('"', '');
-        projectCache.set(key, value);
+        if (lineTrimmed.length === 0) {
+            continue;
+        }
+        const result = CACHE_OUTPUT_REGEX.exec(lineTrimmed);
+        if (result && result.length > 0) {
+            const key = result[1];
+            const value = result[2].replaceAll("'", '').replaceAll('"', '');
+            projectCache.set(key, value);
+        }
     }
 };
 

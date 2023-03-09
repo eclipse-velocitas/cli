@@ -23,9 +23,7 @@ import YAML from 'yaml';
 const VELOCITAS_PROCESS = join('..', '..', process.env['VELOCITAS_PROCESS'] ? process.env['VELOCITAS_PROCESS'] : 'velocitas');
 const TEST_ROOT = cwd();
 const VELOCITAS_HOME = `${homedir()}/.velocitas`;
-function delay(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
+
 describe('CLI command', () => {
     describe('exec', () => {
         beforeEach(() => {
@@ -69,13 +67,7 @@ describe('CLI command', () => {
             expect(result.error).to.be.undefined;
         });
 
-        it('should be able to let programs get cache values', async () => {
-            console.log('Setting Cache');
-            const setCache = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'set-cache'], { encoding: 'utf-8' });
-            console.log('Cache set');
-            console.log('Waiting');
-            await delay(5000);
-            console.log('Getting Cache');
+        it('should be able to let programs get cache values', () => {
             const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'get-cache'], { encoding: 'utf-8' });
             console.log(result.stdout);
             expect(result.stdout).to.contain('my_cache_key');
