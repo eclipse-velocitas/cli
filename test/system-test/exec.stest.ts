@@ -68,6 +68,8 @@ describe('CLI command', () => {
         });
 
         it('should be able to let programs get cache values', () => {
+            spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'set-cache'], { encoding: 'utf-8' });
+
             const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'get-cache'], { encoding: 'utf-8' });
             console.log(result.stdout);
             expect(result.stdout).to.contain('my_cache_key');
