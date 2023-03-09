@@ -58,7 +58,7 @@ describe('CLI command', () => {
         it('should be able to run executables that are on the path', () => {
             const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'executable-on-path'], { encoding: 'utf-8' });
 
-            expect(result.stdout).to.be.equal('Hello World!\n');
+            expect(result.stdout).to.be.equal('Hello World!\r\n');
         });
 
         it('should be able to let programs set cache values', () => {
@@ -70,7 +70,7 @@ describe('CLI command', () => {
         it('should be able to let programs get cache values', () => {
             const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'get-cache'], { encoding: 'utf-8' });
 
-            expect(result.stdout).to.be.equal('Cache value: my_cache_value\n');
+            expect(result.stdout).to.be.equal('Cache value: my_cache_value\r\n');
         });
 
         it('should be able to run programs which read from stdin', () => {
