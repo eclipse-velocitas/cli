@@ -23,7 +23,9 @@ import YAML from 'yaml';
 const VELOCITAS_PROCESS = join('..', '..', process.env['VELOCITAS_PROCESS'] ? process.env['VELOCITAS_PROCESS'] : 'velocitas');
 const TEST_ROOT = cwd();
 const VELOCITAS_HOME = `${homedir()}/.velocitas`;
-
+function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
 describe('CLI command', () => {
     describe('exec', () => {
         beforeEach(() => {
@@ -68,21 +70,24 @@ describe('CLI command', () => {
         });
 
         it('should be able to let programs get cache values', () => {
+            console.log('Setting Cache');
             const setCache = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'set-cache'], { encoding: 'utf-8' });
-            if (setCache) {
-                const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'get-cache'], { encoding: 'utf-8' });
-                console.log(result.stdout);
-                expect(result.stdout).to.contain('my_cache_key');
-                expect(result.stdout).to.contain('my_cache_value');
-                expect(result.stdout).to.contain('foo');
-                expect(result.stdout).to.contain('bar');
-                expect(result.stdout).to.contain('x');
-                expect(result.stdout).to.contain('y');
-                expect(result.stdout).to.contain('0123');
-                expect(result.stdout).to.contain('random');
-                expect(result.stdout).to.not.contain('var');
-                expect(result.stdout).to.not.contain('asdc');
-            }
+            console.log('Cache set');
+            console.log('Waiting');
+            delay(5000);
+            console.log('Getting Cache');
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'get-cache'], { encoding: 'utf-8' });
+            console.log(result.stdout);
+            expect(result.stdout).to.contain('my_cache_key');
+            expect(result.stdout).to.contain('my_cache_value');
+            expect(result.stdout).to.contain('foo');
+            expect(result.stdout).to.contain('bar');
+            expect(result.stdout).to.contain('x');
+            expect(result.stdout).to.contain('y');
+            expect(result.stdout).to.contain('0123');
+            expect(result.stdout).to.contain('random');
+            expect(result.stdout).to.not.contain('var');
+            expect(result.stdout).to.not.contain('asdc');
         });
 
         it('should be able to run programs which read from stdin', () => {
