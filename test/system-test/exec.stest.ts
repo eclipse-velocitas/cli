@@ -69,12 +69,12 @@ describe('CLI command', () => {
             expect(result.error).to.be.undefined;
         });
 
-        it('should be able to let programs get cache values', () => {
+        it('should be able to let programs get cache values', async () => {
             console.log('Setting Cache');
             const setCache = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'set-cache'], { encoding: 'utf-8' });
             console.log('Cache set');
             console.log('Waiting');
-            delay(5000);
+            await delay(5000);
             console.log('Getting Cache');
             const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'get-cache'], { encoding: 'utf-8' });
             console.log(result.stdout);
