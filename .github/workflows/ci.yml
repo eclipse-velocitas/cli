@@ -71,6 +71,8 @@ jobs:
           ref: ${{ inputs.ref }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
+        with:
+          platforms: ${{ matrix.arch }}
       - uses: actions/setup-node@v3
         with:
           node-version: 18
