@@ -74,9 +74,7 @@ jobs:
         with:
           node-version: 18
       - name: Install dependencies
-        run: |
-          rm package-lock.json
-          npm clean-install
+        run: npm clean-install
       - name: Compile EXE
         run: TARGET=node18-linux-x64 ARCH=x64 npm run compile-exe
       - name: Run system test
