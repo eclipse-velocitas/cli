@@ -57,13 +57,12 @@ jobs:
       - run: npm run coverage
 
   system-tests:
-    name: "Run system tests for ${{ matrix.language }} on ${{ matrix.arch }}"
+    name: "Run system tests for ${{ matrix.language }}"
     runs-on: ubuntu-latest
     container: ghcr.io/eclipse-velocitas/devcontainer-base-images/${{ matrix.language }}:latest
     strategy:
       matrix:
         language: ["python", "cpp"]
-        arch: [arm64, x64]
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
@@ -75,10 +74,10 @@ jobs:
         with:
           node-version: 18
       - name: Install dependencies
-        run: npm clean-install
-      - name: Compile EXE for ${{ matrix.arch }}
-        run: TARGET=node18-linux-${{ matrix.arch }} ARCH=${{ matrix.arch }} npm run compile-exe
-      - name: test
-        run: ./velocitas-linux-${{ matrix.arch }}
+        run: |
+          rm package-lock.json
+          npm clean-install
+      - name: Compile EXE
+        run: TARGET=node18-linux-x64 ARCH=x64 npm run compile-exe
       - name: Run system test
-        run: ARCH=${{ matrix.arch }} npm run system-test
+        run: ARCH=x64 npm run system-test

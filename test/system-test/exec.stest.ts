@@ -34,7 +34,6 @@ describe('CLI command', () => {
 
         it('should be able to exec all exposed program specs of runtime-local', async () => {
             const packageOutput = spawnSync(VELOCITAS_PROCESS, ['package', 'devenv-runtime-local'], { encoding: 'utf-8' });
-            console.log(packageOutput);
             const parsedPackageOutput = YAML.parse(packageOutput.stdout.toString());
             const runtimeLocalComponent = parsedPackageOutput['devenv-runtime-local'].components.find(
                 (component: any) => component.id === 'runtime-local'
