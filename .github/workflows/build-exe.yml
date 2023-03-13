@@ -50,8 +50,7 @@ jobs:
         if: ${{ matrix.arch == 'arm64' }}
         uses: uraimo/run-on-arch-action@v2
         with:
-          arch: aarch64
-          base_image: node:lts-bullseye
+          base_image: arm64v8/node:lts-bullseye
 
           # Set an output parameter `uname` for use in subsequent steps
           run: |
