@@ -45,10 +45,15 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
+
       - name: Install dependencies
         run: |
-          rm package-lock.json
-          npm i
+          NPM=npm
+          if [ "${{ matrix.arch}}" == "arm64" ]; then
+            NPM="qemu-aarch64 npm"
+          fi
+
+          $NPM i
       - name: Compile EXE for ${{ matrix.arch }}
         run: TARGET=node18-linux-${{ matrix.arch }} ARCH=${{ matrix.arch }} npm run compile-exe
       - uses: actions/upload-artifact@v3
