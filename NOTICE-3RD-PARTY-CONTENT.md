@@ -51,3 +51,4 @@
 |ncipollo/release-action|v1|MIT License|
 |notiz-dev/github-action-json-property|2192e246737701f108a4571462b76c75e7376216|MIT License|
 |TriPSs/conventional-changelog-action|d360fad3a42feca6462f72c97c165d60a02d4bf2|MIT License|
+|uraimo/run-on-arch-action|v2|BSD 3-Clause "New" or "Revised" License|
