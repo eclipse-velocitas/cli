@@ -46,14 +46,22 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install dependencies
-        run: |
-          NPM=npm
-          if [ "${{ matrix.arch}}" == "arm64" ]; then
-            NPM="qemu-aarch64 npm"
-          fi
+      - name: Install dependencies for ARM64
+        if: ${{ matrix.arch }} == "arm64"
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: aarch64
+          distro: ubuntu22.04
 
-          $NPM i
+          # Set an output parameter `uname` for use in subsequent steps
+          run: |
+            npm install .
+
+      - name: Install dependencies for AMD64
+        if: ${{ matrix.arch }} == "x64"
+        run: |
+          npm install .
+
       - name: Compile EXE for ${{ matrix.arch }}
         run: TARGET=node18-linux-${{ matrix.arch }} ARCH=${{ matrix.arch }} npm run compile-exe
       - uses: actions/upload-artifact@v3
