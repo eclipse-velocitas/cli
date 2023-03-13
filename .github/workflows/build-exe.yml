@@ -47,7 +47,7 @@ jobs:
           node-version: 18
 
       - name: Install dependencies for ARM64
-        if: ${{ matrix.arch }} == "arm64"
+        if: ${{ matrix.arch == 'arm64' }}
         uses: uraimo/run-on-arch-action@v2
         with:
           arch: aarch64
@@ -55,11 +55,12 @@ jobs:
 
           # Set an output parameter `uname` for use in subsequent steps
           run: |
+            apt update
             apt install npm
             npm install .
 
       - name: Install dependencies for AMD64
-        if: ${{ matrix.arch }} == "x64"
+        if: ${{ matrix.arch == 'x64' }}
         run: |
           npm install .
 
