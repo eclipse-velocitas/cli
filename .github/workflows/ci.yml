@@ -78,5 +78,7 @@ jobs:
         run: npm clean-install
       - name: Compile EXE for ${{ matrix.arch }}
         run: TARGET=node18-linux-${{ matrix.arch }} ARCH=${{ matrix.arch }} npm run compile-exe
+      - name: test
+        run: ls -al
       - name: Run system test
         run: ARCH=${{ matrix.arch }} npm run system-test
