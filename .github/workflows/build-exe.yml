@@ -51,12 +51,10 @@ jobs:
         uses: uraimo/run-on-arch-action@v2
         with:
           arch: aarch64
-          distro: ubuntu22.04
+          base_image: node:lts-bullseye-slim
 
           # Set an output parameter `uname` for use in subsequent steps
           run: |
-            apt update
-            apt install npm
             npm install .
 
       - name: Install dependencies for AMD64
