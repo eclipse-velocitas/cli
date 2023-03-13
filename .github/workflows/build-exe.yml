@@ -46,7 +46,9 @@ jobs:
         with:
           node-version: 18
       - name: Install dependencies
-        run: npm clean-install
+        run: |
+          rm package-lock.json
+          npm i
       - name: Compile EXE for ${{ matrix.arch }}
         run: TARGET=node18-linux-${{ matrix.arch }} ARCH=${{ matrix.arch }} npm run compile-exe
       - uses: actions/upload-artifact@v3
