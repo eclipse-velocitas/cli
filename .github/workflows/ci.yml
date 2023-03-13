@@ -71,8 +71,6 @@ jobs:
           ref: ${{ inputs.ref }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
-        with:
-          platforms: ${{ matrix.arch }}
       - uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -81,6 +79,6 @@ jobs:
       - name: Compile EXE for ${{ matrix.arch }}
         run: TARGET=node18-linux-${{ matrix.arch }} ARCH=${{ matrix.arch }} npm run compile-exe
       - name: test
-        run: ls -al
+        run: ./velocitas-linux-${{ matrix.arch }}
       - name: Run system test
         run: ARCH=${{ matrix.arch }} npm run system-test
