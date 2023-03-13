@@ -63,16 +63,18 @@ jobs:
     strategy:
       matrix:
         language: ["python", "cpp"]
-
+        arch: [arm64, x64]
     steps:
       - uses: actions/checkout@v3
         with:
           ref: ${{ inputs.ref }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
       - uses: actions/setup-node@v3
         with:
           node-version: 18
       - run: npm install .
-      - name: Compile EXE
-        run: TARGET=node18-linux-x64 ARCH=x64 npm run compile-exe
+      - name: Compile EXE for ${{ matrix.arch }}
+        run: TARGET=node18-linux-${{ matrix.arch }} ARCH=${{ matrix.arch }} npm run compile-exe
       - name: Run system test
         run: ARCH=x64 npm run system-test
