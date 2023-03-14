@@ -45,14 +45,12 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-
+      # This step is needed to install needed dependencies (node-pty) for arm based architecture
       - name: Install dependencies for ARM64
         if: ${{ matrix.arch == 'arm64' }}
         uses: uraimo/run-on-arch-action@v2
         with:
           base_image: arm64v8/node:lts-bullseye
-
-          # Set an output parameter `uname` for use in subsequent steps
           run: |
             npm install .
 

@@ -68,15 +68,11 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ inputs.ref }}
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
       - uses: actions/setup-node@v3
         with:
           node-version: 18
       - name: Install dependencies
-        run: |
-          rm package-lock.json
-          npm i
+        run: npm install
       - name: Compile EXE
         run: TARGET=node18-linux-x64 ARCH=x64 npm run compile-exe
       - name: Run system test
