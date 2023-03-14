@@ -31,9 +31,9 @@ export interface AppManifest {
     Port: number;
     DAPR_GRPC_PORT: number;
     Dockerfile: string;
-    dependencies: {
-        services: DockerImageReference[];
-        runtime: DockerImageReference[];
+    dependencies?: {
+        services?: DockerImageReference[];
+        runtime?: DockerImageReference[];
     };
     python: {
         version: string;
