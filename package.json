@@ -24,6 +24,7 @@
     "axios": "0.27.2",
     "axios-retry": "^3.4.0",
     "decompress": "^4.2.1",
+    "node-pty": "^0.10.1",
     "recursive-copy": "^2.0.14",
     "semver": "^7.3.8"
   },
@@ -43,7 +44,6 @@
     "eslint": "^8.32.0",
     "mocha": "^10.2.0",
     "mock-fs": "^5.2.0",
-    "mock-spawn": "^0.2.6",
     "nyc": "^15.1.0",
     "oclif": "^3.4.3",
     "pkg": "^5.8.0",

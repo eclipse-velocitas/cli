@@ -63,7 +63,7 @@ jobs:
     strategy:
       matrix:
         language: ["python", "cpp"]
-
+      fail-fast: false
     steps:
       - uses: actions/checkout@v3
         with:
@@ -71,7 +71,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - run: npm install .
+      - name: Install dependencies
+        run: npm install
       - name: Compile EXE
         run: TARGET=node18-linux-x64 ARCH=x64 npm run compile-exe
       - name: Run system test

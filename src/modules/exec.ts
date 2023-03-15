@@ -12,7 +12,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { spawn, SpawnOptions } from 'node:child_process';
+import { spawn } from 'node-pty';
+import { exec } from 'node:child_process';
 import { join, resolve } from 'node:path';
 import { ExecSpec, findComponentByName } from './component';
 import { getPackageDirectory } from './package';
@@ -22,15 +23,13 @@ import { ProjectConfig } from './project-config';
 const CACHE_OUTPUT_REGEX: RegExp = /(\w+)\s*=\s*(\'.*?\'|\".*?\"|\w+)\s+\>\>\s+VELOCITAS_CACHE/;
 
 const lineCapturer = (projectCache: ProjectCache, data: string) => {
+    process.stdout.write(data);
     for (let line of data.toString().split('\n')) {
         let lineTrimmed = (line as string).trim();
 
         if (lineTrimmed.length === 0) {
             continue;
         }
-
-        console.log(lineTrimmed);
-
         const result = CACHE_OUTPUT_REGEX.exec(lineTrimmed);
         if (result && result.length > 0) {
             const key = result[1];
@@ -40,14 +39,32 @@ const lineCapturer = (projectCache: ProjectCache, data: string) => {
     }
 };
 
-async function awaitSpawn(command: string, args: readonly string[], options: SpawnOptions): Promise<number | null> {
+async function awaitSpawn(
+    command: string,
+    args: string[],
+    cwd: string,
+    env: NodeJS.ProcessEnv
+): Promise<{ exitCode: number; signal?: number } | null> {
     const projectCache = ProjectCache.read();
-    let p = spawn(command, args, options);
-    p.stdout!.on('data', (data) => lineCapturer(projectCache, data));
-    p.stderr!.on('data', (data) => lineCapturer(projectCache, data));
+
+    var ptyProcess = spawn(command, args, {
+        cwd: cwd,
+        env: env as any,
+    });
+
+    ptyProcess.onData((data) => lineCapturer(projectCache, data));
+
+    process.stdin.on('data', ptyProcess.write.bind(ptyProcess));
 
     return new Promise((resolveFunc) => {
-        p.on('exit', (code) => {
+        // Needed to kill all childprocesses inside the spawned tty to avoid having leftovers
+        process.on('SIGINT', () => {
+            const spawnedTtyId = (ptyProcess as any)._pty.split('/dev/')[1];
+            exec(`pkill -t ${spawnedTtyId}`);
+        });
+        ptyProcess.onExit((code) => {
+            process.stdin.unref();
+            ptyProcess.kill();
             resolveFunc(code);
             projectCache.write();
         });
@@ -77,11 +94,6 @@ export async function runExecSpec(
     }
 
     const cwd = join(getPackageDirectory(packageConfig.name), packageConfig.version);
-    const spawnOptions: SpawnOptions = {
-        env: envVars,
-        stdio: ['inherit', 'pipe', 'pipe'],
-        cwd: cwd,
-    };
 
     let programArgs = programSpec.args ? programSpec.args : [];
     if (execSpec.args && execSpec.args.length > 0) {
@@ -90,7 +102,7 @@ export async function runExecSpec(
 
     try {
         const command = programSpec.executable.includes('/') ? resolve(cwd, programSpec.executable) : programSpec.executable;
-        await awaitSpawn(command, programArgs, spawnOptions);
+        await awaitSpawn(command, programArgs, cwd, envVars);
     } catch (error) {
         console.error(`There was an error during exec:\n${error}`);
     }
