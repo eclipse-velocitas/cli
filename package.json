@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@oclif/test": "^2.2.21",
-    "@types/archiver": "^5.3.1",
+    "@types/archiver": "^5.3.2",
     "@types/chai": "^4.3.4",
     "@types/decompress": "^4.2.4",
     "@types/fs-extra": "^11.0.1",
