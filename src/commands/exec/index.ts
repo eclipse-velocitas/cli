@@ -23,7 +23,7 @@ export default class Exec extends Command {
     static description = 'Executes a script contained in one of your installed components.';
 
     static examples = [
-        `$ velocitas exec devenv-runtime-local src/run-mosquitto.sh
+        `$ velocitas exec devenv-runtime-local run-mosquitto
 Executing script...
 `,
     ];
@@ -33,11 +33,11 @@ Executing script...
     static args = [
         { name: 'component', description: 'The component which provides the program', required: true },
         { name: 'ref', description: 'Reference to the ID of the program to execute', required: true },
+        { name: 'args...', description: 'Args for the executed program', required: false },
     ];
 
     static flags = {
         verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false }),
-        args: Flags.string({ description: 'Args for the executed program', required: false }),
     };
 
     async run(): Promise<void> {
@@ -45,7 +45,12 @@ Executing script...
 
         const projectConfig = ProjectConfig.read();
 
-        const execArgs: string[] = flags.args ? flags.args.split(' ') : [];
+        // OCLIF does not support varargs (lists) out of the box.
+        // Their suggestion is to set "strict" argument parsing to false but no further documentation is available.
+        // Hence we access the Command.argv attribute which holds all arguments passed to the CLI
+        // and access everything STARTING AT the args."args..." argument as "custom args" for the invoked program.
+        const customArgsOffset = Object.keys(args).indexOf('args...');
+        const execArgs: string[] = this.argv.length > customArgsOffset ? this.argv.slice(customArgsOffset) : [];
 
         const execSpec: ExecSpec = {
             ref: args.ref,
