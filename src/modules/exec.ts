@@ -61,21 +61,29 @@ async function awaitSpawn(
         env: env as any,
     });
 
+    // grab ID of spawned pty in order to terminate dangling child processes
+    const spawnedTtyId = (ptyProcess as any)._pty.split('/dev/')[1];
+
+    const forwardedSignals = ['SIGINT', 'SIGTERM'];
+    for (const signal of forwardedSignals) {
+        process.on(signal, () => {
+            exec(`pkill -${signal} -t ${spawnedTtyId}`);
+        });
+    }
+
     ptyProcess.onData((data) => lineCapturer(projectCache, writeStdout, data));
 
     process.stdin.on('data', ptyProcess.write.bind(ptyProcess));
 
     return new Promise((resolveFunc) => {
-        // Needed to kill all childprocesses inside the spawned tty to avoid having leftovers
-        process.on('SIGINT', () => {
-            const spawnedTtyId = (ptyProcess as any)._pty.split('/dev/')[1];
-            exec(`pkill -t ${spawnedTtyId}`);
-        });
         ptyProcess.onExit((code) => {
             process.stdin.unref();
             ptyProcess.kill();
             resolveFunc(code);
             projectCache.write();
+
+            // Needed to kill all childprocesses inside the spawned tty to avoid having leftovers
+            exec(`pkill -t ${spawnedTtyId}`);
         });
     });
 }
