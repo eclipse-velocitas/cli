@@ -196,6 +196,6 @@ describe('init', () => {
         })
         .command(['init'])
         .it('runs post-init hooks', (ctx) => {
-            expect(ctx.stdout).to.contain(`... > Running post init hook for test-runtime-local`);
+            expect(ctx.stdout).to.contain(`... > Running post init hook for 'test-runtime-local'`);
         });
 });
