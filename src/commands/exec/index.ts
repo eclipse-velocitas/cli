@@ -65,6 +65,6 @@ Executing script...
 
         const envVars = createEnvVars(variables, appManifestData[0]);
 
-        await runExecSpec(execSpec, args.component, projectConfig, envVars, flags.verbose);
+        await runExecSpec(execSpec, args.component, projectConfig, envVars, true, flags.verbose);
     }
 }

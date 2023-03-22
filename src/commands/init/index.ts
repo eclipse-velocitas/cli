@@ -13,6 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Command, Flags } from '@oclif/core';
+import { ux } from '@oclif/core/lib/cli-ux';
 import { AppManifest, readAppManifest } from '../../modules/app-manifest';
 import { Component } from '../../modules/component';
 import { runExecSpec } from '../../modules/exec';
@@ -25,22 +26,30 @@ async function runPostInitHook(
     packageConfig: PackageConfig,
     projectConfig: ProjectConfig,
     appManifest: AppManifest,
-    verbose?: boolean
+    verbose: boolean
 ) {
     if (!component.onPostInit || component.onPostInit.length === 0) {
         return;
     }
 
-    console.log(`Running post init hook for ${component.id}`);
+    console.log(`... > Running post init hook for '${component.id}'`);
 
     const maybeComponentConfig = packageConfig.components?.find((c) => c.id === component.id);
     const componentConfig = maybeComponentConfig ? maybeComponentConfig : new ComponentConfig();
     const variables = VariableCollection.build(projectConfig, packageConfig, componentConfig, component);
 
     for (const execSpec of component.onPostInit) {
-        console.log(`Running '${execSpec.ref}'`);
+        const message = `Running '${execSpec.ref}'`;
+        if (!verbose) {
+            ux.action.start(message);
+        } else {
+            console.log(message);
+        }
         const envVars = createEnvVars(variables, appManifest);
-        await runExecSpec(execSpec, component.id, projectConfig, envVars, verbose);
+        await runExecSpec(execSpec, component.id, projectConfig, envVars, verbose, verbose);
+        if (!verbose) {
+            ux.action.stop();
+        }
     }
 }
 

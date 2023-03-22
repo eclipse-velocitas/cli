@@ -15,17 +15,18 @@
 import { expect, test } from '@oclif/test';
 import archiver from 'archiver';
 import * as fs from 'fs';
+import { Component } from '../../../src/modules/component';
 import { GITHUB_API_URL, GITHUB_ORG_ENDPOINT, MANIFEST_FILE_NAME, PackageManifest } from '../../../src/modules/package';
-import { velocitasConfigMock } from '../../utils/mockConfig';
+import { runtimeComponentManifestMock, velocitasConfigMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore, userHomeDir } from '../../utils/mockfs';
 
 const GITHUB_API_TOKEN = 'MY_API_TOKEN';
 const HEADER_AUTHORIZATION = 'authorization';
 
-function createPackageArchive() {
+function createPackageArchive(components = new Array<Component>()) {
     let archive = archiver('zip');
     const packageManifest: PackageManifest = {
-        components: [],
+        components: components,
     };
     archive.append(JSON.stringify(packageManifest), { name: MANIFEST_FILE_NAME });
     archive.finalize();
@@ -171,5 +172,30 @@ describe('init', () => {
             );
             expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
             expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;
+        });
+
+    test.do(() => {
+        mockFolders(true);
+    })
+        .finally(() => {
+            mockRestore();
+        })
+        .stdout()
+        .env({ GITHUB_API_TOKEN: GITHUB_API_TOKEN })
+        .nock(GITHUB_API_URL, (api) => {
+            api.matchHeader(HEADER_AUTHORIZATION, `Bearer ${GITHUB_API_TOKEN}`)
+                .get(
+                    `${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/zipball/refs/tags/${velocitasConfigMock.packages[0].version}`
+                )
+                .reply(200, createPackageArchive());
+            api.matchHeader(HEADER_AUTHORIZATION, `Bearer ${GITHUB_API_TOKEN}`)
+                .get(
+                    `${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/zipball/refs/tags/${velocitasConfigMock.packages[0].version}`
+                )
+                .reply(200, createPackageArchive(runtimeComponentManifestMock.components));
+        })
+        .command(['init'])
+        .it('runs post-init hooks', (ctx) => {
+            expect(ctx.stdout).to.contain(`... > Running post init hook for test-runtime-local`);
         });
 });

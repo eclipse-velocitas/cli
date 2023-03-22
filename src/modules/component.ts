@@ -28,12 +28,12 @@ function serializable<T extends IComponent>(constructor: T) {
 export interface ProgramSpec {
     id: string;
     executable: string;
-    args: Array<string>;
+    args?: Array<string>;
 }
 
 export interface ExecSpec {
     ref: string;
-    args: Array<string>;
+    args?: Array<string>;
     startupLine?: string;
     dependsOn?: string;
 }
@@ -50,7 +50,7 @@ export interface Component {
     id: string;
 
     // A list of all variable definitions exposed by this component.
-    variables: Array<VariableDefinition>;
+    variables?: Array<VariableDefinition>;
 
     // A list of programs exposed by this component.
     programs?: Array<ProgramSpec>;
