@@ -27,6 +27,11 @@
                     "id": "tty",
                     "executable": "docker",
                     "args": ["run", "-it", "hello-world"]
+                },
+                {
+                    "id": "print-args",
+                    "executable": "python3",
+                    "args": ["./print-args.py", "default", "foo"]
                 }
             ]
         }

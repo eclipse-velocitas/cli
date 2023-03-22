@@ -87,6 +87,19 @@ describe('CLI command', () => {
 
             expect(result.error).to.be.undefined;
         });
+
+        it('should append user-provided args to the default args', () => {
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'print-args', 'hello', 'world'], { encoding: 'utf-8' });
+
+            const lines = result.stdout.split('\r\n');
+            expect(lines.length).to.be.equal(6);
+            expect(lines[0]).to.be.equal('./print-args.py');
+            expect(lines[1]).to.be.equal('default');
+            expect(lines[2]).to.be.equal('foo');
+            expect(lines[3]).to.be.equal('hello');
+            expect(lines[4]).to.be.equal('world');
+            expect(lines[5]).to.be.equal('');
+        });
     });
 });
 

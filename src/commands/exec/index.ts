@@ -23,7 +23,7 @@ export default class Exec extends Command {
     static description = 'Executes a script contained in one of your installed components.';
 
     static examples = [
-        `$ velocitas exec devenv-runtime-local src/run-mosquitto.sh
+        `$ velocitas exec devenv-runtime-local run-mosquitto
 Executing script...
 `,
     ];
@@ -33,11 +33,11 @@ Executing script...
     static args = [
         { name: 'component', description: 'The component which provides the program', required: true },
         { name: 'ref', description: 'Reference to the ID of the program to execute', required: true },
+        { name: 'args...', description: 'Args for the executed program', required: false },
     ];
 
     static flags = {
         verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false }),
-        args: Flags.string({ description: 'Args for the executed program', required: false }),
     };
 
     async run(): Promise<void> {
@@ -45,7 +45,7 @@ Executing script...
 
         const projectConfig = ProjectConfig.read();
 
-        const execArgs: string[] = flags.args ? flags.args.split(' ') : [];
+        const execArgs: string[] = this.argv.length > 2 ? this.argv.slice(2) : [];
 
         const execSpec: ExecSpec = {
             ref: args.ref,
