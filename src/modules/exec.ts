@@ -85,10 +85,17 @@ export async function runExecSpec(
     componentId: string,
     projectConfig: ProjectConfig,
     envVars: NodeJS.ProcessEnv,
-    writeStdout: boolean,
-    verbose: boolean
+    loggingOptions: { writeStdout?: boolean; verbose?: boolean } = { writeStdout: true, verbose: false }
 ) {
-    if (verbose) {
+    if (loggingOptions.writeStdout === undefined) {
+        loggingOptions.writeStdout = true;
+    }
+
+    if (loggingOptions.verbose === undefined) {
+        loggingOptions.verbose = false;
+    }
+
+    if (loggingOptions.verbose) {
         console.info(`Starting ${componentId}/${execSpec.ref}`);
     }
 
@@ -112,7 +119,7 @@ export async function runExecSpec(
 
     try {
         const command = programSpec.executable.includes('/') ? resolve(cwd, programSpec.executable) : programSpec.executable;
-        const result = await awaitSpawn(command, programArgs, cwd, envVars, writeStdout);
+        const result = await awaitSpawn(command, programArgs, cwd, envVars, loggingOptions.writeStdout);
         if (result) {
             if (result.exitCode !== 0) {
                 console.error(`Program returned exit code: ${result.exitCode}`);

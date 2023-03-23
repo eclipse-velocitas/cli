@@ -45,7 +45,7 @@ async function runPostInitHook(
             console.log(message);
         }
         const envVars = createEnvVars(variables, appManifest);
-        await runExecSpec(execSpec, component.id, projectConfig, envVars, verbose, verbose);
+        await runExecSpec(execSpec, component.id, projectConfig, envVars, { writeStdout: true, verbose: verbose });
         if (!verbose) {
             CliUx.ux.action.stop();
         }
