@@ -12,8 +12,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { spawn } from 'node-pty';
-import { exec } from 'node:child_process';
+import { exec } from 'child_process';
+import { IPty, spawn } from 'node-pty';
 import { join, resolve } from 'node:path';
 import { ExecSpec, findComponentByName } from './component';
 import { getPackageDirectory } from './package';
@@ -22,8 +22,10 @@ import { ProjectConfig } from './project-config';
 
 const CACHE_OUTPUT_REGEX: RegExp = /(\w+)\s*=\s*(\'.*?\'|\".*?\"|\w+)\s+\>\>\s+VELOCITAS_CACHE/;
 
-const lineCapturer = (projectCache: ProjectCache, data: string) => {
-    process.stdout.write(data);
+const lineCapturer = (projectCache: ProjectCache, writeStdout: boolean, data: string) => {
+    if (writeStdout) {
+        process.stdout.write(data);
+    }
     for (let line of data.toString().split('\n')) {
         let lineTrimmed = (line as string).trim();
 
@@ -39,20 +41,27 @@ const lineCapturer = (projectCache: ProjectCache, data: string) => {
     }
 };
 
+export function setSpawnImplementation(func: (command: string, args: string | string[], options: any) => IPty) {
+    ptySpawn = func;
+}
+
+var ptySpawn = (command: string, args: string | string[], options: any): IPty => spawn(command, args, options);
+
 async function awaitSpawn(
     command: string,
     args: string[],
     cwd: string,
-    env: NodeJS.ProcessEnv
+    env: NodeJS.ProcessEnv,
+    writeStdout: boolean
 ): Promise<{ exitCode: number; signal?: number } | null> {
     const projectCache = ProjectCache.read();
 
-    var ptyProcess = spawn(command, args, {
+    var ptyProcess = ptySpawn(command, args, {
         cwd: cwd,
         env: env as any,
     });
 
-    ptyProcess.onData((data) => lineCapturer(projectCache, data));
+    ptyProcess.onData((data) => lineCapturer(projectCache, writeStdout, data));
 
     process.stdin.on('data', ptyProcess.write.bind(ptyProcess));
 
@@ -76,9 +85,17 @@ export async function runExecSpec(
     componentId: string,
     projectConfig: ProjectConfig,
     envVars: NodeJS.ProcessEnv,
-    verbose?: boolean
+    loggingOptions: { writeStdout?: boolean; verbose?: boolean } = { writeStdout: true, verbose: false }
 ) {
-    if (verbose) {
+    if (loggingOptions.writeStdout === undefined) {
+        loggingOptions.writeStdout = true;
+    }
+
+    if (loggingOptions.verbose === undefined) {
+        loggingOptions.verbose = false;
+    }
+
+    if (loggingOptions.verbose) {
         console.info(`Starting ${componentId}/${execSpec.ref}`);
     }
 
@@ -102,7 +119,12 @@ export async function runExecSpec(
 
     try {
         const command = programSpec.executable.includes('/') ? resolve(cwd, programSpec.executable) : programSpec.executable;
-        await awaitSpawn(command, programArgs, cwd, envVars);
+        const result = await awaitSpawn(command, programArgs, cwd, envVars, loggingOptions.writeStdout);
+        if (result) {
+            if (result.exitCode !== 0) {
+                console.error(`Program returned exit code: ${result.exitCode}`);
+            }
+        }
     } catch (error) {
         console.error(`There was an error during exec:\n${error}`);
     }

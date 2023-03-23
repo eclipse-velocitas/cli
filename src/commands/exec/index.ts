@@ -37,7 +37,7 @@ Executing script...
     ];
 
     static flags = {
-        verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false }),
+        verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false, default: false }),
     };
 
     async run(): Promise<void> {
@@ -65,6 +65,6 @@ Executing script...
 
         const envVars = createEnvVars(variables, appManifestData[0]);
 
-        await runExecSpec(execSpec, args.component, projectConfig, envVars, flags.verbose);
+        await runExecSpec(execSpec, args.component, projectConfig, envVars, { verbose: flags.verbose });
     }
 }

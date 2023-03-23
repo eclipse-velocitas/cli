@@ -12,6 +12,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+import { ComponentType } from '../../src/modules/component';
+
 export const defaultConfigMock = {
     packages: [
         {
@@ -116,7 +118,7 @@ export const runtimeComponentManifestMock = {
         {
             id: 'test-runtime-local',
             alias: 'local',
-            type: 'runtime',
+            type: ComponentType.runtime,
             programs: [
                 {
                     id: 'test-script-1',
@@ -137,11 +139,16 @@ export const runtimeComponentManifestMock = {
                     dependsOn: 'test-script-1',
                 },
             ],
+            onPostInit: [
+                {
+                    ref: 'test-script-1',
+                },
+            ],
         },
         {
             id: 'test-runtime-deploy-local',
             alias: 'local',
-            type: 'deployment',
+            type: ComponentType.deployment,
             programs: [
                 {
                     id: 'test-script-1',

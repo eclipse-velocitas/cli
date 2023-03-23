@@ -59,9 +59,11 @@ export class VariableCollection {
 
         verifyVariables(map, component);
 
-        for (const variableDef of component.variables) {
-            if (!map.has(variableDef.name) && variableDef.default) {
-                map.set(variableDef.name, variableDef.default);
+        if (component.variables) {
+            for (const variableDef of component.variables) {
+                if (!map.has(variableDef.name) && variableDef.default) {
+                    map.set(variableDef.name, variableDef.default);
+                }
             }
         }
 
@@ -90,14 +92,14 @@ class VerifyFlags {
 function verifyGivenVariables(
     componentId: string,
     providedVariables: Map<string, any>,
-    variableDefinitions: Array<VariableDefinition>,
+    variableDefinitions?: Array<VariableDefinition>,
     flags = new VerifyFlags()
 ) {
     const configuredVars = new Map(providedVariables);
     const missingVars = new Array<VariableDefinition>();
     const wronglyTypedVars = new Array<string>();
 
-    if (variableDefinitions.length === 0) {
+    if (!variableDefinitions || variableDefinitions.length === 0) {
         return;
     }
 

@@ -13,12 +13,59 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
+import { IEvent, IPty } from 'node-pty';
+import { setSpawnImplementation } from '../../../src/modules/exec';
 import { runtimeComponentManifestMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore } from '../../utils/mockfs';
+
+type ExitType = {
+    exitCode: number;
+    signal?: number | undefined;
+};
+
+class StubPty implements IPty {
+    pid: number;
+    cols: number;
+    rows: number;
+    process: string;
+    handleFlowControl: boolean;
+    on(event: 'data', listener: (data: string) => void): void;
+    on(event: 'exit', listener: (exitCode: number, signal?: number | undefined) => void): void;
+    on(event: unknown, listener: unknown): void {}
+
+    onData: IEvent<string>;
+    onExit: IEvent<ExitType>;
+
+    _pty: string;
+
+    constructor(exitCode: number = 0) {
+        this.pid = 0;
+        this.cols = 80;
+        this.rows = 24;
+        this.process = 'stub';
+        this.handleFlowControl = false;
+        this.onData = (listener: (e: string) => any) => {
+            return { dispose: () => {} };
+        };
+        this.onExit = (listener: (e: ExitType) => any) => {
+            listener({ exitCode: exitCode });
+            return { dispose: () => {} };
+        };
+
+        this._pty = '/dev/0';
+    }
+
+    resize(columns: number, rows: number): void {}
+    write(data: string): void {}
+    kill(signal?: string | undefined): void {}
+    pause(): void {}
+    resume(): void {}
+}
 
 describe('exec', () => {
     test.do(() => {
         mockFolders(true, true);
+        setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .finally(() => {
             mockRestore();
@@ -36,6 +83,7 @@ describe('exec', () => {
 
     test.do(() => {
         mockFolders(true, true);
+        setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .finally(() => {
             mockRestore();
@@ -55,6 +103,7 @@ describe('exec', () => {
 
     test.do(() => {
         mockFolders(true, true);
+        setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .finally(() => {
             mockRestore();
@@ -72,6 +121,7 @@ describe('exec', () => {
 
     test.do(() => {
         mockFolders(true, true);
+        setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .finally(() => {
             mockRestore();
@@ -85,6 +135,7 @@ describe('exec', () => {
 
     test.do(() => {
         mockFolders(true, true);
+        setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .finally(() => {
             mockRestore();
