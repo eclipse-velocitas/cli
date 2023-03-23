@@ -12,8 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { Command, Flags } from '@oclif/core';
-import { ux } from '@oclif/core/lib/cli-ux';
+import { CliUx, Command, Flags } from '@oclif/core';
 import { AppManifest, readAppManifest } from '../../modules/app-manifest';
 import { Component } from '../../modules/component';
 import { runExecSpec } from '../../modules/exec';
@@ -41,14 +40,14 @@ async function runPostInitHook(
     for (const execSpec of component.onPostInit) {
         const message = `Running '${execSpec.ref}'`;
         if (!verbose) {
-            ux.action.start(message);
+            CliUx.ux.action.start(message);
         } else {
             console.log(message);
         }
         const envVars = createEnvVars(variables, appManifest);
         await runExecSpec(execSpec, component.id, projectConfig, envVars, verbose, verbose);
         if (!verbose) {
-            ux.action.stop();
+            CliUx.ux.action.stop();
         }
     }
 }
