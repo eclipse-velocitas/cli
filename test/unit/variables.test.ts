@@ -133,5 +133,16 @@ describe('variables - module', () => {
             expect(vars.substitute('${{ builtin.component.id }}')).to.equal('test-component');
             expect(vars.substitute('${{ builtin.component.type }}')).to.equal('setup');
         });
+        it('should transform variable names into allowed environment variable names', () => {
+            const vars = VariableCollection.build(projectConfig, packageConfig, componentConfig, componentManifest);
+
+            const envVars = vars.asEnvVars();
+            expect(envVars['builtin_package_version']).to.equal('v1.1.1');
+            expect(envVars['builtin_package_github_org']).to.equal('eclipse-velocitas');
+            expect(envVars['builtin_package_github_repo']).to.equal('test-package');
+            expect(envVars['builtin_package_github_ref']).to.equal('v1.1.1');
+            expect(envVars['builtin_component_id']).to.equal('test-component');
+            expect(envVars['builtin_component_type']).to.equal('setup');
+        });
     });
 });

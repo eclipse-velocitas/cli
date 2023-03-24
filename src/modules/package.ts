@@ -69,7 +69,7 @@ function getPackageFolderPath(): string {
     return join(getVelocitasRoot(), 'packages');
 }
 
-export function getPackageRepo(packageName: string): string {
+function getPackageRepo(packageName: string): string {
     return `${GITHUB_API_URL}${GITHUB_ORG_ENDPOINT}/${packageName}`;
 }
 
