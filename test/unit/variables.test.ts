@@ -30,12 +30,12 @@ describe('variables - module', () => {
         variablesObject = { testString: 'test', testNumber: 1 };
         variablesMap = new Map(Object.entries(variablesObject));
         projectConfig = {
-            packages: [{ name: 'test-component', version: 'v1.1.1', variables: variablesMap, components: [] }],
+            packages: [{ name: 'test-package', version: 'v1.1.1', variables: variablesMap, components: [] }],
             variables: variablesMap,
             write: () => {},
         };
 
-        packageConfig = { name: 'test-component', version: 'v1.1.1', variables: variablesMap, components: [] };
+        packageConfig = { name: 'test-package', version: 'v1.1.1', variables: variablesMap, components: [] };
         componentConfig = { id: 'test-component', variables: variablesMap };
         componentManifest = {
             id: 'test-component',
@@ -85,7 +85,7 @@ describe('variables - module', () => {
             packageConfig.variables = new Map();
             componentConfig.variables = new Map();
             let expectedErrorMessage: string = '';
-            expectedErrorMessage += `'${projectConfig.packages[0].name}' has issues with its configured variables:\n`;
+            expectedErrorMessage += `'${componentConfig.id}' has issues with its configured variables:\n`;
             expectedErrorMessage += `Is missing required variables:\n`;
             expectedErrorMessage += `* '${componentManifest.variables[0].name}'\n`;
             expectedErrorMessage += `\tType: ${componentManifest.variables[0].type}\n`;
@@ -100,7 +100,7 @@ describe('variables - module', () => {
         it('should throw an error when exposed component variable has wrong type', () => {
             projectConfig.packages[0].variables.set('testNumber', 'wrongType');
             let expectedErrorMessage: string = '';
-            expectedErrorMessage += `'${projectConfig.packages[0].name}' has issues with its configured variables:\n`;
+            expectedErrorMessage += `'${componentConfig.id}' has issues with its configured variables:\n`;
             expectedErrorMessage += `Has wrongly typed variables:\n`;
             expectedErrorMessage += `* '${componentManifest.variables[1].name}' has wrong type! Expected ${componentManifest.variables[1].type} but got string`;
             expect(() => VariableCollection.build(projectConfig, packageConfig, componentConfig, componentManifest)).to.throw(
@@ -122,6 +122,27 @@ describe('variables - module', () => {
             //     expectedErrorMessage += `Is provided unsupported variables:\n`;
             //     expectedErrorMessage += `* 'testUnused'`;
             //     expect(() => VariableCollection.build(projectConfig, packageConfig, componentConfig, component)).to.throw(expectedErrorMessage);
+        });
+        it('should provide builtin variables', () => {
+            const vars = VariableCollection.build(projectConfig, packageConfig, componentConfig, componentManifest);
+
+            expect(vars.substitute('${{ builtin.package.version }}')).to.equal('v1.1.1');
+            expect(vars.substitute('${{ builtin.package.github.org }}')).to.equal('eclipse-velocitas');
+            expect(vars.substitute('${{ builtin.package.github.repo }}')).to.equal('test-package');
+            expect(vars.substitute('${{ builtin.package.github.ref }}')).to.equal('v1.1.1');
+            expect(vars.substitute('${{ builtin.component.id }}')).to.equal('test-component');
+            expect(vars.substitute('${{ builtin.component.type }}')).to.equal('setup');
+        });
+        it('should transform variable names into allowed environment variable names', () => {
+            const vars = VariableCollection.build(projectConfig, packageConfig, componentConfig, componentManifest);
+
+            const envVars = vars.asEnvVars();
+            expect(envVars['builtin_package_version']).to.equal('v1.1.1');
+            expect(envVars['builtin_package_github_org']).to.equal('eclipse-velocitas');
+            expect(envVars['builtin_package_github_repo']).to.equal('test-package');
+            expect(envVars['builtin_package_github_ref']).to.equal('v1.1.1');
+            expect(envVars['builtin_component_id']).to.equal('test-component');
+            expect(envVars['builtin_component_type']).to.equal('setup');
         });
     });
 });

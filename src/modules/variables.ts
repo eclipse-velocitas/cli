@@ -17,6 +17,7 @@ import { cwd } from 'node:process';
 import { AppManifest } from './app-manifest';
 import { Component } from './component';
 import { mapReplacer } from './helpers';
+import { GITHUB_ORG } from './package';
 import { ProjectCache } from './project-cache';
 import { ComponentConfig, PackageConfig, ProjectConfig } from './project-config';
 
@@ -32,8 +33,10 @@ export class VariableCollection {
         const envVars = Object.assign({}, process.env);
 
         for (const [key, value] of this._variables.entries()) {
+            const transformedKey = key.replaceAll('.', '_');
+
             Object.assign(envVars, {
-                [key]: value,
+                [transformedKey]: value,
             });
         }
 
@@ -66,6 +69,14 @@ export class VariableCollection {
                 }
             }
         }
+
+        // set built-ins
+        map.set('builtin.package.version', packageConfig.version);
+        map.set('builtin.package.github.org', GITHUB_ORG);
+        map.set('builtin.package.github.repo', packageConfig.name);
+        map.set('builtin.package.github.ref', packageConfig.version);
+        map.set('builtin.component.id', component.id);
+        map.set('builtin.component.type', component.type);
 
         return new VariableCollection(map);
     }
