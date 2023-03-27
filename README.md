@@ -18,7 +18,7 @@ Velocitas CLI - The project lifecycle manager for your Vehicle Apps
 
 # Introduction
 
-The CLI implements the [lifecyle management](link-to-velocitas-docs) concept of the development environment of
+The CLI implements the [lifecyle management](https://websites.eclipseprojects.io/velocitas/docs/concepts/lifecycle_management/) concept of the development environment of
 a Vehicle App.
 
 It allows *us* to take care of the development environment while *you* focus on the business logic of your vehicle application.
