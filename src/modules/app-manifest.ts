@@ -49,6 +49,11 @@ export interface AppManifest {
 }
 
 export function readAppManifest(): AppManifest[] {
-    const config: AppManifest[] = JSON.parse(readFileSync(resolve(cwd(), './app/AppManifest.json'), 'utf-8'));
+    let config: AppManifest[] = [];
+    try {
+        config = JSON.parse(readFileSync(resolve(cwd(), './app/AppManifest.json'), 'utf-8'));
+    } catch (error) {
+        console.info('*** Info ***: No AppManifest found');
+    }
     return config;
 }
