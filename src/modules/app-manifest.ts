@@ -15,6 +15,9 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { cwd } from 'node:process';
+import { DEFAULT_BUFFER_ENCODING } from './constants';
+
+const DEFAULT_APP_MANIFEST_PATH = resolve(cwd(), './app/AppManifest.json');
 
 export interface DockerImageReference {
     name: string;
@@ -51,7 +54,7 @@ export interface AppManifest {
 export function readAppManifest(): AppManifest[] {
     let config: AppManifest[] = [];
     try {
-        config = JSON.parse(readFileSync(resolve(cwd(), './app/AppManifest.json'), 'utf-8'));
+        config = JSON.parse(readFileSync(DEFAULT_APP_MANIFEST_PATH, DEFAULT_BUFFER_ENCODING));
     } catch (error) {
         console.info('*** Info ***: No AppManifest found');
     }

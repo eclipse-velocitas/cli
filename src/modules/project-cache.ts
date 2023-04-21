@@ -15,6 +15,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, PathLike, readFileSync, writeFileSync } from 'node:fs';
 import { join, parse } from 'node:path';
+import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { mapReplacer } from './helpers';
 import { getVelocitasRoot } from './package';
 
@@ -42,7 +43,7 @@ export class ProjectCache {
     static read(path: string = join(ProjectCache.getCacheDir(), FILE_NAME)): ProjectCache {
         const cache = new ProjectCache();
         try {
-            const data: any = JSON.parse(readFileSync(path, 'utf-8'));
+            const data: any = JSON.parse(readFileSync(path, DEFAULT_BUFFER_ENCODING));
             cache._data = new Map(Object.entries(data));
         } catch (e: any) {
             if (e.code !== 'ENOENT') {

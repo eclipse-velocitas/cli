@@ -15,6 +15,7 @@
 import { PathLike, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { cwd } from 'node:process';
+import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { mapReplacer } from './helpers';
 
 export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), './.velocitas.json');
@@ -46,7 +47,7 @@ export class ProjectConfig {
     }
 
     static read(path: PathLike = DEFAULT_CONFIG_FILE_PATH): ProjectConfig {
-        let config: ProjectConfig = new ProjectConfig(JSON.parse(readFileSync(path, 'utf-8')));
+        let config: ProjectConfig = new ProjectConfig(JSON.parse(readFileSync(path, DEFAULT_BUFFER_ENCODING)));
 
         if (config.variables) {
             config.variables = new Map(Object.entries(config.variables));
@@ -81,7 +82,7 @@ export class ProjectConfig {
 
     write(path: PathLike = DEFAULT_CONFIG_FILE_PATH): void {
         const configString = `${JSON.stringify(this, mapReplacer, 4)}\n`;
-        writeFileSync(path, configString, 'utf-8');
+        writeFileSync(path, configString, DEFAULT_BUFFER_ENCODING);
     }
 }
 

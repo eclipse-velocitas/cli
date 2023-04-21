@@ -20,6 +20,7 @@ import { existsSync, mkdirSync, readFileSync, rm } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { Component, ComponentType, deserializeComponentJSON } from './component';
+import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { PackageConfig } from './project-config';
 
 export const GITHUB_ORG = 'eclipse-velocitas';
@@ -74,7 +75,10 @@ function getPackageRepo(packageName: string): string {
 export function readPackageManifest(packageConfig: PackageConfig): PackageManifest {
     try {
         const config: PackageManifest = deserializeComponentJSON(
-            readFileSync(join(getPackageFolderPath(), packageConfig.name, packageConfig.version, MANIFEST_FILE_NAME), 'utf-8')
+            readFileSync(
+                join(getPackageFolderPath(), packageConfig.name, packageConfig.version, MANIFEST_FILE_NAME),
+                DEFAULT_BUFFER_ENCODING
+            )
         );
         return config;
     } catch (error) {
