@@ -18,7 +18,7 @@ import { mockFolders, mockRestore, userHomeDir } from '../../utils/mockfs';
 
 describe('package', () => {
     test.do(() => {
-        mockFolders(true, true);
+        mockFolders({ velocitasConfig: true, installedComponents: true });
     })
         .finally(() => {
             mockRestore();
@@ -30,7 +30,7 @@ describe('package', () => {
         });
 
     test.do(() => {
-        mockFolders(true, true);
+        mockFolders({ velocitasConfig: true, installedComponents: true });
     })
         .finally(() => {
             mockRestore();
@@ -44,7 +44,7 @@ describe('package', () => {
         });
 
     test.do(() => {
-        mockFolders(true);
+        mockFolders({ velocitasConfig: true });
     })
         .finally(() => {
             mockRestore();
@@ -55,7 +55,7 @@ describe('package', () => {
         .it('throws error when configured component cannot be found');
 
     test.do(() => {
-        mockFolders(true, true);
+        mockFolders({ velocitasConfig: true, installedComponents: true });
     })
         .finally(() => {
             mockRestore();

@@ -36,7 +36,7 @@ function createPackageArchive(components = new Array<Component>()) {
 
 describe('init', () => {
     test.do(() => {
-        mockFolders(true);
+        mockFolders({ velocitasConfig: true });
     })
         .finally(() => {
             mockRestore();
@@ -79,7 +79,7 @@ describe('init', () => {
         });
 
     test.do(() => {
-        mockFolders(true);
+        mockFolders({ velocitasConfig: true });
     })
         .finally(() => {
             mockRestore();
@@ -107,7 +107,7 @@ describe('init', () => {
         });
 
     test.do(() => {
-        mockFolders(true, true);
+        mockFolders({ velocitasConfig: true, installedComponents: true });
     })
         .finally(() => {
             mockRestore();
@@ -128,6 +128,19 @@ describe('init', () => {
         });
 
     test.do(() => {
+        mockFolders({ velocitasConfig: true, installedComponents: true, appManifest: false });
+    })
+        .finally(() => {
+            mockRestore();
+        })
+        .stdout()
+        .command(['init', '-v'])
+        .it('should log warning when no AppManifest.json is found', (ctx) => {
+            console.error(ctx.stdout);
+            expect(ctx.stdout).to.contain('*** Info ***: No AppManifest found');
+        });
+
+    test.do(() => {
         mockFolders();
     })
         .finally(() => {
@@ -142,7 +155,7 @@ describe('init', () => {
         });
 
     test.do(() => {
-        mockFolders(true);
+        mockFolders({ velocitasConfig: true });
     })
         .finally(() => {
             mockRestore();
@@ -175,7 +188,7 @@ describe('init', () => {
         });
 
     test.do(() => {
-        mockFolders(true);
+        mockFolders({ velocitasConfig: true });
     })
         .finally(() => {
             mockRestore();
