@@ -29,7 +29,7 @@ describe('upgrade', () => {
     const mockedNewVersion = 'v2.0.0';
 
     test.do(() => {
-        mockFolders(true);
+        mockFolders({ velocitasConfig: true });
     })
         .finally(() => {
             mockRestore();
@@ -55,7 +55,7 @@ describe('upgrade', () => {
         });
 
     test.do(() => {
-        mockFolders(true, true);
+        mockFolders({ velocitasConfig: true, installedComponents: true });
     })
         .finally(() => {
             mockRestore();
@@ -77,7 +77,7 @@ describe('upgrade', () => {
         });
 
     test.do(() => {
-        mockFolders(true, true);
+        mockFolders({ velocitasConfig: true, installedComponents: true });
     })
         .finally(() => {
             mockRestore();
@@ -103,7 +103,7 @@ describe('upgrade', () => {
         });
 
     test.do(() => {
-        mockFolders(true);
+        mockFolders({ velocitasConfig: true });
     })
         .finally(() => {
             mockRestore();
@@ -138,7 +138,7 @@ describe('upgrade', () => {
         });
 
     test.do(() => {
-        mockFolders(true);
+        mockFolders({ velocitasConfig: true });
     })
         .finally(() => {
             mockRestore();
@@ -164,7 +164,7 @@ describe('upgrade', () => {
         });
 
     test.do(() => {
-        mockFolders(true);
+        mockFolders({ velocitasConfig: true });
     })
         .finally(() => {
             mockRestore();
@@ -193,7 +193,7 @@ describe('upgrade', () => {
         });
 
     test.do(() => {
-        mockFolders(true, true);
+        mockFolders({ velocitasConfig: true, installedComponents: true });
     })
         .finally(() => {
             mockRestore();
@@ -215,7 +215,7 @@ describe('upgrade', () => {
         });
 
     test.do(() => {
-        mockFolders(true, true);
+        mockFolders({ velocitasConfig: true, installedComponents: true });
     })
         .finally(() => {
             mockRestore();
@@ -255,7 +255,7 @@ describe('upgrade', () => {
         });
 
     test.do(() => {
-        mockFolders(true, true);
+        mockFolders({ velocitasConfig: true, installedComponents: true });
     })
         .finally(() => {
             mockRestore();
@@ -296,7 +296,7 @@ describe('upgrade', () => {
         });
 
     test.do(() => {
-        mockFolders(true, true);
+        mockFolders({ velocitasConfig: true, installedComponents: true });
     })
         .finally(() => {
             mockRestore();

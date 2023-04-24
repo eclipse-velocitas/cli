@@ -64,7 +64,7 @@ class StubPty implements IPty {
 
 describe('exec', () => {
     test.do(() => {
-        mockFolders(true, true);
+        mockFolders({ velocitasConfig: true, installedComponents: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .finally(() => {
@@ -82,7 +82,7 @@ describe('exec', () => {
         });
 
     test.do(() => {
-        mockFolders(true, true);
+        mockFolders({ velocitasConfig: true, installedComponents: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .finally(() => {
@@ -102,7 +102,7 @@ describe('exec', () => {
         });
 
     test.do(() => {
-        mockFolders(true, true);
+        mockFolders({ velocitasConfig: true, installedComponents: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .finally(() => {
@@ -120,7 +120,24 @@ describe('exec', () => {
         });
 
     test.do(() => {
-        mockFolders(true, true);
+        mockFolders({ velocitasConfig: true, installedComponents: true, appManifest: false });
+    })
+        .finally(() => {
+            mockRestore();
+        })
+        .stdout()
+        .command([
+            'exec',
+            `${runtimeComponentManifestMock.components[1].id}`,
+            `${runtimeComponentManifestMock.components[1].programs[0].id}`,
+        ])
+        .it('should log warning when no AppManifest.json is found', (ctx) => {
+            console.error(ctx.stdout);
+            expect(ctx.stdout).to.contain('*** Info ***: No AppManifest found');
+        });
+
+    test.do(() => {
+        mockFolders({ velocitasConfig: true, installedComponents: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .finally(() => {
@@ -134,7 +151,7 @@ describe('exec', () => {
         .it('throws error when program is not found in specified runtime component');
 
     test.do(() => {
-        mockFolders(true, true);
+        mockFolders({ velocitasConfig: true, installedComponents: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .finally(() => {

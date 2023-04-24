@@ -14,15 +14,16 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'node:path';
+import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
 import { ProjectCache } from '../../src/modules/project-cache';
 
 export const getCacheData = () => {
-    return JSON.parse(readFileSync(`${ProjectCache.getCacheDir()}/cache.json`, 'utf-8'));
+    return JSON.parse(readFileSync(`${ProjectCache.getCacheDir()}/cache.json`, DEFAULT_BUFFER_ENCODING));
 };
 
 export function writeCacheData(cacheData: any) {
     if (!existsSync(ProjectCache.getCacheDir())) {
         mkdirSync(ProjectCache.getCacheDir(), { recursive: true });
     }
-    return writeFileSync(join(ProjectCache.getCacheDir(), 'cache.json'), JSON.stringify(cacheData), { encoding: 'utf-8' });
+    return writeFileSync(join(ProjectCache.getCacheDir(), 'cache.json'), JSON.stringify(cacheData), { encoding: DEFAULT_BUFFER_ENCODING });
 }

@@ -19,6 +19,7 @@ import { homedir } from 'node:os';
 import { join } from 'path';
 import { cwd } from 'process';
 import YAML from 'yaml';
+import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
 
 const VELOCITAS_PROCESS = join('..', '..', process.env['VELOCITAS_PROCESS'] ? process.env['VELOCITAS_PROCESS'] : 'velocitas');
 const TEST_ROOT = cwd();
@@ -33,7 +34,7 @@ describe('CLI command', () => {
         });
 
         it('should be able to exec all exposed program specs of runtime-local', async () => {
-            const packageOutput = spawnSync(VELOCITAS_PROCESS, ['package', 'devenv-runtime-local'], { encoding: 'utf-8' });
+            const packageOutput = spawnSync(VELOCITAS_PROCESS, ['package', 'devenv-runtime-local'], { encoding: DEFAULT_BUFFER_ENCODING });
             const parsedPackageOutput = YAML.parse(packageOutput.stdout.toString());
             const runtimeLocalComponent = parsedPackageOutput['devenv-runtime-local'].components.find(
                 (component: any) => component.id === 'runtime-local'
@@ -48,7 +49,7 @@ describe('CLI command', () => {
         });
 
         it('should pass environment variables to the spawned process', async () => {
-            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'echo-env'], { encoding: 'utf-8' });
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'echo-env'], { encoding: DEFAULT_BUFFER_ENCODING });
 
             expect(result.stdout).to.contain('VELOCITAS_WORKSPACE_DIR=');
             expect(result.stdout).to.contain('VELOCITAS_CACHE_DATA=');
@@ -56,19 +57,21 @@ describe('CLI command', () => {
         });
 
         it('should be able to run executables that are on the path', () => {
-            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'executable-on-path'], { encoding: 'utf-8' });
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'executable-on-path'], {
+                encoding: DEFAULT_BUFFER_ENCODING,
+            });
 
             expect(result.stdout).to.be.equal('Hello World!\r\n');
         });
 
         it('should be able to let programs set cache values', () => {
-            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'set-cache'], { encoding: 'utf-8' });
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'set-cache'], { encoding: DEFAULT_BUFFER_ENCODING });
 
             expect(result.error).to.be.undefined;
         });
 
         it('should be able to let programs get cache values', () => {
-            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'get-cache'], { encoding: 'utf-8' });
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'get-cache'], { encoding: DEFAULT_BUFFER_ENCODING });
 
             expect(result.stdout).to.contain('my_cache_key');
             expect(result.stdout).to.contain('my_cache_value');
@@ -83,13 +86,15 @@ describe('CLI command', () => {
         });
 
         it('should be able to run programs which read from stdin', () => {
-            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'tty'], { encoding: 'utf-8' });
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'tty'], { encoding: DEFAULT_BUFFER_ENCODING });
 
             expect(result.error).to.be.undefined;
         });
 
         it('should append user-provided args to the default args', () => {
-            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'print-args', 'hello', 'world'], { encoding: 'utf-8' });
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'print-args', 'hello', 'world'], {
+                encoding: DEFAULT_BUFFER_ENCODING,
+            });
 
             const lines = result.stdout.split('\r\n');
             expect(lines.length).to.be.equal(6);

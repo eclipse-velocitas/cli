@@ -21,7 +21,9 @@ export const userHomeDir = os.homedir();
 const runtimeComponentPath = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}/${velocitasConfigMock.packages[0].version}`;
 const setupComponentPath = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}/${velocitasConfigMock.packages[1].version}`;
 
-export const mockFolders = (withVelocitasConfig: boolean = false, withInstalledComponents: boolean = false) => {
+type MockConfig = { velocitasConfig?: boolean; installedComponents?: boolean; appManifest?: boolean };
+
+export const mockFolders = (mockConfig?: MockConfig) => {
     const mockfsConf: any = {
         'package.json': mockfs.load(path.resolve(__dirname, '../../package.json')),
         'tsconfig.json': mockfs.load(path.resolve(__dirname, '../../tsconfig.json')),
@@ -32,10 +34,13 @@ export const mockFolders = (withVelocitasConfig: boolean = false, withInstalledC
             'AppManifest.json': JSON.stringify(appManifestMock),
         },
     };
-    if (withVelocitasConfig) {
+    if (mockConfig && mockConfig.appManifest === false) {
+        delete mockfsConf.app;
+    }
+    if (mockConfig && mockConfig.velocitasConfig) {
         mockfsConf['.velocitas.json'] = JSON.stringify(velocitasConfigMock);
     }
-    if (withInstalledComponents) {
+    if (mockConfig && mockConfig.installedComponents) {
         mockfsConf[runtimeComponentPath] = {
             'manifest.json': JSON.stringify(runtimeComponentManifestMock),
             src: {},
