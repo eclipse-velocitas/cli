@@ -94,6 +94,9 @@ $ velocitas component --get-path devenv-runtime-local
                     this.log(`${' '.repeat(8)}programs:`);
                     for (const exposedProgram of component.programs) {
                         this.log(`${' '.repeat(8)}- id: ${exposedProgram.id}`);
+                        if (exposedProgram.description) {
+                            this.log(`${' '.repeat(10)}description: ${exposedProgram.description}`);
+                        }
                         this.log(`${' '.repeat(10)}executable: ${exposedProgram.executable}`);
                         if (exposedProgram.args && exposedProgram.args.length > 0) {
                             this.log(`${' '.repeat(10)}default-args: ${exposedProgram.args}`);

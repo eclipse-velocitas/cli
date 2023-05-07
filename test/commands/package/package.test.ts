@@ -27,6 +27,7 @@ describe('package', () => {
         .command(['package'])
         .it('prints information about all installed packages', (ctx) => {
             expect(ctx.stdout).to.contain('version: v1.1.1');
+            expect(ctx.stdout).to.contain('description: My test script');
         });
 
     test.do(() => {
