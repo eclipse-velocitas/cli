@@ -40,6 +40,10 @@ export class ProjectCache {
         return this._data;
     }
 
+    public clear() {
+        this._data.clear();
+    }
+
     static read(path: string = join(ProjectCache.getCacheDir(), FILE_NAME)): ProjectCache {
         const cache = new ProjectCache();
         try {
