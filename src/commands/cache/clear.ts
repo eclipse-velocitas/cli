@@ -13,28 +13,23 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Command } from '@oclif/core';
-import { ProjectCache } from '../../../modules/project-cache';
-import { ProjectConfig } from '../../../modules/project-config';
+import { ProjectCache } from '../../modules/project-cache';
+import { ProjectConfig } from '../../modules/project-config';
 
-export default class Set extends Command {
-    static description = 'Set the cache value of an entry.';
+export default class Clear extends Command {
+    static description = "Clean a project's cache.";
 
-    static examples = [`$ velocitas cache set <key> <value>`];
-
-    static args = [
-        { name: 'key', description: 'The cache key to set', required: true },
-        { name: 'value', description: 'The value to set for the cache key', required: true },
-    ];
+    static examples = [`$ velocitas cache clear`];
 
     async run(): Promise<void> {
-        const { args } = await this.parse(Set);
+        await this.parse(Clear);
 
         // although we are not reading the project config, we want to
         // ensure the command is run in a project directory only.
         ProjectConfig.read();
 
         const cache = ProjectCache.read();
-        cache.set(args.key, args.value);
+        cache.clear();
         cache.write();
     }
 }
