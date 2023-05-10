@@ -36,6 +36,18 @@ describe('cache', () => {
             mockRestore();
         })
         .stdout()
+        .command(['cache get', 'myField'])
+        .it('returns the value of a single cache key', (ctx) => {
+            expect(ctx.stdout).to.equal('myValue\n');
+        });
+
+    test.do(() => {
+        mockFolders({ velocitasConfig: true, mockCache: true });
+    })
+        .finally(() => {
+            mockRestore();
+        })
+        .stdout()
         .command(['cache set', 'foo', 'bar'])
         .it('sets a cache field', (ctx) => {
             expect(getCacheData()).to.deep.eq({ myField: 'myValue', foo: 'bar' });

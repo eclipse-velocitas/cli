@@ -14,6 +14,7 @@
 
 import { Command } from '@oclif/core';
 import { ProjectCache } from '../../../modules/project-cache';
+import { ProjectConfig } from '../../../modules/project-config';
 
 export default class Clear extends Command {
     static description = "Clean a project's cache.";
@@ -22,6 +23,11 @@ export default class Clear extends Command {
 
     async run(): Promise<void> {
         await this.parse(Clear);
+
+        // although we are not reading the project config, we want to
+        // ensure the command is run in a project directory only.
+        ProjectConfig.read();
+
         const cache = ProjectCache.read();
         cache.clear();
         cache.write();

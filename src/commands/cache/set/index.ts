@@ -14,6 +14,7 @@
 
 import { Command } from '@oclif/core';
 import { ProjectCache } from '../../../modules/project-cache';
+import { ProjectConfig } from '../../../modules/project-config';
 
 export default class Set extends Command {
     static description = 'Set the cache value of an entry.';
@@ -27,6 +28,11 @@ export default class Set extends Command {
 
     async run(): Promise<void> {
         const { args } = await this.parse(Set);
+
+        // although we are not reading the project config, we want to
+        // ensure the command is run in a project directory only.
+        ProjectConfig.read();
+
         const cache = ProjectCache.read();
         cache.set(args.key, args.value);
         cache.write();

@@ -15,15 +15,34 @@
 import { Command } from '@oclif/core';
 import { mapReplacer } from '../../../modules/helpers';
 import { ProjectCache } from '../../../modules/project-cache';
+import { ProjectConfig } from '../../../modules/project-config';
 
 export default class Get extends Command {
-    static description = 'Get the cache contents as JSON string.';
+    static description = 'Get the complete cache contents as JSON string or the value of a single key.';
 
-    static examples = [`$ velocitas cache get`];
+    static examples = [
+        `$ velocitas cache get
+{"foo":"bar"}`,
+        `$ velocitas cache get foo
+bar`,
+    ];
+
+    static args = [{ name: 'key', description: 'The key of a single cache entry to get.', required: false }];
 
     async run(): Promise<void> {
-        await this.parse(Get);
+        const { args } = await this.parse(Get);
+
+        // although we are not reading the project config, we want to
+        // ensure the command is run in a project directory only.
+        ProjectConfig.read();
+
         const cache = ProjectCache.read();
-        this.log(JSON.stringify(cache.raw(), mapReplacer));
+
+        let output = JSON.stringify(cache.raw(), mapReplacer);
+        if (args.key) {
+            output = cache.get(args.key);
+        }
+
+        this.log(output);
     }
 }
