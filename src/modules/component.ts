@@ -27,6 +27,7 @@ function serializable<T extends IComponent>(constructor: T) {
 
 export interface ProgramSpec {
     id: string;
+    description?: string;
     executable: string;
     args?: Array<string>;
 }

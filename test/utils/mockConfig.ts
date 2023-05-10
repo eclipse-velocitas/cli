@@ -122,6 +122,7 @@ export const runtimeComponentManifestMock = {
             programs: [
                 {
                     id: 'test-script-1',
+                    description: 'My test script',
                     executable: './src/test.sh',
                 },
                 {
