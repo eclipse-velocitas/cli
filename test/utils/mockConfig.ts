@@ -173,3 +173,7 @@ export const runtimeComponentManifestMock = {
         },
     ],
 };
+
+export const mockCacheContent = {
+    myField: 'myValue',
+};

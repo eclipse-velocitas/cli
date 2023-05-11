@@ -66,11 +66,8 @@
     ],
     "topicSeparator": " ",
     "topics": {
-      "hello": {
-        "description": "Say hello to the world and others"
-      },
-      "runtime": {
-        "description": "Create a new Vehicle App"
+      "cache": {
+        "description": "Interact with the project cache"
       }
     },
     "repositoryPrefix": "<%- commandPath %>"

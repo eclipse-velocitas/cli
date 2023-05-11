@@ -85,34 +85,93 @@ Click [here](./docs/PROJECT-CONFIG.md) for an in-depth overview of the project c
 
 # Commands
 <!-- commands -->
-* [`velocitas exec COMPONENT ID`](#velocitas-exec-component-id)
+* [`velocitas cache clear`](#velocitas-cache-clear)
+* [`velocitas cache get [KEY]`](#velocitas-cache-get-key)
+* [`velocitas cache set KEY VALUE`](#velocitas-cache-set-key-value)
+* [`velocitas exec COMPONENT REF [ARGS...]`](#velocitas-exec-component-ref-args)
 * [`velocitas help [COMMANDS]`](#velocitas-help-commands)
 * [`velocitas init`](#velocitas-init)
 * [`velocitas package [NAME]`](#velocitas-package-name)
 * [`velocitas sync`](#velocitas-sync)
 * [`velocitas upgrade`](#velocitas-upgrade)
 
-## `velocitas exec COMPONENT ID`
+## `velocitas cache clear`
+
+Clean a project's cache.
+
+```
+USAGE
+  $ velocitas cache clear
+
+DESCRIPTION
+  Clean a project's cache.
+
+EXAMPLES
+  $ velocitas cache clear
+```
+
+## `velocitas cache get [KEY]`
+
+Get the complete cache contents as JSON string or the value of a single key.
+
+```
+USAGE
+  $ velocitas cache get [KEY]
+
+ARGUMENTS
+  KEY  The key of a single cache entry to get.
+
+DESCRIPTION
+  Get the complete cache contents as JSON string or the value of a single key.
+
+EXAMPLES
+  $ velocitas cache get
+  {"foo":"bar"}
+
+  $ velocitas cache get foo
+  bar
+```
+
+## `velocitas cache set KEY VALUE`
+
+Set the cache value of an entry.
+
+```
+USAGE
+  $ velocitas cache set KEY VALUE
+
+ARGUMENTS
+  KEY    The cache key to set
+  VALUE  The value to set for the cache key
+
+DESCRIPTION
+  Set the cache value of an entry.
+
+EXAMPLES
+  $ velocitas cache set <key> <value>
+```
+
+## `velocitas exec COMPONENT REF [ARGS...]`
 
 Executes a script contained in one of your installed components.
 
 ```
 USAGE
-  $ velocitas exec [COMPONENT] [ID] [-v] [--args <value>]
+  $ velocitas exec COMPONENT REF [ARGS...] [-v]
 
 ARGUMENTS
   COMPONENT  The component which provides the program
-  ID         ID of the program to execute
+  REF        Reference to the ID of the program to execute
+  ARGS...    Args for the executed program
 
 FLAGS
-  -v, --verbose   Enable verbose logging
-  --args=<value>  Args for the executed program
+  -v, --verbose  Enable verbose logging
 
 DESCRIPTION
   Executes a script contained in one of your installed components.
 
 EXAMPLES
-  $ velocitas exec devenv-runtime-local src/run-mosquitto.sh
+  $ velocitas exec devenv-runtime-local run-mosquitto
   Executing script...
 ```
 
@@ -136,7 +195,7 @@ DESCRIPTION
   Display help for velocitas.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.1/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.7/src/commands/help.ts)_
 
 ## `velocitas init`
 
