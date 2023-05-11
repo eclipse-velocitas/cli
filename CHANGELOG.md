@@ -1,3 +1,12 @@
+# [0.5.0](https://github.com/eclipse-velocitas/cli/compare/v0.4.0...v0.5.0) (2023-05-11)
+
+
+### Features
+
+* Add cache command to interact with project cache ([#97](https://github.com/eclipse-velocitas/cli/issues/97)) ([6f4a0f6](https://github.com/eclipse-velocitas/cli/commit/6f4a0f6a3d64ba2a0a61f145929f6a40c5448b18))
+
+
+
 # [0.4.0](https://github.com/eclipse-velocitas/cli/compare/v0.3.2...v0.4.0) (2023-03-31)
 
 
@@ -24,4 +33,3 @@
 
 
 
-## [0.2.1](https://github.com/eclipse-velocitas/cli/compare/v0.2.0...v0.2.1) (2023-02-03)
