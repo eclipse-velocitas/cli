@@ -30,6 +30,3 @@
 ### Features
 
 * post init hooks and project cache ([#30](https://github.com/eclipse-velocitas/cli/issues/30)) ([26e3936](https://github.com/eclipse-velocitas/cli/commit/26e3936c996c9b8d9d792e29fe501958897d6b85))
-
-
-
