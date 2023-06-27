@@ -34,7 +34,7 @@
 |recursive-copy|2.0.14|ISC|
 |semver|7.5.0|ISC|
 |shx|0.3.4|MIT|
-|sinon|15.0.4|MIT|
+|sinon|15.2.0|MIT|
 |ts-node|10.9.1|MIT|
 |tslib|2.5.0|BSD Zero Clause License|
 |typescript|4.9.5|Apache 2.0|
