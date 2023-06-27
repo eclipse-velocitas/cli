@@ -347,4 +347,4 @@ In case you do not want to install NodeJS on your system, you can obtain prebuil
 # Contribution
 - [GitHub Issues](https://github.com/eclipse-velocitas/cli/issues)
 - [Mailing List](https://accounts.eclipse.org/mailing-list/velocitas-dev)
-- [Contribution](https://eclipse-velocitas.github.io/velocitas-docs/docs/contribution/)
+- [Contribution](CONTRIBUTING.md)
