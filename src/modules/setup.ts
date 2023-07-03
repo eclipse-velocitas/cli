@@ -19,8 +19,7 @@ import { cwd } from 'process';
 import copy from 'recursive-copy';
 import { TransformCallback, TransformOptions } from 'stream';
 import { SetupComponent } from './component';
-import { getPackageDirectory } from './package';
-import { PackageConfig } from './project-config';
+import { PackageConfig } from './package';
 import { VariableCollection } from './variables';
 
 class ReplaceVariablesStream extends Transform {
@@ -79,14 +78,14 @@ class ReplaceVariablesStream extends Transform {
     }
 }
 
-export function installComponent(componentConfig: PackageConfig, setupComponent: SetupComponent, variables: VariableCollection) {
+export function installComponent(packageConfig: PackageConfig, setupComponent: SetupComponent, variables: VariableCollection) {
     for (const spec of setupComponent.files) {
         const src = variables.substitute(spec.src);
         const dst = variables.substitute(spec.dst);
         let ifCondition = spec.condition ? variables.substitute(spec.condition) : 'true';
 
         if (eval(ifCondition)) {
-            const sourceFileOrDir = join(getPackageDirectory(componentConfig.name), componentConfig.version, src);
+            const sourceFileOrDir = join(packageConfig.getPackageDirectory(), packageConfig.version, src);
             const destFileOrDir = join(cwd(), dst);
             try {
                 if (existsSync(sourceFileOrDir)) {

@@ -26,7 +26,8 @@
     "decompress": "^4.2.1",
     "node-pty": "^0.10.1",
     "recursive-copy": "^2.0.14",
-    "semver": "^7.5.0"
+    "semver": "^7.5.0",
+    "simple-git": "^3.19.0"
   },
   "devDependencies": {
     "@oclif/test": "^2.3.19",

@@ -12,8 +12,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { getComponentByType, PackageManifest, readPackageManifest } from './package';
-import { ComponentConfig, PackageConfig, ProjectConfig } from './project-config';
+import { getComponentByType, PackageConfig, PackageManifest, readPackageManifest } from './package';
+import { ComponentConfig, ProjectConfig } from './project-config';
 import { VariableDefinition } from './variables';
 
 type IComponent = new () => { readonly type: ComponentType };

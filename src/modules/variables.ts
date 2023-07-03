@@ -17,9 +17,9 @@ import { cwd } from 'node:process';
 import { AppManifest } from './app-manifest';
 import { Component } from './component';
 import { mapReplacer } from './helpers';
-import { GITHUB_ORG } from './package';
+import { GITHUB_ORG, PackageConfig } from './package';
 import { ProjectCache } from './project-cache';
-import { ComponentConfig, PackageConfig, ProjectConfig } from './project-config';
+import { ComponentConfig, ProjectConfig } from './project-config';
 
 export interface VariableDefinition {
     name: string;
@@ -73,7 +73,7 @@ export class VariableCollection {
         // set built-ins
         map.set('builtin.package.version', packageConfig.version);
         map.set('builtin.package.github.org', GITHUB_ORG);
-        map.set('builtin.package.github.repo', packageConfig.name);
+        map.set('builtin.package.github.repo', packageConfig.getPackageName());
         map.set('builtin.package.github.ref', packageConfig.version);
         map.set('builtin.component.id', component.id);
         map.set('builtin.component.type', component.type);

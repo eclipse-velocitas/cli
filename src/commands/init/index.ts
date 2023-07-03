@@ -16,8 +16,8 @@ import { CliUx, Command, Flags } from '@oclif/core';
 import { AppManifest, readAppManifest } from '../../modules/app-manifest';
 import { Component } from '../../modules/component';
 import { runExecSpec } from '../../modules/exec';
-import { downloadPackageVersion, isPackageInstalled, readPackageManifest } from '../../modules/package';
-import { ComponentConfig, PackageConfig, ProjectConfig } from '../../modules/project-config';
+import { downloadPackageVersion, isPackageInstalled, PackageConfig, readPackageManifest } from '../../modules/package';
+import { ComponentConfig, ProjectConfig } from '../../modules/project-config';
 import { createEnvVars, VariableCollection } from '../../modules/variables';
 
 async function runPostInitHook(
@@ -88,13 +88,13 @@ Velocitas project found!
             projectConfig = ProjectConfig.read();
 
             for (const packageConfig of projectConfig.packages) {
-                if (!flags.force && isPackageInstalled(packageConfig.name, packageConfig.version)) {
-                    this.log(`... '${packageConfig.name}:${packageConfig.version}' already initialized.`);
+                if (!flags.force && isPackageInstalled(packageConfig.repo, packageConfig.version)) {
+                    this.log(`... '${packageConfig.getPackageName()}:${packageConfig.version}' already initialized.`);
                     continue;
                 }
 
-                this.log(`... Downloading package: '${packageConfig.name}:${packageConfig.version}'`);
-                await downloadPackageVersion(packageConfig.name, packageConfig.version, flags.verbose);
+                this.log(`... Downloading package: '${packageConfig.getPackageName()}:${packageConfig.version}'`);
+                await downloadPackageVersion(packageConfig.repo, packageConfig.version, flags.verbose, packageConfig.dev);
 
                 const packageManifest = readPackageManifest(packageConfig);
 

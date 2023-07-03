@@ -40,9 +40,9 @@ Checking for updates!
         this.log(`Checking for updates!`);
         const projectConfig = ProjectConfig.read();
         for (const packageConfig of projectConfig.packages) {
-            const availableVersions = await getPackageVersions(packageConfig.name);
+            const availableVersions = await getPackageVersions(packageConfig.repo);
             try {
-                const latestVersion = getLatestVersion(availableVersions.flatMap((v) => v.name));
+                const latestVersion = getLatestVersion(availableVersions);
 
                 if (packageConfig.version === latestVersion) {
                     if (!isPackageInstalled(packageConfig.name, packageConfig.version)) {
@@ -52,21 +52,23 @@ Checking for updates!
                         }
                         const response = await CliUx.ux.prompt(`... Do you want to download them? [y/n]`, { default: 'y' });
                         if (response === 'y') {
-                            await downloadPackageVersion(packageConfig.name, latestVersion, flags.verbose);
+                            await downloadPackageVersion(packageConfig.name, latestVersion, flags.verbose, packageConfig.dev);
                         }
                         continue;
                     }
-                    this.log(`... '${packageConfig.name}' is up to date!`);
+                    this.log(`... '${packageConfig.getPackageName()}' is up to date!`);
                     continue;
                 }
 
-                this.log(`... '${packageConfig.name}' is currently at ${packageConfig.version}, can be updated to ${latestVersion}`);
+                this.log(
+                    `... '${packageConfig.getPackageName()}' is currently at ${packageConfig.version}, can be updated to ${latestVersion}`
+                );
                 if (flags['dry-run']) {
                     continue;
                 }
                 const response = await CliUx.ux.prompt(`... Do you wish to continue? [y/n]`, { default: 'y' });
                 if (response === 'y') {
-                    await downloadPackageVersion(packageConfig.name, latestVersion, flags.verbose);
+                    await downloadPackageVersion(packageConfig.name, latestVersion, flags.verbose, packageConfig.dev);
                     packageConfig.version = latestVersion;
                     projectConfig.write();
                 }

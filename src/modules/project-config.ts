@@ -17,22 +17,9 @@ import { resolve } from 'node:path';
 import { cwd } from 'node:process';
 import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { mapReplacer } from './helpers';
+import { PackageConfig } from './package';
 
 export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), './.velocitas.json');
-
-export class PackageConfig {
-    // name of the package or URL to the package repository
-    name: string = '';
-
-    // version of the package to use
-    version: string = '';
-
-    // package-wide variable configuration
-    variables: Map<string, any> = new Map<string, any>();
-
-    // per-component configuration
-    components: Array<ComponentConfig> = new Array<ComponentConfig>();
-}
 
 export class ProjectConfig {
     // packages used in the project
