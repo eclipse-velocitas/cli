@@ -71,7 +71,7 @@ Checking for updates!
                     projectConfig.write();
                 }
             } catch (e) {
-                throw new Error(`Error during upgrade: '${e}'`);
+                this.error(`Error during upgrade: '${e}'`);
             }
         }
     }

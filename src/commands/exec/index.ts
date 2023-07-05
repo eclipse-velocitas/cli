@@ -15,7 +15,7 @@
 import { Command, Flags } from '@oclif/core';
 import { readAppManifest } from '../../modules/app-manifest';
 import { ExecSpec, findComponentByName } from '../../modules/component';
-import { runExecSpec } from '../../modules/exec';
+import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { ProjectConfig } from '../../modules/project-config';
 import { createEnvVars, VariableCollection } from '../../modules/variables';
 
@@ -65,6 +65,16 @@ Executing script...
 
         const envVars = createEnvVars(variables, appManifestData[0]);
 
-        await runExecSpec(execSpec, args.component, projectConfig, envVars, { verbose: flags.verbose });
+        try {
+            await runExecSpec(execSpec, args.component, projectConfig, envVars, { verbose: flags.verbose });
+        } catch (e) {
+            if (e instanceof ExecExitError) {
+                this.error(e.message, { exit: e.exitCode });
+            } else if (e instanceof Error) {
+                this.error(e.message);
+            } else {
+                this.error(`An unexpected error occured during execution of component: ${args.component}`);
+            }
+        }
     }
 }
