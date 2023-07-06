@@ -106,7 +106,7 @@ describe('CLI command', () => {
             expect(lines[5]).to.be.equal('');
         });
 
-        it('should exit properly when program returns exit code', async () => {
+        it('should return the error code of the first executed program which returns an error', async () => {
             const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'exit'], {
                 encoding: DEFAULT_BUFFER_ENCODING,
             });

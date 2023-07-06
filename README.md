@@ -55,11 +55,11 @@ This file is maintained by velocitas CLI, do not modify manually. Change setting
 
 ## Prerequisites
 
-When using the Velocitas CLI outside of our devcontainer-base-images some software/tools are needed:
+> **_NOTE:_** The CLI has not been tested outside of our devcontainer base images. However, when using the Velocitas CLI outside of the mentioned image the following software/tools are needed:
 
-- OS Recommendation is e.g. Ubuntu >= 22
+- OS Recommendation is e.g. Ubuntu >= 22.04
 - python3 (If not default in your environment create a symlink or use `python-is-python3`)
-- `wget`, `dapr`, `build-essentials`, `GLIBC_x` need to be installed
+- `wget`, `dapr`, `build-essential`, `glibc` need to be installed
 
 ## Project configuration
 
