@@ -53,6 +53,14 @@ Should one of your packages provide files to be synchronized into your repositor
 This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json
 ```
 
+## Prerequisites
+
+When using the Velocitas CLI outside of our devcontainer-base-images some software/tools are needed:
+
+- OS Recommendation is e.g. Ubuntu >= 22
+- python3 (If not default in your environment create a symlink or use `python-is-python3`)
+- `wget`, `dapr`, `build-essentials`, `GLIBC_x` need to be installed
+
 ## Project configuration
 
 An exemplary project configuration (`.velocitas.json`) looks like this:
