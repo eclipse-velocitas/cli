@@ -105,6 +105,13 @@ describe('CLI command', () => {
             expect(lines[4]).to.be.equal('world');
             expect(lines[5]).to.be.equal('');
         });
+
+        it('should return the error code of the first executed program which returns an error', async () => {
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'exit'], {
+                encoding: DEFAULT_BUFFER_ENCODING,
+            });
+            expect(result.status).to.be.equal(1);
+        });
     });
 });
 

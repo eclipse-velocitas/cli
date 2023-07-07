@@ -19,36 +19,19 @@ import { DEFAULT_BUFFER_ENCODING } from './constants';
 
 const DEFAULT_APP_MANIFEST_PATH = resolve(cwd(), './app/AppManifest.json');
 
-export interface DockerImageReference {
-    name: string;
-    image: string;
-    version: string;
+export interface DataPoint {
+    path: string;
+    required: string;
+    access: string;
 }
-
-export interface PythonReference {
-    version: string;
+export interface VehicleModelReference {
+    src: string;
+    datapoints: DataPoint[];
 }
-
 export interface AppManifest {
-    Name: string;
-    Port: number;
-    DAPR_GRPC_PORT: number;
-    Dockerfile: string;
-    dependencies?: {
-        services?: DockerImageReference[];
-        runtime?: DockerImageReference[];
-    };
-    python: {
-        version: string;
-    } | null;
-    dapr: {
-        cli: {
-            version: string;
-        };
-        runtime: {
-            version: string;
-        };
-    };
+    name: string;
+    vehicleModel: VehicleModelReference;
+    runtime: string[];
 }
 
 export function readAppManifest(): AppManifest[] {
