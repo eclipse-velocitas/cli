@@ -11,3 +11,6 @@ oclif.manifest.json
 tsconfig.tsbuildinfo
 
 .DS_Store
+
+# vehicle app repo which is cloned by starting the devContainer
+/vehicle-app-repo
