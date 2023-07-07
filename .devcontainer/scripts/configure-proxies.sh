@@ -91,6 +91,10 @@ if [ "${USE_PROXIES}" = "true" ]; then
     echo "no_proxy=${NO_PROXY}" >> /etc/wgetrc
     echo "use_proxy=on" >> /etc/wgetrc
 
+    # add proxy config to .npmrc
+    echo "proxy=${HTTP_PROXY}" >> /home/${USERNAME}/.npmrc
+    echo "https-proxy=${HTTPS_PROXY}" >> /home/${USERNAME}/.npmrc
+
     # enable root user to "apt-get" via proxy
     echo "Acquire::http::proxy \"${HTTP_PROXY}\";" >> /etc/apt/apt.conf
     echo "Acquire::https::proxy \"${HTTPS_PROXY}\";" >> /etc/apt/apt.conf
