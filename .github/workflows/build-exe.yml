@@ -34,7 +34,7 @@ jobs:
   compile:
     strategy:
       matrix:
-        arch: [x64]
+        arch: [arm64, x64]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3

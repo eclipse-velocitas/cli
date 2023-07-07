@@ -16,9 +16,7 @@ name: Trigger Manual Release
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - change-release-process
+
 jobs:
   bump-version:
     runs-on: ubuntu-latest
