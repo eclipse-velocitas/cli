@@ -38,7 +38,7 @@
 |ts-node|10.9.1|MIT|
 |tslib|2.6.0|BSD Zero Clause License|
 |typescript|4.9.5|Apache 2.0|
-|velocitas-cli|0.5.0|Apache 2.0|
+|velocitas-cli|0.0.0|Apache 2.0|
 |yaml|2.3.1|ISC|
 ## Workflows
 | Dependency | Version | License |
@@ -49,5 +49,5 @@
 |actions/upload-artifact|v3|MIT License|
 |docker/setup-qemu-action|v2|Apache License 2.0|
 |ncipollo/release-action|v1|MIT License|
-|TriPSs/conventional-changelog-action|d360fad3a42feca6462f72c97c165d60a02d4bf2|MIT License|
+|TriPSs/conventional-changelog-action|v3|MIT License|
 |uraimo/run-on-arch-action|v2|BSD 3-Clause "New" or "Revised" License|

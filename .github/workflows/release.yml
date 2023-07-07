@@ -29,7 +29,7 @@ jobs:
 
       - name: Conventional Changelog Action
         id: changelog
-        uses: TriPSs/conventional-changelog-action@d360fad3a42feca6462f72c97c165d60a02d4bf2
+        uses: TriPSs/conventional-changelog-action@v3
         with:
           skip-on-empty: false
           skip-version-file: true
@@ -38,8 +38,6 @@ jobs:
 
       - run: echo ${{ steps.changelog.outputs.version }}
       - run: echo "`jq '.version="${{ steps.changelog.outputs.version }}"' package.json`" > package.json
-      - run: cat package.json
-      - run: cat CHANGELOG.md
 
   compile:
     uses: ./.github/workflows/build-exe.yml
