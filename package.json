@@ -85,6 +85,7 @@
     "test": "mocha \"test/**/*.test.ts\"",
     "coverage": "nyc npm run test",
     "version": "oclif readme && git add README.md",
+    "local-system-test": "export VELOCITAS_PROCESS=\"./bin/dev\" && mocha \"test/**/*.stest.ts\"",
     "system-test": "export VELOCITAS_PROCESS=\"./velocitas-linux-$ARCH\" && mocha \"test/**/*.stest.ts\"",
     "compile-exe": "npm run build && pkg --target=$TARGET --compress=Brotli --output=velocitas-linux-$ARCH ."
   },
