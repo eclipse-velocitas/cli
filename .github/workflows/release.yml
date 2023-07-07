@@ -16,7 +16,9 @@ name: Trigger Manual Release
 
 on:
   workflow_dispatch:
-
+  push:
+    branches:
+      - change-release-process
 jobs:
   bump-version:
     runs-on: ubuntu-latest
@@ -30,26 +32,27 @@ jobs:
         uses: TriPSs/conventional-changelog-action@v3
         with:
           skip-on-empty: false
-          skip-version-file: true
+          # skip-version-file: true
           skip-commit: true
           tag-prefix: 'v'
 
       - run: echo ${{ steps.changelog.outputs.version }}
-      - run: echo "`jq '.version="${{ steps.changelog.outputs.version }}"' package.json`" > package.json
+      - run: cat package.json
+      # - run: echo "`jq '.version="${{ steps.changelog.outputs.version }}"' package.json`" > package.json
 
-  compile:
-    uses: ./.github/workflows/build-exe.yml
-    needs: [bump-version]
-    with:
-      ref: v${{ needs.bump-version.outputs.packageVersion }}
+  # compile:
+  #   uses: ./.github/workflows/build-exe.yml
+  #   needs: [bump-version]
+  #   with:
+  #     ref: v${{ needs.bump-version.outputs.packageVersion }}
 
-  create-release:
-    runs-on: ubuntu-latest
-    needs: [bump-version, compile]
-    steps:
-      - uses: actions/download-artifact@v3
+  # create-release:
+  #   runs-on: ubuntu-latest
+  #   needs: [bump-version, compile]
+  #   steps:
+  #     - uses: actions/download-artifact@v3
 
-      - uses: ncipollo/release-action@v1
-        with:
-          artifacts: "arm64/*,x64/*"
-          tag: v${{ needs.bump-version.outputs.packageVersion }}
+  #     - uses: ncipollo/release-action@v1
+  #       with:
+  #         artifacts: "arm64/*,x64/*"
+  #         tag: v${{ needs.bump-version.outputs.packageVersion }}
