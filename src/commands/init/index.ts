@@ -15,7 +15,7 @@
 import { CliUx, Command, Flags } from '@oclif/core';
 import { AppManifest, readAppManifest } from '../../modules/app-manifest';
 import { Component } from '../../modules/component';
-import { runExecSpec } from '../../modules/exec';
+import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { downloadPackageVersion, isPackageInstalled, readPackageManifest } from '../../modules/package';
 import { ComponentConfig, PackageConfig, ProjectConfig } from '../../modules/project-config';
 import { createEnvVars, VariableCollection } from '../../modules/variables';
@@ -99,7 +99,17 @@ Velocitas project found!
                 const packageManifest = readPackageManifest(packageConfig);
 
                 for (const component of packageManifest.components) {
-                    await runPostInitHook(component, packageConfig, projectConfig, appManifestData[0], flags.verbose);
+                    try {
+                        await runPostInitHook(component, packageConfig, projectConfig, appManifestData[0], flags.verbose);
+                    } catch (e) {
+                        if (e instanceof ExecExitError) {
+                            this.error(e.message, { exit: e.exitCode });
+                        } else if (e instanceof Error) {
+                            this.error(e.message);
+                        } else {
+                            this.error(`An unexpected error occured during initialization of component: ${component.id}`);
+                        }
+                    }
                 }
             }
         } else {

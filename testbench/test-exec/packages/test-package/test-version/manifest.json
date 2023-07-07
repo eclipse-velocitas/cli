@@ -32,6 +32,11 @@
                     "id": "print-args",
                     "executable": "python3",
                     "args": ["./print-args.py", "default", "foo"]
+                },
+                {
+                    "id": "exit",
+                    "executable": "python3",
+                    "args": ["./exit.py"]
                 }
             ]
         }

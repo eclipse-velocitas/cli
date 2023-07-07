@@ -80,6 +80,15 @@ async function awaitSpawn(
     });
 }
 
+export class ExecExitError extends Error {
+    exitCode: number;
+    constructor(message: string, exitCode: number) {
+        super(message);
+        this.name = 'ExecExitError';
+        this.exitCode = exitCode;
+    }
+}
+
 export async function runExecSpec(
     execSpec: ExecSpec,
     componentId: string,
@@ -120,12 +129,10 @@ export async function runExecSpec(
     try {
         const command = programSpec.executable.includes('/') ? resolve(cwd, programSpec.executable) : programSpec.executable;
         const result = await awaitSpawn(command, programArgs, cwd, envVars, loggingOptions.writeStdout);
-        if (result) {
-            if (result.exitCode !== 0) {
-                console.error(`Program returned exit code: ${result.exitCode}`);
-            }
+        if (result && result.exitCode !== 0) {
+            throw new ExecExitError(`Program returned exit code: ${result.exitCode}`, result.exitCode);
         }
     } catch (error) {
-        console.error(`There was an error during exec:\n${error}`);
+        throw error;
     }
 }
