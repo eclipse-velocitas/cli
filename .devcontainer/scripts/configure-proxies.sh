@@ -94,6 +94,7 @@ if [ "${USE_PROXIES}" = "true" ]; then
     # add proxy config to .npmrc
     echo "proxy=${HTTP_PROXY}" >> /home/${USERNAME}/.npmrc
     echo "https-proxy=${HTTPS_PROXY}" >> /home/${USERNAME}/.npmrc
+    sudo chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.npmrc
 
     # enable root user to "apt-get" via proxy
     echo "Acquire::http::proxy \"${HTTP_PROXY}\";" >> /etc/apt/apt.conf
