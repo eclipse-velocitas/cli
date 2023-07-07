@@ -23,7 +23,7 @@ jobs:
   bump-version:
     runs-on: ubuntu-latest
     outputs:
-      packageVersion: ${{ steps.changelog.outputs.tag }}
+      packageVersion: ${{ steps.changelog.outputs.version }}
     steps:
       - uses: actions/checkout@v3
 
@@ -34,6 +34,7 @@ jobs:
           skip-on-empty: false
           skip-version-file: true
           skip-commit: true
+          tag-prefix: 'v'
 
       # - uses: notiz-dev/github-action-json-property@2192e246737701f108a4571462b76c75e7376216
       #   id: version
@@ -41,8 +42,8 @@ jobs:
       #     path: 'package.json'
       #     prop_path: 'version'
 
-      - run: echo ${{ steps.changelog.outputs.tag }}
-      - run: echo "`jq '.version="${{ steps.changelog.outputs.tag }}"' package.json`" > package.json
+      - run: echo ${{ steps.changelog.outputs.version }}
+      - run: echo "`jq '.version="${{ steps.changelog.outputs.version }}"' package.json`" > package.json
       - run: cat package.json
       - run: cat CHANGELOG.md
 
