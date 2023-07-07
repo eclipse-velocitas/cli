@@ -34,7 +34,6 @@ jobs:
           skip-on-empty: false
           skip-version-file: true
           skip-commit: true
-          tag-prefix: 'v'
 
       # - uses: notiz-dev/github-action-json-property@2192e246737701f108a4571462b76c75e7376216
       #   id: version
