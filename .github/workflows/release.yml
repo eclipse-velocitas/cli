@@ -36,12 +36,6 @@ jobs:
           skip-commit: true
           tag-prefix: 'v'
 
-      # - uses: notiz-dev/github-action-json-property@2192e246737701f108a4571462b76c75e7376216
-      #   id: version
-      #   with:
-      #     path: 'package.json'
-      #     prop_path: 'version'
-
       - run: echo ${{ steps.changelog.outputs.version }}
       - run: echo "`jq '.version="${{ steps.changelog.outputs.version }}"' package.json`" > package.json
       - run: cat package.json
@@ -53,13 +47,13 @@ jobs:
     with:
       ref: v${{ needs.bump-version.outputs.packageVersion }}
 
-  # create-release:
-  #   runs-on: ubuntu-latest
-  #   needs: [bump-version, compile]
-  #   steps:
-  #     - uses: actions/download-artifact@v3
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [bump-version, compile]
+    steps:
+      - uses: actions/download-artifact@v3
 
-  #     - uses: ncipollo/release-action@v1
-  #       with:
-  #         artifacts: "arm64/*,x64/*"
-  #         tag: v${{ needs.bump-version.outputs.packageVersion }}
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "arm64/*,x64/*"
+          tag: v${{ needs.bump-version.outputs.packageVersion }}
