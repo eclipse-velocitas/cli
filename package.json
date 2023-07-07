@@ -1,6 +1,6 @@
 {
   "name": "velocitas-cli",
-  "version": "0.5.0",
+  "version": "0.0.0",
   "description": "Lifecycle management of Velocitas Vehicle Applications",
   "author": "Eclipse Velocitas Team",
   "bin": {
