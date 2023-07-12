@@ -3,11 +3,11 @@
 ## JavaScript
 | Dependency | Version | License |
 |:-----------|:-------:|--------:|
-|@oclif/core|1.26.2|MIT|
-|@oclif/plugin-help|5.2.11|MIT|
-|@oclif/plugin-not-found|2.3.26|MIT|
-|@oclif/plugin-plugins|2.4.7|MIT|
-|@oclif/test|2.3.26|MIT|
+|@oclif/core|2.9.0|MIT|
+|@oclif/plugin-help|5.2.12|MIT|
+|@oclif/plugin-not-found|2.3.29|MIT|
+|@oclif/plugin-plugins|3.1.6|MIT|
+|@oclif/test|2.3.28|MIT|
 |@types/archiver|5.3.2|MIT|
 |@types/chai|4.3.5|MIT|
 |@types/decompress|4.2.4|MIT|
@@ -15,8 +15,8 @@
 |@types/mocha|10.0.1|MIT|
 |@types/mock-fs|4.13.1|MIT|
 |@types/node|18.16.19|MIT|
-|@typescript-eslint/eslint-plugin|5.61.0|MIT|
-|@typescript-eslint/parser|5.61.0|unknown|
+|@typescript-eslint/eslint-plugin|6.0.0|MIT|
+|@typescript-eslint/parser|6.0.0|unknown|
 |archiver|5.3.1|MIT|
 |axios|0.27.2|MIT|
 |axios-retry|3.5.1|unknown|
@@ -25,19 +25,19 @@
 |eslint|8.44.0|MIT|
 |mocha|10.2.0|ISC<br/>MIT|
 |mock-fs|5.2.0|MIT|
-|node-pty|0.10.1|MIT|
+|node-pty|1.0.0|MIT|
 |nyc|15.1.0|ISC<br/>MIT|
 |oclif|3.9.1|MIT|
 |pkg|5.8.1|MIT|
-|prettier|2.8.8|Apache 2.0|
+|prettier|3.0.0|Apache 2.0|
 |prettier-plugin-organize-imports|3.2.2|MIT|
 |recursive-copy|2.0.14|ISC|
-|semver|7.5.3|ISC|
+|semver|7.5.4|ISC|
 |shx|0.3.4|MIT|
 |sinon|15.2.0|MIT|
 |ts-node|10.9.1|MIT|
 |tslib|2.6.0|BSD Zero Clause License|
-|typescript|4.9.5|Apache 2.0|
+|typescript|5.1.6|Apache 2.0|
 |velocitas-cli|0.0.0|Apache 2.0|
 |yaml|2.3.1|ISC|
 ## Workflows
