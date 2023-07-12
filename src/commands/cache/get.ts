@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { Command } from '@oclif/core';
+import { Command, Args } from '@oclif/core';
 import { mapReplacer } from '../../modules/helpers';
 import { ProjectCache } from '../../modules/project-cache';
 import { ProjectConfig } from '../../modules/project-config';
@@ -27,7 +27,9 @@ export default class Get extends Command {
 bar`,
     ];
 
-    static args = [{ name: 'key', description: 'The key of a single cache entry to get.', required: false }];
+    static args = {
+        key: Args.string({ description: 'The key of a single cache entry to get.', required: false }),
+    };
 
     async run(): Promise<void> {
         const { args } = await this.parse(Get);

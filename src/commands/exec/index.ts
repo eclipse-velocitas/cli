@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { Command, Flags } from '@oclif/core';
+import { Command, Flags, Args } from '@oclif/core';
 import { readAppManifest } from '../../modules/app-manifest';
 import { ExecSpec, findComponentByName } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
@@ -28,16 +28,17 @@ Executing script...
 `,
     ];
 
-    static strict: boolean = false;
+    static strict = false;
 
-    static args = [
-        { name: 'component', description: 'The component which provides the program', required: true },
-        { name: 'ref', description: 'Reference to the ID of the program to execute', required: true },
-        { name: 'args...', description: 'Args for the executed program', required: false },
-    ];
+    static args = {
+        component: Args.string({ description: 'The component which provides the program', required: true }),
+        ref: Args.string({ description: 'Reference to the ID of the program to execute', required: true }),
+        'args...': Args.string({ description: 'Args for the executed program', required: false }),
+    };
 
     static flags = {
         verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false, default: false }),
+        args: Flags.string({ description: 'Args for the executed program', multiple: true, required: false }),
     };
 
     async run(): Promise<void> {
