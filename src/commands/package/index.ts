@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { Command, Flags } from '@oclif/core';
+import { Command, Flags, Args } from '@oclif/core';
 import { join } from 'node:path';
 import { PackageConfig, readPackageManifest } from '../../modules/package';
 import { ProjectConfig } from '../../modules/project-config';
@@ -42,7 +42,9 @@ $ velocitas component --get-path devenv-runtime-local
         getPath: Flags.boolean({ char: 'p', aliases: ['get-path'], description: 'Print the path of the package', required: false }),
     };
 
-    static args = [{ name: 'name', description: 'Name of the package', required: false }];
+    static args = {
+        name: Args.string({ description: 'Name of the package', required: false }),
+    };
 
     async run(): Promise<void> {
         const { args, flags } = await this.parse(Package);

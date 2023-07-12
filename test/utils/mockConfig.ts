@@ -45,26 +45,9 @@ export const velocitasConfigMock = {
 
 export const appManifestMock = [
     {
-        Name: 'sampleapp',
-        Port: 50008,
-        DAPR_GRPC_PORT: 50001,
-        Dockerfile: './app/Dockerfile',
-        dependencies: {
-            services: [
-                {
-                    name: 'test-dependency-service',
-                    image: 'test-service-image',
-                    version: 'v0.0.1',
-                },
-            ],
-            runtime: [
-                {
-                    name: 'test-dependency-runtime',
-                    image: 'test-runtime',
-                    version: '0.0.1',
-                },
-            ],
-        },
+        name: 'sampleapp',
+        vehicleModel: {},
+        runtime: [],
     },
 ];
 

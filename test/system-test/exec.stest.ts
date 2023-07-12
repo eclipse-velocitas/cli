@@ -37,7 +37,7 @@ describe('CLI command', () => {
             const packageOutput = spawnSync(VELOCITAS_PROCESS, ['package', 'devenv-runtime-local'], { encoding: DEFAULT_BUFFER_ENCODING });
             const parsedPackageOutput = YAML.parse(packageOutput.stdout.toString());
             const runtimeLocalComponent = parsedPackageOutput['devenv-runtime-local'].components.find(
-                (component: any) => component.id === 'runtime-local'
+                (component: any) => component.id === 'runtime-local',
             );
             let spawnSuccesful = false;
             for (const exposedProgramSpec of runtimeLocalComponent.programs) {
@@ -104,6 +104,13 @@ describe('CLI command', () => {
             expect(lines[3]).to.be.equal('hello');
             expect(lines[4]).to.be.equal('world');
             expect(lines[5]).to.be.equal('');
+        });
+
+        it('should return the error code of the first executed program which returns an error', async () => {
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'exit'], {
+                encoding: DEFAULT_BUFFER_ENCODING,
+            });
+            expect(result.status).to.be.equal(1);
         });
     });
 });

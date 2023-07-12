@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { CliUx, Command, Flags } from '@oclif/core';
+import { ux, Command, Flags } from '@oclif/core';
 import { downloadPackageVersion, getPackageVersions, isPackageInstalled } from '../../modules/package';
 import { ProjectConfig } from '../../modules/project-config';
 import { getLatestVersion } from '../../modules/semver';
@@ -50,7 +50,7 @@ Checking for updates!
                         if (flags['dry-run']) {
                             continue;
                         }
-                        const response = await CliUx.ux.prompt(`... Do you want to download them? [y/n]`, { default: 'y' });
+                        const response = await ux.prompt(`... Do you want to download them? [y/n]`, { default: 'y' });
                         if (response === 'y') {
                             await downloadPackageVersion(packageConfig.name, latestVersion, flags.verbose, packageConfig.dev);
                         }
@@ -66,14 +66,14 @@ Checking for updates!
                 if (flags['dry-run']) {
                     continue;
                 }
-                const response = await CliUx.ux.prompt(`... Do you wish to continue? [y/n]`, { default: 'y' });
+                const response = await ux.prompt(`... Do you wish to continue? [y/n]`, { default: 'y' });
                 if (response === 'y') {
                     await downloadPackageVersion(packageConfig.name, latestVersion, flags.verbose, packageConfig.dev);
                     packageConfig.version = latestVersion;
                     projectConfig.write();
                 }
             } catch (e) {
-                throw new Error(`Error during upgrade: '${e}'`);
+                this.error(`Error during upgrade: '${e}'`);
             }
         }
     }

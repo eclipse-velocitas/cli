@@ -195,26 +195,6 @@ export function createEnvVars(variables: VariableCollection, appManifestData?: A
         Object.assign(envVars, {
             VELOCITAS_APP_MANIFEST: JSON.stringify(appManifestData),
         });
-
-        if (appManifestData.dependencies) {
-            if (appManifestData.dependencies.services) {
-                for (const service of appManifestData.dependencies.services) {
-                    Object.assign(envVars, {
-                        [`${service.name.toUpperCase()}_IMAGE`]: service.image,
-                        [`${service.name.toUpperCase()}_TAG`]: service.version,
-                    });
-                }
-            }
-
-            if (appManifestData.dependencies.runtime) {
-                for (const service of appManifestData.dependencies.runtime) {
-                    Object.assign(envVars, {
-                        [`${service.name.toUpperCase()}_IMAGE`]: service.image,
-                        [`${service.name.toUpperCase()}_TAG`]: service.version,
-                    });
-                }
-            }
-        }
     }
 
     if (variables) {

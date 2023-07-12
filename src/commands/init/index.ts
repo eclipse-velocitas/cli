@@ -12,10 +12,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { CliUx, Command, Flags } from '@oclif/core';
+import { ux, Command, Flags } from '@oclif/core';
 import { AppManifest, readAppManifest } from '../../modules/app-manifest';
 import { Component } from '../../modules/component';
-import { runExecSpec } from '../../modules/exec';
+import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { downloadPackageVersion, isPackageInstalled, PackageConfig, readPackageManifest } from '../../modules/package';
 import { ComponentConfig, ProjectConfig } from '../../modules/project-config';
 import { createEnvVars, VariableCollection } from '../../modules/variables';
@@ -25,7 +25,7 @@ async function runPostInitHook(
     packageConfig: PackageConfig,
     projectConfig: ProjectConfig,
     appManifest: AppManifest,
-    verbose: boolean
+    verbose: boolean,
 ) {
     if (!component.onPostInit || component.onPostInit.length === 0) {
         return;
@@ -40,14 +40,14 @@ async function runPostInitHook(
     for (const execSpec of component.onPostInit) {
         const message = `Running '${execSpec.ref}'`;
         if (!verbose) {
-            CliUx.ux.action.start(message);
+            ux.action.start(message);
         } else {
             console.log(message);
         }
         const envVars = createEnvVars(variables, appManifest);
         await runExecSpec(execSpec, component.id, projectConfig, envVars, { writeStdout: verbose, verbose: verbose });
         if (!verbose) {
-            CliUx.ux.action.stop();
+            ux.action.stop();
         }
     }
 }
@@ -99,7 +99,17 @@ Velocitas project found!
                 const packageManifest = readPackageManifest(packageConfig);
 
                 for (const component of packageManifest.components) {
-                    await runPostInitHook(component, packageConfig, projectConfig, appManifestData[0], flags.verbose);
+                    try {
+                        await runPostInitHook(component, packageConfig, projectConfig, appManifestData[0], flags.verbose);
+                    } catch (e) {
+                        if (e instanceof ExecExitError) {
+                            this.error(e.message, { exit: e.exitCode });
+                        } else if (e instanceof Error) {
+                            this.error(e.message);
+                        } else {
+                            this.error(`An unexpected error occured during initialization of component: ${component.id}`);
+                        }
+                    }
                 }
             }
         } else {

@@ -12,10 +12,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { Command, Flags } from '@oclif/core';
+import { Command, Flags, Args } from '@oclif/core';
 import { readAppManifest } from '../../modules/app-manifest';
 import { ExecSpec, findComponentByName } from '../../modules/component';
-import { runExecSpec } from '../../modules/exec';
+import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { ProjectConfig } from '../../modules/project-config';
 import { createEnvVars, VariableCollection } from '../../modules/variables';
 
@@ -28,16 +28,17 @@ Executing script...
 `,
     ];
 
-    static strict: boolean = false;
+    static strict = false;
 
-    static args = [
-        { name: 'component', description: 'The component which provides the program', required: true },
-        { name: 'ref', description: 'Reference to the ID of the program to execute', required: true },
-        { name: 'args...', description: 'Args for the executed program', required: false },
-    ];
+    static args = {
+        component: Args.string({ description: 'The component which provides the program', required: true }),
+        ref: Args.string({ description: 'Reference to the ID of the program to execute', required: true }),
+        'args...': Args.string({ description: 'Args for the executed program', required: false }),
+    };
 
     static flags = {
         verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false, default: false }),
+        args: Flags.string({ description: 'Args for the executed program', multiple: true, required: false }),
     };
 
     async run(): Promise<void> {
@@ -65,6 +66,16 @@ Executing script...
 
         const envVars = createEnvVars(variables, appManifestData[0]);
 
-        await runExecSpec(execSpec, args.component, projectConfig, envVars, { verbose: flags.verbose });
+        try {
+            await runExecSpec(execSpec, args.component, projectConfig, envVars, { verbose: flags.verbose });
+        } catch (e) {
+            if (e instanceof ExecExitError) {
+                this.error(e.message, { exit: e.exitCode });
+            } else if (e instanceof Error) {
+                this.error(e.message);
+            } else {
+                this.error(`An unexpected error occured during execution of component: ${args.component}`);
+            }
+        }
     }
 }
