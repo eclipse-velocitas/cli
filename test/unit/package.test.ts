@@ -14,8 +14,7 @@
 
 import 'mocha';
 import mockfs from 'mock-fs';
-import { readPackageManifest } from '../../src/modules/package';
-import { PackageConfig } from '../../src/modules/project-config';
+import { PackageConfig } from '../../src/modules/package';
 
 describe('package - module', () => {
     let envCache: any;
@@ -34,13 +33,11 @@ describe('package - module', () => {
     });
     describe('Package manifest', () => {
         it('should be loaded from VELOCITAS_HOME', () => {
-            const packageConfig = new PackageConfig();
-            packageConfig.name = 'TestPackage';
-            packageConfig.version = 'v1.2.3';
+            const packageConfig = new PackageConfig({ name: 'TestPackage', version: 'v1.2.3' });
 
             process.env = { VELOCITAS_HOME: '/my/custom/path' };
 
-            readPackageManifest(packageConfig);
+            packageConfig.readPackageManifest();
         });
     });
     after(() => {

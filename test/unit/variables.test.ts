@@ -15,7 +15,8 @@
 import { expect } from 'chai';
 import 'mocha';
 import { ComponentType, SetupComponent } from '../../src/modules/component';
-import { ComponentConfig, PackageConfig, ProjectConfig } from '../../src/modules/project-config';
+import { PackageConfig } from '../../src/modules/package';
+import { ComponentConfig, ProjectConfig } from '../../src/modules/project-config';
 import { VariableCollection } from '../../src/modules/variables';
 
 let projectConfig: ProjectConfig;
@@ -29,13 +30,9 @@ describe('variables - module', () => {
     beforeEach(() => {
         variablesObject = { testString: 'test', testNumber: 1 };
         variablesMap = new Map(Object.entries(variablesObject));
-        projectConfig = {
-            packages: [{ name: 'test-package', version: 'v1.1.1', variables: variablesMap, components: [] }],
-            variables: variablesMap,
-            write: () => {},
-        };
+        packageConfig = new PackageConfig({ name: 'test-package', version: 'v1.1.1', variables: variablesMap, components: [] });
+        projectConfig = new ProjectConfig({ packages: [packageConfig], variables: variablesMap });
 
-        packageConfig = { name: 'test-package', version: 'v1.1.1', variables: variablesMap, components: [] };
         componentConfig = { id: 'test-component', variables: variablesMap };
         componentManifest = {
             id: 'test-component',
@@ -94,17 +91,17 @@ describe('variables - module', () => {
             expectedErrorMessage += `\tType: ${componentManifest.variables[1].type}\n`;
             expectedErrorMessage += `\t${componentManifest.variables[1].description}`;
             expect(() => VariableCollection.build(projectConfig, packageConfig, componentConfig, componentManifest)).to.throw(
-                expectedErrorMessage
+                expectedErrorMessage,
             );
         });
         it('should throw an error when exposed component variable has wrong type', () => {
-            projectConfig.packages[0].variables.set('testNumber', 'wrongType');
+            projectConfig.packages[0].variables?.set('testNumber', 'wrongType');
             let expectedErrorMessage: string = '';
             expectedErrorMessage += `'${componentConfig.id}' has issues with its configured variables:\n`;
             expectedErrorMessage += `Has wrongly typed variables:\n`;
             expectedErrorMessage += `* '${componentManifest.variables[1].name}' has wrong type! Expected ${componentManifest.variables[1].type} but got string`;
             expect(() => VariableCollection.build(projectConfig, packageConfig, componentConfig, componentManifest)).to.throw(
-                expectedErrorMessage
+                expectedErrorMessage,
             );
         });
         it('should throw an error when unused variables are configured', () => {

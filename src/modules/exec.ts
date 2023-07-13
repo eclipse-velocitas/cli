@@ -51,7 +51,7 @@ async function awaitSpawn(
     args: string[],
     cwd: string,
     env: NodeJS.ProcessEnv,
-    writeStdout: boolean
+    writeStdout: boolean,
 ): Promise<{ exitCode: number; signal?: number } | null> {
     const projectCache = ProjectCache.read();
 
@@ -93,7 +93,7 @@ export async function runExecSpec(
     componentId: string,
     projectConfig: ProjectConfig,
     envVars: NodeJS.ProcessEnv,
-    loggingOptions: { writeStdout?: boolean; verbose?: boolean } = { writeStdout: true, verbose: false }
+    loggingOptions: { writeStdout?: boolean; verbose?: boolean } = { writeStdout: true, verbose: false },
 ) {
     if (loggingOptions.writeStdout === undefined) {
         loggingOptions.writeStdout = true;

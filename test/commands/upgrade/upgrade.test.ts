@@ -17,17 +17,37 @@ import { expect, test } from '@oclif/test';
 import * as fs from 'fs';
 import * as packageModule from '../../../src/modules/package';
 import { ProjectConfig } from '../../../src/modules/project-config';
-import { velocitasConfigMock } from '../../utils/mockConfig';
+import { runtimeComponentManifestMock, velocitasConfigMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore, userHomeDir } from '../../utils/mockfs';
+import * as sg from 'simple-git';
+import sinon from 'sinon';
 
-const GITHUB_ORG_ENDPOINT = packageModule.GITHUB_ORG_ENDPOINT;
-const GITHUB_API_URL = packageModule.GITHUB_API_URL;
-const GITHUB_API_TOKEN = 'MY_API_TOKEN';
-const HEADER_AUTHORIZATION = 'authorization';
+const mockedNewVersionTag = 'v2.0.0';
+
+const simpleGitInstanceMock = (mockedNewVersion?: boolean) => {
+    return {
+        clone: async (repoPath: string, localPath: string, options?: any) => {
+            await fs.promises.mkdir(localPath, { recursive: true });
+            await fs.promises.writeFile(`${localPath}/.git`, 'This is a git repo');
+            await fs.promises.writeFile(`${localPath}/manifest.json`, JSON.stringify(runtimeComponentManifestMock));
+        },
+        checkIsRepo: () => {
+            return true;
+        },
+        fetch: () => {},
+        checkout: () => {
+            // Function implementation
+        },
+        tags: () => {
+            if (mockedNewVersion) {
+                return { all: [mockedNewVersionTag] };
+            }
+            return { all: ['v1.1.1'] };
+        },
+    };
+};
 
 describe('upgrade', () => {
-    const mockedNewVersion = 'v2.0.0';
-
     test.do(() => {
         mockFolders({ velocitasConfig: true });
     })
@@ -35,14 +55,7 @@ describe('upgrade', () => {
             mockRestore();
         })
         .stdout()
-        .nock(GITHUB_API_URL, (api) => {
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/tags`).reply(200, [
-                { name: velocitasConfigMock.packages[0].version, tarball_url: 'test' },
-            ]);
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/tags`).reply(200, [
-                { name: velocitasConfigMock.packages[1].version, tarball_url: 'test' },
-            ]);
-        })
+        .stub(sg, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .command(['upgrade', '--dry-run'])
         .it('checking for upgrades in dry-run - no installed sources found', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
@@ -61,14 +74,7 @@ describe('upgrade', () => {
             mockRestore();
         })
         .stdout()
-        .nock(GITHUB_API_URL, (api) => {
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/tags`).reply(200, [
-                { name: velocitasConfigMock.packages[0].version, tarball_url: 'test' },
-            ]);
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/tags`).reply(200, [
-                { name: velocitasConfigMock.packages[1].version, tarball_url: 'test' },
-            ]);
-        })
+        .stub(sg, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .command(['upgrade', '--dry-run'])
         .it('checking for upgrades in dry-run - up to date', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
@@ -83,22 +89,15 @@ describe('upgrade', () => {
             mockRestore();
         })
         .stdout()
-        .nock(GITHUB_API_URL, (api) => {
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/tags`).reply(200, [
-                { name: mockedNewVersion, tarball_url: 'test' },
-            ]);
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/tags`).reply(200, [
-                { name: mockedNewVersion, tarball_url: 'test' },
-            ]);
-        })
+        .stub(sg, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock(true)))
         .command(['upgrade', '--dry-run'])
         .it('checking for upgrades in dry-run - can be updated', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
             expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[0].name}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersion}`,
+                `... '${velocitasConfigMock.packages[0].name}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersionTag}`,
             );
             expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[1].name}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersion}`,
+                `... '${velocitasConfigMock.packages[1].name}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersionTag}`,
             );
         });
 
@@ -109,21 +108,8 @@ describe('upgrade', () => {
             mockRestore();
         })
         .stdout()
-        .nock(GITHUB_API_URL, (api) => {
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/tags`).reply(200, [
-                { name: velocitasConfigMock.packages[0].version, tarball_url: 'test' },
-            ]);
-            api.get(
-                `${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/zipball/refs/tags/${velocitasConfigMock.packages[0].version}`,
-            ).reply(200, [{ name: velocitasConfigMock.packages[0].version, tarball_url: 'test' }]);
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/tags`).reply(200, [
-                { name: velocitasConfigMock.packages[1].version, tarball_url: 'test' },
-            ]);
-            api.get(
-                `${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/zipball/refs/tags/${velocitasConfigMock.packages[1].version}`,
-            ).reply(200, [{ name: velocitasConfigMock.packages[1].version, tarball_url: 'test' }]);
-        })
         .stub(ux, 'prompt', () => 'y')
+        .stub(sg, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .command(['upgrade'])
         .it('checking for upgrades - no installed sources found - download', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
@@ -145,13 +131,9 @@ describe('upgrade', () => {
         })
         .stderr()
         .stdout()
-        .nock(GITHUB_API_URL, (api) => {
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/tags`).reply(200, [
-                { name: velocitasConfigMock.packages[0].version, tarball_url: 'test' },
-            ]);
-        })
         .stub(ux, 'prompt', () => 'y')
-        .stub(packageModule, 'downloadPackageVersion', () => {
+        .stub(sg, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
+        .stub(packageModule.PackageConfig.prototype, 'downloadPackageVersion', () => {
             throw new Error('Error in downloading package');
         })
         .command(['upgrade'])
@@ -170,15 +152,8 @@ describe('upgrade', () => {
             mockRestore();
         })
         .stdout()
-        .nock(GITHUB_API_URL, (api) => {
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/tags`).reply(200, [
-                { name: velocitasConfigMock.packages[0].version, tarball_url: 'test' },
-            ]);
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/tags`).reply(200, [
-                { name: velocitasConfigMock.packages[1].version, tarball_url: 'test' },
-            ]);
-        })
         .stub(ux, 'prompt', () => 'n')
+        .stub(sg, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .command(['upgrade'])
         .it('checking for upgrades - no installed sources found - do nothing', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
@@ -188,8 +163,18 @@ describe('upgrade', () => {
             expect(ctx.stdout).to.contain(
                 `... No installed sources for ${velocitasConfigMock.packages[1].name}:${velocitasConfigMock.packages[1].version} found`,
             );
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.false;
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.false;
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}/_cache`)).to.be.true;
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}/_cache`)).to.be.true;
+            expect(
+                fs.existsSync(
+                    `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}/${velocitasConfigMock.packages[0].version}`,
+                ),
+            ).to.be.false;
+            expect(
+                fs.existsSync(
+                    `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}/${velocitasConfigMock.packages[1].version}`,
+                ),
+            ).to.be.false;
         });
 
     test.do(() => {
@@ -199,14 +184,7 @@ describe('upgrade', () => {
             mockRestore();
         })
         .stdout()
-        .nock(GITHUB_API_URL, (api) => {
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/tags`).reply(200, [
-                { name: velocitasConfigMock.packages[0].version, tarball_url: 'test' },
-            ]);
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/tags`).reply(200, [
-                { name: velocitasConfigMock.packages[1].version, tarball_url: 'test' },
-            ]);
-        })
+        .stub(sg, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .command(['upgrade'])
         .it('checking for upgrades - up to date', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
@@ -221,37 +199,24 @@ describe('upgrade', () => {
             mockRestore();
         })
         .stdout()
-        .nock(GITHUB_API_URL, (api) => {
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/tags`).reply(200, [
-                { name: mockedNewVersion, tarball_url: 'test' },
-            ]);
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/zipball/refs/tags/${mockedNewVersion}`).reply(200, [
-                { name: mockedNewVersion, tarball_url: 'test' },
-            ]);
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/tags`).reply(200, [
-                { name: mockedNewVersion, tarball_url: 'test' },
-            ]);
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/zipball/refs/tags/${mockedNewVersion}`).reply(200, [
-                { name: mockedNewVersion, tarball_url: 'test' },
-            ]);
-        })
         .stub(ux, 'prompt', () => 'y')
+        .stub(sg, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock(true)))
         .command(['upgrade'])
         .it('checking for upgrades - can be updated - download', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
             expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[0].name}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersion}`,
+                `... '${velocitasConfigMock.packages[0].name}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersionTag}`,
             );
             expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[1].name}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersion}`,
+                `... '${velocitasConfigMock.packages[1].name}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersionTag}`,
             );
             expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
             expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;
             const newVelocitasConfig: ProjectConfig = JSON.parse(
                 fs.readFileSync(`${process.cwd()}/.velocitas.json`, { encoding: 'utf8', flag: 'r' }),
             );
-            expect(newVelocitasConfig.packages[0].version).to.be.equal(mockedNewVersion);
-            expect(newVelocitasConfig.packages[1].version).to.be.equal(mockedNewVersion);
+            expect(newVelocitasConfig.packages[0].version).to.be.equal(mockedNewVersionTag);
+            expect(newVelocitasConfig.packages[1].version).to.be.equal(mockedNewVersionTag);
         });
 
     test.do(() => {
@@ -261,64 +226,16 @@ describe('upgrade', () => {
             mockRestore();
         })
         .stdout()
-        .env({ GITHUB_API_TOKEN: GITHUB_API_TOKEN })
-        .nock(GITHUB_API_URL, (api) => {
-            api.matchHeader(HEADER_AUTHORIZATION, `Bearer ${GITHUB_API_TOKEN}`)
-                .get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/tags`)
-                .reply(200, [{ name: mockedNewVersion, tarball_url: 'test' }]);
-            api.matchHeader(HEADER_AUTHORIZATION, `Bearer ${GITHUB_API_TOKEN}`)
-                .get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/zipball/refs/tags/${mockedNewVersion}`)
-                .reply(200, [{ name: mockedNewVersion, tarball_url: 'test' }]);
-            api.matchHeader(HEADER_AUTHORIZATION, `Bearer ${GITHUB_API_TOKEN}`)
-                .get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/tags`)
-                .reply(200, [{ name: mockedNewVersion, tarball_url: 'test' }]);
-            api.matchHeader(HEADER_AUTHORIZATION, `Bearer ${GITHUB_API_TOKEN}`)
-                .get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/zipball/refs/tags/${mockedNewVersion}`)
-                .reply(200, [{ name: mockedNewVersion, tarball_url: 'test' }]);
-        })
-        .stub(ux, 'prompt', () => 'y')
-        .command(['upgrade'])
-        .it('checking for upgrades - can be updated - download, with API token', (ctx) => {
-            expect(ctx.stdout).to.contain('Checking for updates!');
-            expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[0].name}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersion}`,
-            );
-            expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[1].name}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersion}`,
-            );
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;
-            const newVelocitasConfig: ProjectConfig = JSON.parse(
-                fs.readFileSync(`${process.cwd()}/.velocitas.json`, { encoding: 'utf8', flag: 'r' }),
-            );
-            expect(newVelocitasConfig.packages[0].version).to.be.equal(mockedNewVersion);
-            expect(newVelocitasConfig.packages[1].version).to.be.equal(mockedNewVersion);
-        });
-
-    test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
-    })
-        .finally(() => {
-            mockRestore();
-        })
-        .stdout()
-        .nock(GITHUB_API_URL, (api) => {
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/tags`).reply(200, [
-                { name: mockedNewVersion, tarball_url: 'test' },
-            ]);
-            api.get(`${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/tags`).reply(200, [
-                { name: mockedNewVersion, tarball_url: 'test' },
-            ]);
-        })
         .stub(ux, 'prompt', () => 'n')
+        .stub(sg, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock(true)))
         .command(['upgrade'])
         .it('checking for upgrades - can be updated - do nothing', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
             expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[0].name}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersion}`,
+                `... '${velocitasConfigMock.packages[0].name}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersionTag}`,
             );
             expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[1].name}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersion}`,
+                `... '${velocitasConfigMock.packages[1].name}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersionTag}`,
             );
             expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
             expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;

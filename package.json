@@ -27,7 +27,7 @@
     "node-pty": "^1.0.0",
     "recursive-copy": "^2.0.14",
     "semver": "^7.5.4",
-    "simple-git": "^3.19.0"
+    "simple-git": "^3.19.1"
   },
   "devDependencies": {
     "@oclif/test": "^2.3.28",

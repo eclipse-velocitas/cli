@@ -13,7 +13,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ux, Command, Flags } from '@oclif/core';
-import { downloadPackageVersion, getPackageVersions, isPackageInstalled } from '../../modules/package';
 import { ProjectConfig } from '../../modules/project-config';
 import { getLatestVersion } from '../../modules/semver';
 
@@ -40,19 +39,19 @@ Checking for updates!
         this.log(`Checking for updates!`);
         const projectConfig = ProjectConfig.read();
         for (const packageConfig of projectConfig.packages) {
-            const availableVersions = await getPackageVersions(packageConfig.repo);
+            const availableVersions = await packageConfig.getPackageVersions();
             try {
                 const latestVersion = getLatestVersion(availableVersions);
 
                 if (packageConfig.version === latestVersion) {
-                    if (!isPackageInstalled(packageConfig.name, packageConfig.version)) {
-                        this.log(`... No installed sources for ${packageConfig.name}:${packageConfig.version} found`);
+                    if (!packageConfig.isPackageInstalled()) {
+                        this.log(`... No installed sources for ${packageConfig.repo}:${packageConfig.version} found`);
                         if (flags['dry-run']) {
                             continue;
                         }
                         const response = await ux.prompt(`... Do you want to download them? [y/n]`, { default: 'y' });
                         if (response === 'y') {
-                            await downloadPackageVersion(packageConfig.name, latestVersion, flags.verbose, packageConfig.dev);
+                            await packageConfig.downloadPackageVersion(flags.verbose);
                         }
                         continue;
                     }
@@ -61,15 +60,15 @@ Checking for updates!
                 }
 
                 this.log(
-                    `... '${packageConfig.getPackageName()}' is currently at ${packageConfig.version}, can be updated to ${latestVersion}`
+                    `... '${packageConfig.getPackageName()}' is currently at ${packageConfig.version}, can be updated to ${latestVersion}`,
                 );
                 if (flags['dry-run']) {
                     continue;
                 }
                 const response = await ux.prompt(`... Do you wish to continue? [y/n]`, { default: 'y' });
                 if (response === 'y') {
-                    await downloadPackageVersion(packageConfig.name, latestVersion, flags.verbose, packageConfig.dev);
                     packageConfig.version = latestVersion;
+                    await packageConfig.downloadPackageVersion(flags.verbose);
                     projectConfig.write();
                 }
             } catch (e) {

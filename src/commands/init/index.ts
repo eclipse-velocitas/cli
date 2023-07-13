@@ -16,7 +16,7 @@ import { ux, Command, Flags } from '@oclif/core';
 import { AppManifest, readAppManifest } from '../../modules/app-manifest';
 import { Component } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
-import { downloadPackageVersion, isPackageInstalled, PackageConfig, readPackageManifest } from '../../modules/package';
+import { PackageConfig } from '../../modules/package';
 import { ComponentConfig, ProjectConfig } from '../../modules/project-config';
 import { createEnvVars, VariableCollection } from '../../modules/variables';
 
@@ -88,16 +88,13 @@ Velocitas project found!
             projectConfig = ProjectConfig.read();
 
             for (const packageConfig of projectConfig.packages) {
-                if (!flags.force && isPackageInstalled(packageConfig.repo, packageConfig.version)) {
+                if (!flags.force && packageConfig.isPackageInstalled()) {
                     this.log(`... '${packageConfig.getPackageName()}:${packageConfig.version}' already initialized.`);
                     continue;
                 }
-
                 this.log(`... Downloading package: '${packageConfig.getPackageName()}:${packageConfig.version}'`);
-                await downloadPackageVersion(packageConfig.repo, packageConfig.version, flags.verbose, packageConfig.dev);
-
-                const packageManifest = readPackageManifest(packageConfig);
-
+                await packageConfig.downloadPackageVersion(flags.verbose);
+                const packageManifest = packageConfig.readPackageManifest();
                 for (const component of packageManifest.components) {
                     try {
                         await runPostInitHook(component, packageConfig, projectConfig, appManifestData[0], flags.verbose);

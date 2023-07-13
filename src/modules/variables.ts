@@ -47,7 +47,7 @@ export class VariableCollection {
         projectConfig: ProjectConfig,
         packageConfig: PackageConfig,
         componentConfig: ComponentConfig,
-        component: Component
+        component: Component,
     ): VariableCollection {
         var map = new Map<string, any>();
         if (projectConfig.variables) {
@@ -104,7 +104,7 @@ function verifyGivenVariables(
     componentId: string,
     providedVariables: Map<string, any>,
     variableDefinitions?: Array<VariableDefinition>,
-    flags = new VerifyFlags()
+    flags = new VerifyFlags(),
 ) {
     const configuredVars = new Map(providedVariables);
     const missingVars = new Array<VariableDefinition>();
@@ -125,13 +125,12 @@ function verifyGivenVariables(
                 wronglyTypedVars.push(
                     `'${componentExposedVariable.name}' has wrong type! Expected ${
                         componentExposedVariable.type
-                    } but got ${typeof configuredValue}`
+                    } but got ${typeof configuredValue}`,
                 );
             }
             configuredVars.delete(componentExposedVariable.name);
         }
     }
-
     const errorMessage: string = buildErrorMessageForComponent(componentId, flags, { configuredVars, missingVars, wronglyTypedVars });
 
     if (errorMessage.length > 0) {
@@ -146,7 +145,7 @@ function verifyVariables(variables: Map<string, any>, component: Component): voi
 function buildErrorMessageForComponent(
     componentId: string,
     flags: VerifyFlags,
-    vars: { configuredVars: Map<string, any>; missingVars: Array<VariableDefinition>; wronglyTypedVars: Array<string> }
+    vars: { configuredVars: Map<string, any>; missingVars: Array<VariableDefinition>; wronglyTypedVars: Array<string> },
 ): string {
     let errorMessage: string = '';
     if (

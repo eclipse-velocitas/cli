@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { getComponentByType, PackageConfig, PackageManifest, readPackageManifest } from './package';
+import { getComponentByType, PackageConfig, PackageManifest } from './package';
 import { ComponentConfig, ProjectConfig } from './project-config';
 import { VariableDefinition } from './variables';
 
@@ -105,11 +105,11 @@ export class DeployComponent implements Component {
 
 export function findComponentsByType<TComponentType extends Component>(
     projectConfig: ProjectConfig,
-    type: ComponentType
+    type: ComponentType,
 ): Array<[PackageConfig, PackageManifest, TComponentType]> {
     const result = new Array<[PackageConfig, PackageManifest, TComponentType]>();
     for (const packageConfig of projectConfig.packages) {
-        const componentManifest = readPackageManifest(packageConfig);
+        const componentManifest = packageConfig.readPackageManifest();
         try {
             result.push([packageConfig, componentManifest, getComponentByType(componentManifest, type) as TComponentType]);
         } catch (e) {}
@@ -121,7 +121,7 @@ export function findComponentsByType<TComponentType extends Component>(
 export function findComponentByName(projectConfig: ProjectConfig, componentId: string): [PackageConfig, ComponentConfig, Component] {
     let result: [PackageConfig, ComponentConfig, Component] | undefined;
     for (const packageConfig of projectConfig.packages) {
-        const packageManifest = readPackageManifest(packageConfig);
+        const packageManifest = packageConfig.readPackageManifest();
         const matchingComponent = packageManifest.components.find((c) => c.id === componentId);
         const matchingComponentConfig = getComponentConfig(packageConfig, componentId);
         if (matchingComponent) {

@@ -14,7 +14,7 @@
 
 import { Command, Flags, Args } from '@oclif/core';
 import { join } from 'node:path';
-import { PackageConfig, readPackageManifest } from '../../modules/package';
+import { PackageConfig } from '../../modules/package';
 import { ProjectConfig } from '../../modules/project-config';
 
 export default class Package extends Command {
@@ -72,7 +72,7 @@ $ velocitas component --get-path devenv-runtime-local
         }
 
         for (const packageToPrint of packagesToPrint) {
-            const packageManifest = readPackageManifest(packageToPrint);
+            const packageManifest = packageToPrint.readPackageManifest();
 
             this.log(`${packageToPrint.getPackageName()}:`);
             this.log(`${' '.repeat(4)}version: ${packageToPrint.version}`);
