@@ -18,8 +18,6 @@
 |@typescript-eslint/eslint-plugin|6.0.0|MIT|
 |@typescript-eslint/parser|6.0.0|unknown|
 |archiver|5.3.1|MIT|
-|axios|0.27.2|MIT|
-|axios-retry|3.5.1|unknown|
 |chai|4.3.7|MIT|
 |decompress|4.2.1|MIT|
 |eslint|8.44.0|MIT|
@@ -34,6 +32,7 @@
 |recursive-copy|2.0.14|ISC|
 |semver|7.5.4|ISC|
 |shx|0.3.4|MIT|
+|simple-git|3.19.1|unknown|
 |sinon|15.2.0|MIT|
 |ts-node|10.9.1|MIT|
 |tslib|2.6.0|BSD Zero Clause License|

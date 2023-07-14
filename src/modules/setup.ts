@@ -79,34 +79,36 @@ class ReplaceVariablesStream extends Transform {
 }
 
 export function installComponent(packageConfig: PackageConfig, setupComponent: SetupComponent, variables: VariableCollection) {
-    for (const spec of setupComponent.files) {
-        const src = variables.substitute(spec.src);
-        const dst = variables.substitute(spec.dst);
-        let ifCondition = spec.condition ? variables.substitute(spec.condition) : 'true';
+    if (setupComponent.files) {
+        for (const spec of setupComponent.files) {
+            const src = variables.substitute(spec.src);
+            const dst = variables.substitute(spec.dst);
+            let ifCondition = spec.condition ? variables.substitute(spec.condition) : 'true';
 
-        if (eval(ifCondition)) {
-            const sourceFileOrDir = join(packageConfig.getPackageDirectory(), packageConfig.version, src);
-            const destFileOrDir = join(cwd(), dst);
-            try {
-                if (existsSync(sourceFileOrDir)) {
-                    copy(sourceFileOrDir, destFileOrDir, {
-                        dot: true,
-                        overwrite: true,
-                        transform: function (src: string, _: string, stats: Stats) {
-                            if (
-                                !['.md', '.yaml', '.yml', '.txt', '.json', '.sh', '.html', '.htm', '.xml', '.tpl'].includes(
-                                    path.extname(src)
-                                )
-                            ) {
-                                return null;
-                            }
+            if (eval(ifCondition)) {
+                const sourceFileOrDir = join(packageConfig.getPackageDirectory(), packageConfig.version, src);
+                const destFileOrDir = join(cwd(), dst);
+                try {
+                    if (existsSync(sourceFileOrDir)) {
+                        copy(sourceFileOrDir, destFileOrDir, {
+                            dot: true,
+                            overwrite: true,
+                            transform: function (src: string, _: string, stats: Stats) {
+                                if (
+                                    !['.md', '.yaml', '.yml', '.txt', '.json', '.sh', '.html', '.htm', '.xml', '.tpl'].includes(
+                                        path.extname(src),
+                                    )
+                                ) {
+                                    return null;
+                                }
 
-                            return new ReplaceVariablesStream(path.extname(src), variables);
-                        },
-                    });
+                                return new ReplaceVariablesStream(path.extname(src), variables);
+                            },
+                        });
+                    }
+                } catch (e) {
+                    console.error(`Error during copy: ${e}`);
                 }
-            } catch (e) {
-                console.error(`Error during copy: ${e}`);
             }
         }
     }

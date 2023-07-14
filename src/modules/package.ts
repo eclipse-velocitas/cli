@@ -12,22 +12,18 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { removeSync } from 'fs-extra';
-import { existsSync, readFileSync } from 'node:fs';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
-import { CheckRepoActions, simpleGit, SimpleGit } from 'simple-git';
+import { existsSync, readFileSync } from 'fs-extra';
+import { homedir } from 'os';
+import { join } from 'path';
 import { Component, ComponentType, deserializeComponentJSON } from './component';
 import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { ComponentConfig } from './project-config';
+import { GitHelper } from './git-module';
 
-export const GITHUB_ORG = 'eclipse-velocitas';
-export const GITHUB_API_URL = 'https://api.github.com';
-export const GITHUB_ORG_ENDPOINT = `/repos/${GITHUB_ORG}`;
 export const MANIFEST_FILE_NAME = 'manifest.json';
 
 export interface PackageManifest {
-    components: Array<Component>;
+    components: Component[];
 }
 
 export class PackageConfig {
@@ -40,23 +36,19 @@ export class PackageConfig {
 
     // package-wide variable configuration
     variables?: Map<string, any>;
-    // variables?: Map<string, any> = new Map<string, any>();
 
     // per-component configuration
-    components?: Array<ComponentConfig>;
-    // components?: Array<ComponentConfig> = new Array<ComponentConfig>();
+    components?: ComponentConfig[];
 
     // enable development mode for package
     dev?: boolean;
+
     constructor(config?: any) {
-        this.repo = config.name;
-        this.version = config.version;
-        if (config.variables) {
-            this.variables = config.variables;
-        }
-        if (config.components) {
-            this.components = config.components;
-        }
+        const { name, version, variables, components } = config;
+        this.repo = name;
+        this.version = version;
+        this.variables = variables;
+        this.components = components;
     }
 
     private _isCustomPackage(repository: string): boolean {
@@ -91,62 +83,22 @@ export class PackageConfig {
         return join(getPackageFolderPath(), this.getPackageName());
     }
 
-    async getPackageVersions(): Promise<Array<string>> {
+    async getPackageVersions(): Promise<string[]> {
         try {
-            const git = await this.cloneOrUpdateRepo(true);
+            const gitHelper = new GitHelper(this);
+            const git = await gitHelper.cloneOrUpdateRepo(true);
             const tagsResult = await git.tags();
-
-            const availableVersions = new Array<string>();
-            for (const tagInfo of tagsResult.all) {
-                availableVersions.push(tagInfo);
-            }
-            return availableVersions;
+            return tagsResult.all;
         } catch (error) {
             console.log(error);
         }
-
-        return new Array<string>();
-    }
-
-    async cloneOrUpdateRepo(check: boolean): Promise<SimpleGit> {
-        let packageDir = this.getPackageDirectory();
-        let cloneOpts = new Array<string>();
-        let checkRepoAction: CheckRepoActions;
-
-        if (check) {
-            packageDir = join(packageDir, '_cache');
-            cloneOpts.push('--bare');
-            checkRepoAction = CheckRepoActions.BARE;
-        } else {
-            packageDir = join(packageDir, this.version);
-            checkRepoAction = CheckRepoActions.IS_REPO_ROOT;
-        }
-
-        if (!existsSync(packageDir)) {
-            await simpleGit().clone(this.getPackageRepo(), packageDir, cloneOpts);
-        }
-
-        const git = simpleGit(packageDir);
-
-        const localRepoExists = await git.checkIsRepo(checkRepoAction);
-        if (localRepoExists) {
-            await git.fetch(['--all']);
-        } else {
-            await git.clone(this.getPackageRepo(), packageDir, cloneOpts);
-        }
-
-        if (!check) {
-            await git.checkout(this.version);
-            // if (!this.dev) {
-            //     removeSync(join(packageDir, '.git'));
-            // }
-        }
-        return git;
+        return [];
     }
 
     async downloadPackageVersion(verbose?: boolean): Promise<void> {
         try {
-            await this.cloneOrUpdateRepo(false);
+            const gitHelper = new GitHelper(this);
+            await gitHelper.cloneOrUpdateRepo(false);
         } catch (error) {
             console.error(error);
         }

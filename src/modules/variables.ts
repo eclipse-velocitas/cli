@@ -17,9 +17,11 @@ import { cwd } from 'node:process';
 import { AppManifest } from './app-manifest';
 import { Component } from './component';
 import { mapReplacer } from './helpers';
-import { GITHUB_ORG, PackageConfig } from './package';
+import { PackageConfig } from './package';
 import { ProjectCache } from './project-cache';
 import { ComponentConfig, ProjectConfig } from './project-config';
+
+const GITHUB_ORG = 'eclipse-velocitas';
 
 export interface VariableDefinition {
     name: string;

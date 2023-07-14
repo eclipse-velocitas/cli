@@ -13,87 +13,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
-import archiver from 'archiver';
 import * as fs from 'fs';
-import { Component } from '../../../src/modules/component';
-import { MANIFEST_FILE_NAME, PackageManifest } from '../../../src/modules/package';
-import { runtimeComponentManifestMock, velocitasConfigMock } from '../../utils/mockConfig';
+import { velocitasConfigMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore, userHomeDir } from '../../utils/mockfs';
-import * as sg from 'simple-git';
+import * as gitModule from 'simple-git';
 import * as exec from '../../../src/modules/exec';
 import sinon from 'sinon';
-
-const simpleGitInstanceMock = {
-    clone: async (repoPath: string, localPath: string, options?: any) => {
-        console.log(JSON.stringify(runtimeComponentManifestMock.components[0]));
-        await fs.promises.mkdir(localPath, { recursive: true });
-        await fs.promises.writeFile(`${localPath}/.git`, 'This is a git repo');
-        await fs.promises.writeFile(`${localPath}/manifest.json`, JSON.stringify(runtimeComponentManifestMock));
-    },
-    checkIsRepo: () => {
-        return true;
-    },
-    fetch: () => {},
-    checkout: () => {
-        // Function implementation
-    },
-};
-
-function createPackageArchive(components = new Array<Component>()) {
-    let archive = archiver('zip');
-    const packageManifest: PackageManifest = {
-        components: components,
-    };
-    archive.append(JSON.stringify(packageManifest), { name: MANIFEST_FILE_NAME });
-    archive.finalize();
-
-    return archive;
-}
+import { simpleGitInstanceMock } from '../../helpers/simpleGit';
 
 describe('init', () => {
-    // test.do(() => {
-    //     mockFolders({ velocitasConfig: true });
-    // })
-    //     .finally(() => {
-    //         mockRestore();
-    //     })
-    //     .stdout()
-    //     .nock(GITHUB_API_URL, (api) => {
-    //         api.get(
-    //             `${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/zipball/refs/tags/${velocitasConfigMock.packages[0].version}`,
-    //         ).reply(404);
-
-    //         api.get(
-    //             `${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/zipball/refs/tags/${velocitasConfigMock.packages[1].version}`,
-    //         ).reply(200, createPackageArchive());
-
-    //         api.get(
-    //             `${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/zipball/${velocitasConfigMock.packages[0].version}`,
-    //         ).reply(200, createPackageArchive());
-    //     })
-    //     .command(['init', '-v'])
-    //     .it('retries downloading package from fallback url', (ctx) => {
-    //         expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
-    //         expect(ctx.stdout).to.contain(
-    //             `... Downloading package: '${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version}'`,
-    //         );
-    //         expect(ctx.stdout).to.contain(
-    //             `Did not find tag '${velocitasConfigMock.packages[0].version}' in '${velocitasConfigMock.packages[0].name}' - looking for branch ...`,
-    //         );
-    //         expect(ctx.stdout).to.contain(
-    //             `Succesfully downloaded package: '${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version}'`,
-    //         );
-    //         expect(ctx.stdout).to.contain(
-    //             `... Downloading package: '${velocitasConfigMock.packages[1].name}:${velocitasConfigMock.packages[1].version}'`,
-    //         );
-    //         expect(ctx.stdout).to.contain(
-    //             `Succesfully downloaded package: '${velocitasConfigMock.packages[1].name}:${velocitasConfigMock.packages[1].version}'`,
-    //         );
-
-    //         expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
-    //         expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;
-    //     });
-
     test.do(() => {
         mockFolders({ velocitasConfig: true });
     })
@@ -101,7 +29,7 @@ describe('init', () => {
             mockRestore();
         })
         .stdout()
-        .stub(sg, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock))
+        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .command(['init'])
         .it('downloads packages from preconfigured velocitas.json', (ctx) => {
             expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
@@ -163,39 +91,6 @@ describe('init', () => {
             expect(fs.existsSync(`${process.cwd()}/.velocitas.json`)).to.be.true;
         });
 
-    // test.do(() => {
-    //     mockFolders({ velocitasConfig: true });
-    // })
-    //     .finally(() => {
-    //         mockRestore();
-    //     })
-    //     .stdout()
-    //     .env({ GITHUB_API_TOKEN: GITHUB_API_TOKEN })
-    //     .nock(GITHUB_API_URL, (api) => {
-    //         api.matchHeader(HEADER_AUTHORIZATION, `Bearer ${GITHUB_API_TOKEN}`)
-    //             .get(
-    //                 `${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[0].name}/zipball/refs/tags/${velocitasConfigMock.packages[0].version}`,
-    //             )
-    //             .reply(200, createPackageArchive());
-    //         api.matchHeader(HEADER_AUTHORIZATION, `Bearer ${GITHUB_API_TOKEN}`)
-    //             .get(
-    //                 `${GITHUB_ORG_ENDPOINT}/${velocitasConfigMock.packages[1].name}/zipball/refs/tags/${velocitasConfigMock.packages[0].version}`,
-    //             )
-    //             .reply(200, createPackageArchive());
-    //     })
-    //     .command(['init'])
-    //     .it('uses API token, if provided, to download packages', (ctx) => {
-    //         expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
-    //         expect(ctx.stdout).to.contain(
-    //             `... Downloading package: '${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version}'`,
-    //         );
-    //         expect(ctx.stdout).to.contain(
-    //             `... Downloading package: '${velocitasConfigMock.packages[1].name}:${velocitasConfigMock.packages[1].version}'`,
-    //         );
-    //         expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
-    //         expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;
-    //     });
-
     test.do(() => {
         mockFolders({ velocitasConfig: true });
     })
@@ -203,7 +98,7 @@ describe('init', () => {
             mockRestore();
         })
         .stdout()
-        .stub(sg, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock))
+        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})
         .command(['init'])
         .it('runs post-init hooks', (ctx) => {

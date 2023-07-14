@@ -84,12 +84,14 @@ describe('variables - module', () => {
             let expectedErrorMessage: string = '';
             expectedErrorMessage += `'${componentConfig.id}' has issues with its configured variables:\n`;
             expectedErrorMessage += `Is missing required variables:\n`;
-            expectedErrorMessage += `* '${componentManifest.variables[0].name}'\n`;
-            expectedErrorMessage += `\tType: ${componentManifest.variables[0].type}\n`;
-            expectedErrorMessage += `\t${componentManifest.variables[0].description}\n`;
-            expectedErrorMessage += `* '${componentManifest.variables[1].name}'\n`;
-            expectedErrorMessage += `\tType: ${componentManifest.variables[1].type}\n`;
-            expectedErrorMessage += `\t${componentManifest.variables[1].description}`;
+            if (componentManifest.variables) {
+                expectedErrorMessage += `* '${componentManifest.variables[0].name}'\n`;
+                expectedErrorMessage += `\tType: ${componentManifest.variables[0].type}\n`;
+                expectedErrorMessage += `\t${componentManifest.variables[0].description}\n`;
+                expectedErrorMessage += `* '${componentManifest.variables[1].name}'\n`;
+                expectedErrorMessage += `\tType: ${componentManifest.variables[1].type}\n`;
+                expectedErrorMessage += `\t${componentManifest.variables[1].description}`;
+            }
             expect(() => VariableCollection.build(projectConfig, packageConfig, componentConfig, componentManifest)).to.throw(
                 expectedErrorMessage,
             );
@@ -99,7 +101,9 @@ describe('variables - module', () => {
             let expectedErrorMessage: string = '';
             expectedErrorMessage += `'${componentConfig.id}' has issues with its configured variables:\n`;
             expectedErrorMessage += `Has wrongly typed variables:\n`;
-            expectedErrorMessage += `* '${componentManifest.variables[1].name}' has wrong type! Expected ${componentManifest.variables[1].type} but got string`;
+            if (componentManifest.variables) {
+                expectedErrorMessage += `* '${componentManifest.variables[1].name}' has wrong type! Expected ${componentManifest.variables[1].type} but got string`;
+            }
             expect(() => VariableCollection.build(projectConfig, packageConfig, componentConfig, componentManifest)).to.throw(
                 expectedErrorMessage,
             );
