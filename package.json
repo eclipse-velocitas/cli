@@ -19,7 +19,7 @@
   "dependencies": {
     "@oclif/core": "^1.26.2",
     "@oclif/plugin-help": "^5.2.9",
-    "@oclif/plugin-not-found": "^2.3.23",
+    "@oclif/plugin-not-found": "^2.3.29",
     "@oclif/plugin-plugins": "^2.4.7",
     "axios": "0.27.2",
     "axios-retry": "^3.4.0",
