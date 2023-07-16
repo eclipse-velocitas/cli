@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { Command } from '@oclif/core';
+import { Command, Args } from '@oclif/core';
 import { ProjectCache } from '../../modules/project-cache';
 import { ProjectConfig } from '../../modules/project-config';
 
@@ -21,10 +21,10 @@ export default class Set extends Command {
 
     static examples = [`$ velocitas cache set <key> <value>`];
 
-    static args = [
-        { name: 'key', description: 'The cache key to set', required: true },
-        { name: 'value', description: 'The value to set for the cache key', required: true },
-    ];
+    static args = {
+        key: Args.string({ description: 'The cache key to set', required: true }),
+        value: Args.string({ description: 'The value to set for the cache key', required: true }),
+    };
 
     async run(): Promise<void> {
         const { args } = await this.parse(Set);

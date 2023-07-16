@@ -56,6 +56,7 @@ class StubPty implements IPty {
     }
 
     resize(columns: number, rows: number): void {}
+    clear(): void {}
     write(data: string): void {}
     kill(signal?: string | undefined): void {}
     pause(): void {}
@@ -94,8 +95,9 @@ describe('exec', () => {
             'exec',
             `${runtimeComponentManifestMock.components[0].id}`,
             `${runtimeComponentManifestMock.components[0].programs[0].id}`,
-            `--args`,
+            '--args',
             `additionalArgument`,
+            `additionalArgument2`,
         ])
         .it('executes a runtime script with additional arguments', (ctx) => {
             expect(ctx.stderr).to.be.empty;
@@ -146,7 +148,7 @@ describe('exec', () => {
         .stdout()
         .command(['exec', `${runtimeComponentManifestMock.components[0].id}`, 'unknown-script'])
         .catch(
-            `No program found for item 'unknown-script' referenced in program list of '${runtimeComponentManifestMock.components[0].id}'`
+            `No program found for item 'unknown-script' referenced in program list of '${runtimeComponentManifestMock.components[0].id}'`,
         )
         .it('throws error when program is not found in specified runtime component');
 
@@ -160,7 +162,7 @@ describe('exec', () => {
         .stdout()
         .command(['exec', `${runtimeComponentManifestMock.components[1].id}`, 'unknown-script'])
         .catch(
-            `No program found for item 'unknown-script' referenced in program list of '${runtimeComponentManifestMock.components[1].id}'`
+            `No program found for item 'unknown-script' referenced in program list of '${runtimeComponentManifestMock.components[1].id}'`,
         )
         .it('throws error when program is not found in specified deployment component');
 });
