@@ -65,7 +65,7 @@ if [ "${USE_PROXIES}" = "true" ]; then
     echo "Configuring proxies"
 
     mkdir -p /home/${USERNAME}
-    echo "export HTTP_PROXY=\"${HTTP_PROXY}\"" >> /home/${USERNAME}/  
+    echo "export HTTP_PROXY=\"${HTTP_PROXY}\"" >> /home/${USERNAME}/.profile
     echo "export http_proxy=\"${HTTP_PROXY}\"" >> /home/${USERNAME}/.profile
     echo "export HTTPS_PROXY=\"${HTTPS_PROXY}\"" >> /home/${USERNAME}/.profile
     echo "export https_proxy=\"${HTTPS_PROXY}\"" >> /home/${USERNAME}/.profile
