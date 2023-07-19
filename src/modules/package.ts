@@ -18,7 +18,7 @@ import { join } from 'path';
 import { Component, ComponentType, deserializeComponentJSON } from './component';
 import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { ComponentConfig } from './project-config';
-import { GitHelper } from './git-module';
+import { GitFacade } from './git-facade';
 
 export const MANIFEST_FILE_NAME = 'manifest.json';
 
@@ -40,9 +40,6 @@ export class PackageConfig {
     // per-component configuration
     components?: ComponentConfig[];
 
-    // enable development mode for package
-    dev?: boolean;
-
     constructor(config?: any) {
         const { name, version, variables, components } = config;
         this.repo = name;
@@ -52,7 +49,7 @@ export class PackageConfig {
     }
 
     private _isCustomPackage(repository: string): boolean {
-        return repository.startsWith('ssh://') || repository.startsWith('http://') || repository.startsWith('https://');
+        return repository.endsWith('.git');
     }
     /**
      * Return the fully qualified URL to the package repository.
@@ -85,8 +82,8 @@ export class PackageConfig {
 
     async getPackageVersions(): Promise<string[]> {
         try {
-            const gitHelper = new GitHelper(this);
-            const git = await gitHelper.cloneOrUpdateRepo(true);
+            const gitFacade = new GitFacade(this);
+            const git = await gitFacade.cloneOrUpdateRepo(true);
             const tagsResult = await git.tags();
             return tagsResult.all;
         } catch (error) {
@@ -97,8 +94,8 @@ export class PackageConfig {
 
     async downloadPackageVersion(verbose?: boolean): Promise<void> {
         try {
-            const gitHelper = new GitHelper(this);
-            await gitHelper.cloneOrUpdateRepo(false);
+            const gitFacade = new GitFacade(this);
+            await gitFacade.cloneOrUpdateRepo(false);
         } catch (error) {
             console.error(error);
         }

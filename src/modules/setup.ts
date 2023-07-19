@@ -22,6 +22,8 @@ import { SetupComponent } from './component';
 import { PackageConfig } from './package';
 import { VariableCollection } from './variables';
 
+const SUPPORTED_TEXT_FILES_ARRAY = ['.md', '.yaml', '.yml', '.txt', '.json', '.sh', '.html', '.htm', '.xml', '.tpl'];
+
 class ReplaceVariablesStream extends Transform {
     private _fileExt: string;
     private _variables: VariableCollection;
@@ -94,11 +96,7 @@ export function installComponent(packageConfig: PackageConfig, setupComponent: S
                             dot: true,
                             overwrite: true,
                             transform: function (src: string, _: string, stats: Stats) {
-                                if (
-                                    !['.md', '.yaml', '.yml', '.txt', '.json', '.sh', '.html', '.htm', '.xml', '.tpl'].includes(
-                                        path.extname(src),
-                                    )
-                                ) {
+                                if (!SUPPORTED_TEXT_FILES_ARRAY.includes(path.extname(src))) {
                                     return null;
                                 }
 

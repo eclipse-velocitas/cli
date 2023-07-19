@@ -17,7 +17,7 @@ import { posix as pathPosix } from 'path';
 import { CheckRepoActions, SimpleGit, simpleGit } from 'simple-git';
 import { PackageConfig } from './package';
 
-export class GitHelper {
+export class GitFacade {
     packageConfig: PackageConfig;
 
     constructor(packageConfig: PackageConfig) {
@@ -40,12 +40,6 @@ export class GitHelper {
 
     async checkoutVersion(git: SimpleGit): Promise<void> {
         await git.checkout(this.packageConfig.version);
-    }
-
-    async removeGitFolder(packageDir: string): Promise<void> {
-        // if (!this.packageConfig.dev) {
-        //     removeSync(pathPosix.join(packageDir, '.git'));
-        // }
     }
 
     async cloneOrUpdateRepo(check: boolean): Promise<SimpleGit> {
@@ -71,7 +65,6 @@ export class GitHelper {
 
         if (!check) {
             await this.checkoutVersion(git);
-            await this.removeGitFolder(packageDir);
         }
 
         return git;

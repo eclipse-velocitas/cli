@@ -15,6 +15,7 @@
 import 'mocha';
 import mockfs from 'mock-fs';
 import { PackageConfig } from '../../src/modules/package';
+import { expect } from 'chai';
 
 describe('package - module', () => {
     let envCache: any;
@@ -38,6 +39,26 @@ describe('package - module', () => {
             process.env = { VELOCITAS_HOME: '/my/custom/path' };
 
             packageConfig.readPackageManifest();
+        });
+    });
+    describe('Package config', () => {
+        it('should get package name', () => {
+            const packageNamePlain = 'TestPackage';
+            const packageConfigPlan = new PackageConfig({ name: packageNamePlain, version: 'v1.2.3' });
+            const packageNameHttps = 'https://testserver.com/TestOrg/TestPackage.git';
+            const packageConfigHttps = new PackageConfig({ name: packageNameHttps, version: 'v1.2.3' });
+            const packageNameHttp = 'http://testserver.com/TestOrg/TestPackage.git';
+            const packageConfigHttp = new PackageConfig({ name: packageNameHttp, version: 'v1.2.3' });
+            const packageNameSsh = 'ssh://testuser@testserver.com:TestOrg/TestPackage.git';
+            const packageConfigSsh = new PackageConfig({ name: packageNameSsh, version: 'v1.2.3' });
+            const packageNameSshAlternate = 'testuser@testserver.com:TestOrg/TestPackage.git';
+            const packageConfigSshAlternate = new PackageConfig({ name: packageNameSshAlternate, version: 'v1.2.3' });
+
+            expect(packageConfigPlan.getPackageName()).equals(packageNamePlain);
+            expect(packageConfigHttps.getPackageName()).equals(packageNamePlain);
+            expect(packageConfigHttp.getPackageName()).equals(packageNamePlain);
+            expect(packageConfigSsh.getPackageName()).equals(packageNamePlain);
+            expect(packageConfigSshAlternate.getPackageName()).equals(packageNamePlain);
         });
     });
     after(() => {
