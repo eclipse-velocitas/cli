@@ -18,7 +18,7 @@ import { join } from 'path';
 import { Component, ComponentType, deserializeComponentJSON } from './component';
 import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { ComponentConfig } from './project-config';
-import { GitFacade } from './git-facade';
+import { packageDownloader } from './package-downloader';
 
 export const MANIFEST_FILE_NAME = 'manifest.json';
 
@@ -82,10 +82,9 @@ export class PackageConfig {
 
     async getPackageVersions(): Promise<string[]> {
         try {
-            const gitFacade = new GitFacade(this);
-            const git = await gitFacade.cloneOrUpdateRepo(true);
-            const tagsResult = await git.tags();
-            return tagsResult.all;
+            const packageInformation = await packageDownloader(this).downloadPackage({ checkVersionOnly: true });
+            const packageVersionTags = await packageInformation.tags();
+            return packageVersionTags.all;
         } catch (error) {
             console.log(error);
         }
@@ -94,8 +93,7 @@ export class PackageConfig {
 
     async downloadPackageVersion(verbose?: boolean): Promise<void> {
         try {
-            const gitFacade = new GitFacade(this);
-            await gitFacade.cloneOrUpdateRepo(false);
+            await packageDownloader(this).downloadPackage({ checkVersionOnly: false });
         } catch (error) {
             console.error(error);
         }

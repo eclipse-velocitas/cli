@@ -17,37 +17,38 @@ import { posix as pathPosix } from 'path';
 import { CheckRepoActions, SimpleGit, simpleGit } from 'simple-git';
 import { PackageConfig } from './package';
 
-export class GitFacade {
+export class PackageDownloader {
     packageConfig: PackageConfig;
+    git: SimpleGit = simpleGit();
 
     constructor(packageConfig: PackageConfig) {
         this.packageConfig = packageConfig;
     }
 
     async cloneRepository(packageDir: string, cloneOpts: string[]): Promise<void> {
-        await simpleGit().clone(this.packageConfig.getPackageRepo(), packageDir, cloneOpts);
+        await this.git.clone(this.packageConfig.getPackageRepo(), packageDir, cloneOpts);
     }
 
-    async updateRepository(git: SimpleGit, checkRepoAction: CheckRepoActions, packageDir: string, cloneOpts: string[]): Promise<void> {
-        const localRepoExists = await git.checkIsRepo(checkRepoAction);
+    async updateRepository(checkRepoAction: CheckRepoActions, packageDir: string, cloneOpts: string[]): Promise<void> {
+        const localRepoExists = await this.git.checkIsRepo(checkRepoAction);
 
         if (localRepoExists) {
-            await git.fetch(['--all']);
+            await this.git.fetch(['--all']);
         } else {
-            await git.clone(this.packageConfig.getPackageRepo(), packageDir, cloneOpts);
+            await this.git.clone(this.packageConfig.getPackageRepo(), packageDir, cloneOpts);
         }
     }
 
-    async checkoutVersion(git: SimpleGit): Promise<void> {
-        await git.checkout(this.packageConfig.version);
+    async checkoutVersion(): Promise<void> {
+        await this.git.checkout(this.packageConfig.version);
     }
 
-    async cloneOrUpdateRepo(check: boolean): Promise<SimpleGit> {
+    async downloadPackage(option: { checkVersionOnly: boolean }): Promise<SimpleGit> {
         let packageDir: string = this.packageConfig.getPackageDirectory();
         let cloneOpts: string[] = [];
         let checkRepoAction: CheckRepoActions;
 
-        if (check) {
+        if (option.checkVersionOnly) {
             packageDir = pathPosix.join(packageDir, '_cache');
             cloneOpts.push('--bare');
             checkRepoAction = CheckRepoActions.BARE;
@@ -60,13 +61,17 @@ export class GitFacade {
             await this.cloneRepository(packageDir, cloneOpts);
         }
 
-        const git: SimpleGit = simpleGit(packageDir);
-        await this.updateRepository(git, checkRepoAction, packageDir, cloneOpts);
+        this.git = simpleGit(packageDir);
+        await this.updateRepository(checkRepoAction, packageDir, cloneOpts);
 
-        if (!check) {
-            await this.checkoutVersion(git);
+        if (!option.checkVersionOnly) {
+            await this.checkoutVersion();
         }
 
-        return git;
+        return this.git;
     }
 }
+
+export const packageDownloader = (packageConfig: PackageConfig) => {
+    return new PackageDownloader(packageConfig);
+};
