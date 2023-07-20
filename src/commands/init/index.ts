@@ -16,8 +16,8 @@ import { ux, Command, Flags } from '@oclif/core';
 import { AppManifest, readAppManifest } from '../../modules/app-manifest';
 import { Component } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
-import { downloadPackageVersion, isPackageInstalled, readPackageManifest } from '../../modules/package';
-import { ComponentConfig, PackageConfig, ProjectConfig } from '../../modules/project-config';
+import { PackageConfig } from '../../modules/package';
+import { ComponentConfig, ProjectConfig } from '../../modules/project-config';
 import { createEnvVars, VariableCollection } from '../../modules/variables';
 
 async function runPostInitHook(
@@ -88,16 +88,13 @@ Velocitas project found!
             projectConfig = ProjectConfig.read();
 
             for (const packageConfig of projectConfig.packages) {
-                if (!flags.force && isPackageInstalled(packageConfig.name, packageConfig.version)) {
-                    this.log(`... '${packageConfig.name}:${packageConfig.version}' already initialized.`);
+                if (!flags.force && packageConfig.isPackageInstalled()) {
+                    this.log(`... '${packageConfig.getPackageName()}:${packageConfig.version}' already initialized.`);
                     continue;
                 }
-
-                this.log(`... Downloading package: '${packageConfig.name}:${packageConfig.version}'`);
-                await downloadPackageVersion(packageConfig.name, packageConfig.version, flags.verbose);
-
-                const packageManifest = readPackageManifest(packageConfig);
-
+                this.log(`... Downloading package: '${packageConfig.getPackageName()}:${packageConfig.version}'`);
+                await packageConfig.downloadPackageVersion(flags.verbose);
+                const packageManifest = packageConfig.readPackageManifest();
                 for (const component of packageManifest.components) {
                     try {
                         await runPostInitHook(component, packageConfig, projectConfig, appManifestData[0], flags.verbose);

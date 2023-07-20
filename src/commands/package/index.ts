@@ -14,8 +14,8 @@
 
 import { Command, Flags, Args } from '@oclif/core';
 import { join } from 'node:path';
-import { getPackageDirectory, readPackageManifest } from '../../modules/package';
-import { PackageConfig, ProjectConfig } from '../../modules/project-config';
+import { PackageConfig } from '../../modules/package';
+import { ProjectConfig } from '../../modules/project-config';
 
 export default class Package extends Command {
     static description = 'Prints information about packages';
@@ -59,9 +59,9 @@ $ velocitas component --get-path devenv-runtime-local
 
         if (args.name) {
             packagesToPrint = new Array<PackageConfig>();
-            packagesToPrint.push(projectConfig.packages.find((p) => p.name === args.name)!);
+            packagesToPrint.push(projectConfig.packages.find((p) => p.getPackageName() === args.name)!);
 
-            const componentDir = join(getPackageDirectory(packagesToPrint[0].name), packagesToPrint[0].version);
+            const componentDir = join(packagesToPrint[0].getPackageDirectory(), packagesToPrint[0].version);
 
             if (flags.getPath) {
                 this.log(componentDir);
@@ -72,9 +72,9 @@ $ velocitas component --get-path devenv-runtime-local
         }
 
         for (const packageToPrint of packagesToPrint) {
-            const packageManifest = readPackageManifest(packageToPrint);
+            const packageManifest = packageToPrint.readPackageManifest();
 
-            this.log(`${packageToPrint.name}:`);
+            this.log(`${packageToPrint.getPackageName()}:`);
             this.log(`${' '.repeat(4)}version: ${packageToPrint.version}`);
             this.log(`${' '.repeat(4)}components:`);
             for (const component of packageManifest.components) {

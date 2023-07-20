@@ -14,8 +14,8 @@
 
 import 'mocha';
 import mockfs from 'mock-fs';
-import { readPackageManifest } from '../../src/modules/package';
-import { PackageConfig } from '../../src/modules/project-config';
+import { PackageConfig } from '../../src/modules/package';
+import { expect } from 'chai';
 
 describe('package - module', () => {
     let envCache: any;
@@ -34,13 +34,31 @@ describe('package - module', () => {
     });
     describe('Package manifest', () => {
         it('should be loaded from VELOCITAS_HOME', () => {
-            const packageConfig = new PackageConfig();
-            packageConfig.name = 'TestPackage';
-            packageConfig.version = 'v1.2.3';
+            const packageConfig = new PackageConfig({ name: 'TestPackage', version: 'v1.2.3' });
 
             process.env = { VELOCITAS_HOME: '/my/custom/path' };
 
-            readPackageManifest(packageConfig);
+            packageConfig.readPackageManifest();
+        });
+    });
+    describe('Package config', () => {
+        it('should get package name', () => {
+            const packageNamePlain = 'TestPackage';
+            const packageConfigPlan = new PackageConfig({ name: packageNamePlain, version: 'v1.2.3' });
+            const packageNameHttps = 'https://testserver.com/TestOrg/TestPackage.git';
+            const packageConfigHttps = new PackageConfig({ name: packageNameHttps, version: 'v1.2.3' });
+            const packageNameHttp = 'http://testserver.com/TestOrg/TestPackage.git';
+            const packageConfigHttp = new PackageConfig({ name: packageNameHttp, version: 'v1.2.3' });
+            const packageNameSsh = 'ssh://testuser@testserver.com:TestOrg/TestPackage.git';
+            const packageConfigSsh = new PackageConfig({ name: packageNameSsh, version: 'v1.2.3' });
+            const packageNameSshAlternate = 'testuser@testserver.com:TestOrg/TestPackage.git';
+            const packageConfigSshAlternate = new PackageConfig({ name: packageNameSshAlternate, version: 'v1.2.3' });
+
+            expect(packageConfigPlan.getPackageName()).equals(packageNamePlain);
+            expect(packageConfigHttps.getPackageName()).equals(packageNamePlain);
+            expect(packageConfigHttp.getPackageName()).equals(packageNamePlain);
+            expect(packageConfigSsh.getPackageName()).equals(packageNamePlain);
+            expect(packageConfigSshAlternate.getPackageName()).equals(packageNamePlain);
         });
     });
     after(() => {
