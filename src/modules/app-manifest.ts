@@ -19,23 +19,8 @@ import { DEFAULT_BUFFER_ENCODING } from './constants';
 
 const DEFAULT_APP_MANIFEST_PATH = resolve(cwd(), './app/AppManifest.json');
 
-export interface DataPoint {
-    path: string;
-    required: string;
-    access: string;
-}
-export interface VehicleModelReference {
-    src: string;
-    datapoints: DataPoint[];
-}
-export interface AppManifest {
-    name: string;
-    vehicleModel: VehicleModelReference;
-    runtime: string[];
-}
-
-export function readAppManifest(): AppManifest[] {
-    let config: AppManifest[] = [];
+export function readAppManifest(): any | undefined {
+    let config: any = undefined;
     try {
         config = JSON.parse(readFileSync(DEFAULT_APP_MANIFEST_PATH, DEFAULT_BUFFER_ENCODING));
     } catch (error) {

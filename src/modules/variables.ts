@@ -14,7 +14,6 @@
 
 import { realpathSync } from 'node:fs';
 import { cwd } from 'node:process';
-import { AppManifest } from './app-manifest';
 import { Component } from './component';
 import { mapReplacer } from './helpers';
 import { PackageConfig } from './package';
@@ -183,7 +182,7 @@ function buildErrorMessageForComponent(
     return errorMessage;
 }
 
-export function createEnvVars(variables: VariableCollection, appManifestData?: AppManifest): NodeJS.ProcessEnv {
+export function createEnvVars(variables: VariableCollection, appManifestData?: any): NodeJS.ProcessEnv {
     const projectCache = ProjectCache.read();
 
     const envVars = Object.assign({}, process.env, {
