@@ -16,7 +16,6 @@ import { exec } from 'child_process';
 import { IPty, spawn } from 'node-pty';
 import { join, resolve } from 'node:path';
 import { ExecSpec, findComponentByName } from './component';
-import { getPackageDirectory } from './package';
 import { ProjectCache } from './project-cache';
 import { ProjectConfig } from './project-config';
 
@@ -52,7 +51,7 @@ async function awaitSpawn(
     args: string[],
     cwd: string,
     env: NodeJS.ProcessEnv,
-    writeStdout: boolean
+    writeStdout: boolean,
 ): Promise<{ exitCode: number; signal?: number } | null> {
     const projectCache = ProjectCache.read();
 
@@ -94,7 +93,7 @@ export async function runExecSpec(
     componentId: string,
     projectConfig: ProjectConfig,
     envVars: NodeJS.ProcessEnv,
-    loggingOptions: { writeStdout?: boolean; verbose?: boolean } = { writeStdout: true, verbose: false }
+    loggingOptions: { writeStdout?: boolean; verbose?: boolean } = { writeStdout: true, verbose: false },
 ) {
     if (loggingOptions.writeStdout === undefined) {
         loggingOptions.writeStdout = true;
@@ -119,7 +118,7 @@ export async function runExecSpec(
         throw new Error(`No program found for item '${execSpec.ref}' referenced in program list of '${component.id}'`);
     }
 
-    const cwd = join(getPackageDirectory(packageConfig.name), packageConfig.version);
+    const cwd = join(packageConfig.getPackageDirectory(), packageConfig.version);
 
     let programArgs = programSpec.args ? programSpec.args : [];
     if (execSpec.args && execSpec.args.length > 0) {

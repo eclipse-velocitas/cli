@@ -19,9 +19,10 @@ import { cwd } from 'process';
 import copy from 'recursive-copy';
 import { TransformCallback, TransformOptions } from 'stream';
 import { SetupComponent } from './component';
-import { getPackageDirectory } from './package';
-import { PackageConfig } from './project-config';
+import { PackageConfig } from './package';
 import { VariableCollection } from './variables';
+
+const SUPPORTED_TEXT_FILES_ARRAY = ['.md', '.yaml', '.yml', '.txt', '.json', '.sh', '.html', '.htm', '.xml', '.tpl'];
 
 class ReplaceVariablesStream extends Transform {
     private _fileExt: string;
@@ -79,35 +80,33 @@ class ReplaceVariablesStream extends Transform {
     }
 }
 
-export function installComponent(componentConfig: PackageConfig, setupComponent: SetupComponent, variables: VariableCollection) {
-    for (const spec of setupComponent.files) {
-        const src = variables.substitute(spec.src);
-        const dst = variables.substitute(spec.dst);
-        let ifCondition = spec.condition ? variables.substitute(spec.condition) : 'true';
+export function installComponent(packageConfig: PackageConfig, setupComponent: SetupComponent, variables: VariableCollection) {
+    if (setupComponent.files) {
+        for (const spec of setupComponent.files) {
+            const src = variables.substitute(spec.src);
+            const dst = variables.substitute(spec.dst);
+            let ifCondition = spec.condition ? variables.substitute(spec.condition) : 'true';
 
-        if (eval(ifCondition)) {
-            const sourceFileOrDir = join(getPackageDirectory(componentConfig.name), componentConfig.version, src);
-            const destFileOrDir = join(cwd(), dst);
-            try {
-                if (existsSync(sourceFileOrDir)) {
-                    copy(sourceFileOrDir, destFileOrDir, {
-                        dot: true,
-                        overwrite: true,
-                        transform: function (src: string, _: string, stats: Stats) {
-                            if (
-                                !['.md', '.yaml', '.yml', '.txt', '.json', '.sh', '.html', '.htm', '.xml', '.tpl'].includes(
-                                    path.extname(src)
-                                )
-                            ) {
-                                return null;
-                            }
+            if (eval(ifCondition)) {
+                const sourceFileOrDir = join(packageConfig.getPackageDirectory(), packageConfig.version, src);
+                const destFileOrDir = join(cwd(), dst);
+                try {
+                    if (existsSync(sourceFileOrDir)) {
+                        copy(sourceFileOrDir, destFileOrDir, {
+                            dot: true,
+                            overwrite: true,
+                            transform: function (src: string, _: string, stats: Stats) {
+                                if (!SUPPORTED_TEXT_FILES_ARRAY.includes(path.extname(src))) {
+                                    return null;
+                                }
 
-                            return new ReplaceVariablesStream(path.extname(src), variables);
-                        },
-                    });
+                                return new ReplaceVariablesStream(path.extname(src), variables);
+                            },
+                        });
+                    }
+                } catch (e) {
+                    console.error(`Error during copy: ${e}`);
                 }
-            } catch (e) {
-                console.error(`Error during copy: ${e}`);
             }
         }
     }

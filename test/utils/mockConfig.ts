@@ -14,15 +14,6 @@
 
 import { ComponentType } from '../../src/modules/component';
 
-export const defaultConfigMock = {
-    packages: [
-        {
-            name: 'test-runtime',
-            version: 'v1.0.0',
-        },
-    ],
-};
-
 export const velocitasConfigMock = {
     packages: [
         {
@@ -113,16 +104,6 @@ export const runtimeComponentManifestMock = {
                     executable: './src/test.sh',
                 },
             ],
-            start: [
-                {
-                    id: 'test-script-1',
-                    startupLine: 'Runtime Start Test',
-                },
-                {
-                    id: 'test-script-2',
-                    dependsOn: 'test-script-1',
-                },
-            ],
             onPostInit: [
                 {
                     ref: 'test-script-1',
@@ -141,16 +122,6 @@ export const runtimeComponentManifestMock = {
                 {
                     id: 'test-script-2',
                     executable: './src/test.sh',
-                },
-            ],
-            start: [
-                {
-                    id: 'test-script-1',
-                    startupLine: 'Runtime Start Test',
-                },
-                {
-                    id: 'test-script-2',
-                    dependsOn: 'test-script-1',
                 },
             ],
         },

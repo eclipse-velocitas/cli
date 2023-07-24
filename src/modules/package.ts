@@ -12,51 +12,112 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import axios, { AxiosProxyConfig, AxiosRequestConfig, AxiosRequestHeaders, AxiosResponse } from 'axios';
-import axiosRetry from 'axios-retry';
-import decompress from 'decompress';
-import { HttpsProxyAgent } from 'https-proxy-agent';
-import { existsSync, mkdirSync, readFileSync, rm } from 'node:fs';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { existsSync, readFileSync } from 'fs-extra';
+import { homedir } from 'os';
+import { join } from 'path';
 import { Component, ComponentType, deserializeComponentJSON } from './component';
 import { DEFAULT_BUFFER_ENCODING } from './constants';
-import { PackageConfig } from './project-config';
+import { ComponentConfig } from './project-config';
+import { packageDownloader } from './package-downloader';
 
-export const GITHUB_ORG = 'eclipse-velocitas';
-export const GITHUB_API_URL = 'https://api.github.com';
-export const GITHUB_ORG_ENDPOINT = `/repos/${GITHUB_ORG}`;
 export const MANIFEST_FILE_NAME = 'manifest.json';
 
-function setProxy() {
-    let proxyConfig: { proxy?: AxiosProxyConfig | false; httpsAgent?: any } = { proxy: false };
-    if (process.env.HTTPS_PROXY || process.env.https_proxy) {
-        const proxyString = process.env.HTTPS_PROXY || process.env.https_proxy;
-        proxyConfig.httpsAgent = new HttpsProxyAgent(proxyString!);
-    }
-
-    return proxyConfig;
-}
-
-function setApiToken(requestHeaders: AxiosRequestHeaders): void {
-    if (process.env.GITHUB_API_TOKEN) {
-        Object.assign(requestHeaders, {
-            authorization: `Bearer ${process.env.GITHUB_API_TOKEN}`,
-        });
-    }
-}
-
 export interface PackageManifest {
-    components: Array<Component>;
+    components: Component[];
 }
 
-export class VersionInfo {
-    readonly name: string;
-    readonly tarballUrl: string;
+export class PackageConfig {
+    // name of the package to the package repository
+    // @deprecated use repo instead
+    repo: string = '';
 
-    constructor(name: string, tarballUrl: string) {
-        this.name = name;
-        this.tarballUrl = tarballUrl;
+    // version of the package to use
+    version: string = '';
+
+    // package-wide variable configuration
+    variables?: Map<string, any>;
+
+    // per-component configuration
+    components?: ComponentConfig[];
+
+    constructor(config?: any) {
+        const { name, version, variables, components } = config;
+        this.repo = name;
+        this.version = version;
+        this.variables = variables;
+        this.components = components;
+    }
+
+    private _isCustomPackage(repository: string): boolean {
+        return repository.endsWith('.git');
+    }
+    /**
+     * Return the fully qualified URL to the package repository.
+     * In case of Eclipse Velocitas repos which can be referenced by name only,
+     * their Github URL is returned.
+     *
+     * In case of custom URLs as package names, the package name is returned.
+     *
+     * @param repository The repository of the package.
+     * @returns The fully qualified URL to the package repository.
+     */
+    getPackageRepo(): string {
+        if (this._isCustomPackage(this.repo)) {
+            return this.repo;
+        }
+        return `https://github.com/eclipse-velocitas/${this.repo}`;
+    }
+
+    getPackageName(): string {
+        if (!this._isCustomPackage(this.repo)) {
+            return this.repo;
+        }
+        const repoName = this.repo.substring(this.repo.lastIndexOf('/') + 1).replace('.git', '');
+        return repoName;
+    }
+
+    getPackageDirectory(): string {
+        return join(getPackageFolderPath(), this.getPackageName());
+    }
+
+    async getPackageVersions(): Promise<string[]> {
+        try {
+            const packageInformation = await packageDownloader(this).downloadPackage({ checkVersionOnly: true });
+            const packageVersionTags = await packageInformation.tags();
+            return packageVersionTags.all;
+        } catch (error) {
+            console.log(error);
+        }
+        return [];
+    }
+
+    async downloadPackageVersion(verbose?: boolean): Promise<void> {
+        try {
+            await packageDownloader(this).downloadPackage({ checkVersionOnly: false });
+        } catch (error) {
+            console.error(error);
+        }
+        return;
+    }
+
+    isPackageInstalled(): boolean {
+        const packageDir = `${getPackageFolderPath()}/${this.repo}/${this.version}`;
+        if (!existsSync(packageDir)) {
+            return false;
+        }
+        return true;
+    }
+
+    readPackageManifest(): PackageManifest {
+        try {
+            const config: PackageManifest = deserializeComponentJSON(
+                readFileSync(join(this.getPackageDirectory(), this.version, MANIFEST_FILE_NAME), DEFAULT_BUFFER_ENCODING),
+            );
+            return config;
+        } catch (error) {
+            console.log(`Cannot find component ${this.getPackageName()}:${this.version}. Please upgrade or init first!`);
+            throw new Error(`Cannot find component ${this.getPackageName()}:${this.version}`);
+        }
     }
 }
 
@@ -68,140 +129,10 @@ function getPackageFolderPath(): string {
     return join(getVelocitasRoot(), 'packages');
 }
 
-function getPackageRepo(packageName: string): string {
-    return `${GITHUB_API_URL}${GITHUB_ORG_ENDPOINT}/${packageName}`;
-}
-
-export function readPackageManifest(packageConfig: PackageConfig): PackageManifest {
-    try {
-        const config: PackageManifest = deserializeComponentJSON(
-            readFileSync(
-                join(getPackageFolderPath(), packageConfig.name, packageConfig.version, MANIFEST_FILE_NAME),
-                DEFAULT_BUFFER_ENCODING
-            )
-        );
-        return config;
-    } catch (error) {
-        console.log(`Cannot find component ${packageConfig.name}:${packageConfig.version}. Please upgrade or init first!`);
-        throw new Error(`Cannot find component ${packageConfig.name}:${packageConfig.version}`);
-    }
-}
-
 export function getComponentByType(packageManifest: PackageManifest, type: ComponentType): Component {
     const component = packageManifest.components.find((component: Component) => component.type === type);
     if (component === undefined) {
         throw new TypeError(`No Subcomponent with type "${type}" found!`);
     }
     return component;
-}
-
-export function getPackageDirectory(packageName: string): string {
-    return join(getPackageFolderPath(), packageName);
-}
-
-export async function getPackageVersions(packageName: string): Promise<Array<VersionInfo>> {
-    try {
-        const requestHeaders: AxiosRequestHeaders = {
-            accept: 'application/vnd.github+json',
-        };
-        setApiToken(requestHeaders);
-
-        const requestConfig: AxiosRequestConfig = { headers: requestHeaders, ...setProxy() };
-        const res = await axios.get(`${getPackageRepo(packageName)}/tags`, requestConfig);
-
-        if (res.status !== 200) {
-            console.log(res.statusText);
-            return new Array<VersionInfo>();
-        }
-
-        const availableVersions = new Array<VersionInfo>();
-        for (const tagInfo of res.data) {
-            availableVersions.push(new VersionInfo(tagInfo.name, tagInfo.tarball_url));
-        }
-        return availableVersions;
-    } catch (error) {
-        console.log(error);
-    }
-
-    return new Array<VersionInfo>();
-}
-
-export async function downloadPackageVersion(packageName: string, versionIdentifier: string, verbose?: boolean): Promise<void> {
-    try {
-        const res = await downloadPackageRequest(packageName, versionIdentifier, verbose);
-
-        if (res.status !== 200) {
-            console.log(res.statusText);
-            return;
-        }
-        const packageDir = join(getPackageDirectory(packageName), versionIdentifier);
-        rm(packageDir, { recursive: true, force: true }, (_) => {});
-        if (!existsSync(`${getPackageFolderPath()}/${packageName}`)) {
-            mkdirSync(`${getPackageFolderPath()}/${packageName}`, { recursive: true });
-        }
-        await decompress(res.data, `${getPackageFolderPath()}/${packageName}`, {
-            map: (file) => {
-                file.path = `${versionIdentifier}/${file.path}`;
-                return file;
-            },
-            strip: 1,
-        }).catch((reason) => {
-            console.error(reason);
-        });
-    } catch (error) {
-        console.error(error);
-    }
-    return;
-}
-
-export function isPackageInstalled(packageName: string, versionIdentifier: string): boolean {
-    const packageDir = `${getPackageFolderPath()}/${packageName}/${versionIdentifier}`;
-    if (!existsSync(packageDir)) {
-        return false;
-    }
-    return true;
-}
-
-async function downloadPackageRequest(packageName: string, versionIdentifier: string, verbose?: boolean): Promise<AxiosResponse<any, any>> {
-    const baseUrl = getPackageRepo(packageName);
-    const tagEndpoint = `/zipball/refs/tags/${versionIdentifier}`;
-    const branchEndpoint = `/zipball/${versionIdentifier}`;
-
-    const requestHeaders: AxiosRequestHeaders = {
-        accept: 'application/vnd.github+json',
-    };
-    setApiToken(requestHeaders);
-    const requestConfig: AxiosRequestConfig = { headers: requestHeaders, responseType: 'arraybuffer', ...setProxy() };
-
-    const packageClient = axios.create({
-        baseURL: baseUrl,
-        ...requestConfig,
-    });
-    axiosRetry(packageClient, { retries: 1 });
-
-    const res = await packageClient.get(tagEndpoint, {
-        'axios-retry': {
-            retryCondition: (error) => {
-                if (error.response?.status === 404) {
-                    if (verbose) {
-                        console.log(`Did not find tag '${versionIdentifier}' in '${packageName}' - looking for branch ...`);
-                    }
-                    return true;
-                }
-                return false;
-            },
-            onRetry: (_retryCount, _error, requestConfig) => {
-                if (verbose) {
-                    console.log(`Try using fallback URL '${baseUrl}${branchEndpoint}' to download package ...`);
-                }
-                requestConfig.url = branchEndpoint;
-            },
-        },
-    });
-
-    if (verbose) {
-        console.log(`Succesfully downloaded package: '${packageName}:${versionIdentifier}'`);
-    }
-
-    return res;
 }

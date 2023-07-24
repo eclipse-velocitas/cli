@@ -33,7 +33,7 @@ Syncing Velocitas components!
         const projectConfig = ProjectConfig.read();
         const setupComponents = findComponentsByType(projectConfig, ComponentType.setup);
         for (const setupComponent of setupComponents) {
-            this.log(`... syncing '${setupComponent[0].name}'`);
+            this.log(`... syncing '${setupComponent[0].getPackageName()}'`);
 
             const componentConfig = getComponentConfig(setupComponent[0], setupComponent[2].id);
             const variables = VariableCollection.build(projectConfig, setupComponent[0], componentConfig, setupComponent[2]);

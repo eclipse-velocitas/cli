@@ -17,9 +17,11 @@ import { cwd } from 'node:process';
 import { AppManifest } from './app-manifest';
 import { Component } from './component';
 import { mapReplacer } from './helpers';
-import { GITHUB_ORG } from './package';
+import { PackageConfig } from './package';
 import { ProjectCache } from './project-cache';
-import { ComponentConfig, PackageConfig, ProjectConfig } from './project-config';
+import { ComponentConfig, ProjectConfig } from './project-config';
+
+const GITHUB_ORG = 'eclipse-velocitas';
 
 export interface VariableDefinition {
     name: string;
@@ -47,7 +49,7 @@ export class VariableCollection {
         projectConfig: ProjectConfig,
         packageConfig: PackageConfig,
         componentConfig: ComponentConfig,
-        component: Component
+        component: Component,
     ): VariableCollection {
         var map = new Map<string, any>();
         if (projectConfig.variables) {
@@ -73,7 +75,7 @@ export class VariableCollection {
         // set built-ins
         map.set('builtin.package.version', packageConfig.version);
         map.set('builtin.package.github.org', GITHUB_ORG);
-        map.set('builtin.package.github.repo', packageConfig.name);
+        map.set('builtin.package.github.repo', packageConfig.getPackageName());
         map.set('builtin.package.github.ref', packageConfig.version);
         map.set('builtin.component.id', component.id);
         map.set('builtin.component.type', component.type);
@@ -104,7 +106,7 @@ function verifyGivenVariables(
     componentId: string,
     providedVariables: Map<string, any>,
     variableDefinitions?: Array<VariableDefinition>,
-    flags = new VerifyFlags()
+    flags = new VerifyFlags(),
 ) {
     const configuredVars = new Map(providedVariables);
     const missingVars = new Array<VariableDefinition>();
@@ -125,13 +127,12 @@ function verifyGivenVariables(
                 wronglyTypedVars.push(
                     `'${componentExposedVariable.name}' has wrong type! Expected ${
                         componentExposedVariable.type
-                    } but got ${typeof configuredValue}`
+                    } but got ${typeof configuredValue}`,
                 );
             }
             configuredVars.delete(componentExposedVariable.name);
         }
     }
-
     const errorMessage: string = buildErrorMessageForComponent(componentId, flags, { configuredVars, missingVars, wronglyTypedVars });
 
     if (errorMessage.length > 0) {
@@ -146,7 +147,7 @@ function verifyVariables(variables: Map<string, any>, component: Component): voi
 function buildErrorMessageForComponent(
     componentId: string,
     flags: VerifyFlags,
-    vars: { configuredVars: Map<string, any>; missingVars: Array<VariableDefinition>; wronglyTypedVars: Array<string> }
+    vars: { configuredVars: Map<string, any>; missingVars: Array<VariableDefinition>; wronglyTypedVars: Array<string> },
 ): string {
     let errorMessage: string = '';
     if (

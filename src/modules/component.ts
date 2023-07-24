@@ -12,8 +12,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { getComponentByType, PackageManifest, readPackageManifest } from './package';
-import { ComponentConfig, PackageConfig, ProjectConfig } from './project-config';
+import { getComponentByType, PackageConfig, PackageManifest } from './package';
+import { ComponentConfig, ProjectConfig } from './project-config';
 import { VariableDefinition } from './variables';
 
 type IComponent = new () => { readonly type: ComponentType };
@@ -67,12 +67,10 @@ export interface Component {
 export class RuntimeComponent implements Component {
     id = '';
     alias = '';
-    programs = new Array<ProgramSpec>();
-    start = new Array<ExecSpec>();
-    stop = new Array<ExecSpec>();
-    variables = new Array<VariableDefinition>();
-    onPostInit? = new Array<ExecSpec>();
     readonly type = ComponentType.runtime;
+    programs? = new Array<ProgramSpec>();
+    onPostInit? = new Array<ExecSpec>();
+    variables? = new Array<VariableDefinition>();
 }
 
 export interface FileSpec {
@@ -84,32 +82,30 @@ export interface FileSpec {
 @serializable
 export class SetupComponent implements Component {
     id = '';
-    files = new Array<FileSpec>();
-    variables = new Array<VariableDefinition>();
+    readonly type = ComponentType.setup;
+    files? = new Array<FileSpec>();
     programs? = new Array<ProgramSpec>();
     onPostInit? = new Array<ExecSpec>();
-    readonly type = ComponentType.setup;
+    variables? = new Array<VariableDefinition>();
 }
 
 @serializable
 export class DeployComponent implements Component {
     id = '';
     alias = '';
-    programs = new Array<ProgramSpec>();
-    start = new Array<ExecSpec>();
-    stop = new Array<ExecSpec>();
-    variables = new Array<VariableDefinition>();
-    onPostInit? = new Array<ExecSpec>();
     readonly type = ComponentType.deployment;
+    programs? = new Array<ProgramSpec>();
+    onPostInit? = new Array<ExecSpec>();
+    variables? = new Array<VariableDefinition>();
 }
 
 export function findComponentsByType<TComponentType extends Component>(
     projectConfig: ProjectConfig,
-    type: ComponentType
+    type: ComponentType,
 ): Array<[PackageConfig, PackageManifest, TComponentType]> {
     const result = new Array<[PackageConfig, PackageManifest, TComponentType]>();
     for (const packageConfig of projectConfig.packages) {
-        const componentManifest = readPackageManifest(packageConfig);
+        const componentManifest = packageConfig.readPackageManifest();
         try {
             result.push([packageConfig, componentManifest, getComponentByType(componentManifest, type) as TComponentType]);
         } catch (e) {}
@@ -121,7 +117,7 @@ export function findComponentsByType<TComponentType extends Component>(
 export function findComponentByName(projectConfig: ProjectConfig, componentId: string): [PackageConfig, ComponentConfig, Component] {
     let result: [PackageConfig, ComponentConfig, Component] | undefined;
     for (const packageConfig of projectConfig.packages) {
-        const packageManifest = readPackageManifest(packageConfig);
+        const packageManifest = packageConfig.readPackageManifest();
         const matchingComponent = packageManifest.components.find((c) => c.id === componentId);
         const matchingComponentConfig = getComponentConfig(packageConfig, componentId);
         if (matchingComponent) {
