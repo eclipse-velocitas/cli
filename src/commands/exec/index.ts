@@ -49,8 +49,8 @@ Executing script...
         // OCLIF does not support varargs (lists) out of the box.
         // Their suggestion is to set "strict" argument parsing to false but no further documentation is available.
         // Hence we access the Command.argv attribute which holds all arguments passed to the CLI
-        // and access everything STARTING AT the args."args..." argument as "custom args" for the invoked program.
-        const customArgsOffset = Object.keys(args).indexOf('args...');
+        // and access everything STARTING AFTER the args."ref" argument as "custom args" for the invoked program.
+        const customArgsOffset = Object.keys(args).indexOf('ref') + 1;
         const execArgs: string[] = this.argv.length > customArgsOffset ? this.argv.slice(customArgsOffset) : [];
 
         const execSpec: ExecSpec = {

@@ -106,6 +106,17 @@ describe('CLI command', () => {
             expect(lines[5]).to.be.equal('');
         });
 
+        it('should pass no additional args if none are given', async () => {
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'print-args-no-default'], {
+                encoding: DEFAULT_BUFFER_ENCODING,
+            });
+
+            const lines = result.stdout.split('\r\n');
+            expect(lines.length).to.be.equal(2);
+            expect(lines[0]).to.be.equal('./print-args.py');
+            expect(lines[1]).to.be.equal('');
+        });
+
         it('should return the error code of the first executed program which returns an error', async () => {
             const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'exit'], {
                 encoding: DEFAULT_BUFFER_ENCODING,
