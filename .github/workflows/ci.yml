@@ -43,7 +43,8 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest"]
-        node_version: [lts/-1, lts/*, latest]
+        # TODO: eclipse-velocitas/cli/issues/141
+        node_version: [lts/-1, lts/*, 20.4.0]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
