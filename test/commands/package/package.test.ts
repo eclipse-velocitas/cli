@@ -37,10 +37,10 @@ describe('package', () => {
             mockRestore();
         })
         .stdout()
-        .command(['package', '-p', `${velocitasConfigMock.packages[0].name}`])
+        .command(['package', '-p', `${velocitasConfigMock.packages[0].repo}`])
         .it('prints the path of specified package', (ctx) => {
             expect(ctx.stdout).to.contain(
-                `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}/${velocitasConfigMock.packages[0].version}`,
+                `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}/${velocitasConfigMock.packages[0].version}`,
             );
         });
 
@@ -52,8 +52,8 @@ describe('package', () => {
         })
         .stdout()
         .command(['package'])
-        .catch(`Cannot find component ${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version}`)
-        .it('throws error when configured component cannot be found');
+        .catch(`Cannot find package ${velocitasConfigMock.packages[0].repo}:${velocitasConfigMock.packages[0].version}`)
+        .it('throws error when configured package cannot be found');
 
     test.do(() => {
         mockFolders({ velocitasConfig: true, installedComponents: true });

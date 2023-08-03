@@ -38,7 +38,7 @@ Checking for updates!
 
         this.log(`Checking for updates!`);
         const projectConfig = ProjectConfig.read(`v${this.config.version}`);
-        for (const packageConfig of projectConfig.packages) {
+        for (const packageConfig of projectConfig.getPackages()) {
             const availableVersions = await packageConfig.getPackageVersions();
             try {
                 const latestVersion = getLatestVersion(availableVersions);

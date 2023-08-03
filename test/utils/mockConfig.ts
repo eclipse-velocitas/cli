@@ -12,22 +12,21 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { ComponentType } from '../../src/modules/component';
-import { Core, Extension, PackageAttributes } from '../../src/modules/package-index';
+import { CoreComponent, ExtensionComponent, PackageAttributes } from '../../src/modules/package-index';
 
 export const velocitasConfigMock = {
     packages: [
         {
-            name: 'test-runtime',
+            repo: 'test-runtime',
             version: 'v1.1.1',
             variables: { test: 'test' },
         },
         {
-            name: 'test-setup',
+            repo: 'test-setup',
             version: 'v1.1.1',
         },
         {
-            name: 'test-package-main',
+            repo: 'test-package-main',
             version: 'v1.1.1',
         },
     ],
@@ -66,7 +65,7 @@ export const packageIndexMock: PackageAttributes[] = [
                         type: 'object',
                     },
                 ],
-            } as Extension,
+            } as ExtensionComponent,
             {
                 id: 'test-extension',
                 type: 'extension',
@@ -134,7 +133,7 @@ export const packageIndexMock: PackageAttributes[] = [
                         ],
                     },
                 ],
-            } as Core,
+            } as CoreComponent,
         ],
     },
     {
@@ -159,7 +158,7 @@ export const appManifestMock = [
     },
 ];
 
-export const setupComponentManifestMock = {
+export const setupPackageManifestMock = {
     components: [
         {
             id: 'github-workflows',
@@ -204,12 +203,12 @@ export const setupComponentManifestMock = {
     ],
 };
 
-export const runtimeComponentManifestMock = {
+export const runtimePackageManifestMock = {
     components: [
         {
             id: 'test-runtime-local',
             alias: 'local',
-            type: ComponentType.runtime,
+            type: 'extension',
             programs: [
                 {
                     id: 'test-script-1',
@@ -230,7 +229,7 @@ export const runtimeComponentManifestMock = {
         {
             id: 'test-runtime-deploy-local',
             alias: 'local',
-            type: ComponentType.deployment,
+            type: 'extension',
             programs: [
                 {
                     id: 'test-script-1',

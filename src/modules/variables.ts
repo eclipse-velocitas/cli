@@ -14,7 +14,7 @@
 
 import { realpathSync } from 'node:fs';
 import { cwd } from 'node:process';
-import { Component } from './component';
+import { ComponentManifest } from './component';
 import { mapReplacer } from './helpers';
 import { PackageConfig } from './package';
 import { ProjectCache } from './project-cache';
@@ -48,11 +48,11 @@ export class VariableCollection {
         projectConfig: ProjectConfig,
         packageConfig: PackageConfig,
         componentConfig: ComponentConfig,
-        component: Component,
+        component: ComponentManifest,
     ): VariableCollection {
         var map = new Map<string, any>();
-        if (projectConfig.variables) {
-            map = new Map([...map.entries(), ...projectConfig.variables.entries()]);
+        if (projectConfig.getVariableMappings()) {
+            map = new Map([...map.entries(), ...projectConfig.getVariableMappings().entries()]);
         }
         if (packageConfig.variables) {
             map = new Map([...map.entries(), ...packageConfig.variables.entries()]);
@@ -77,7 +77,6 @@ export class VariableCollection {
         map.set('builtin.package.github.repo', packageConfig.getPackageName());
         map.set('builtin.package.github.ref', packageConfig.version);
         map.set('builtin.component.id', component.id);
-        map.set('builtin.component.type', component.type);
 
         return new VariableCollection(map);
     }
@@ -139,7 +138,7 @@ function verifyGivenVariables(
     }
 }
 
-function verifyVariables(variables: Map<string, any>, component: Component): void {
+function verifyVariables(variables: Map<string, any>, component: ComponentManifest): void {
     verifyGivenVariables(component.id, variables, component.variables);
 }
 

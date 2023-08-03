@@ -21,7 +21,15 @@ import Exec from '../exec';
 import Init from '../init';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import Sync from '../sync';
-import { PackageIndex, Core, Extension, CoreOptions, DescribedId, Parameter, PackageAttributes } from '../../modules/package-index';
+import {
+    PackageIndex,
+    CoreComponent,
+    ExtensionComponent,
+    CoreOptions,
+    DescribedId,
+    Parameter,
+    PackageAttributes,
+} from '../../modules/package-index';
 import { AppManifest, AppManifestInterfaceAttributes } from '../../modules/app-manifest';
 import { InteractiveMode } from '../../modules/create-interactive';
 import { PackageConfig } from '../../modules/package';
@@ -34,32 +42,14 @@ import { PackageConfig } from '../../modules/package';
 const inquirer = require('inquirer');
 
 /**
- * Configuration data for creating a new Velocitas Vehicle App project.
- * @interface CreateDataConfig
- * @prop {string} name - Name of the Vehicle App.
- * @prop {string} coreId - The ID of the selected core.
- * @prop {AppManifest} appManifest - App manifest for the project.
- * @prop {PackageAttributes[]} packages - Packages needed for the project.
- * @prop {boolean} example - Indicates whether to use an example or not.
- */
-interface CreateDataConfig {
-    name: string;
-    coreId: string;
-    appManifest: AppManifest;
-    packages: PackageAttributes[];
-    example: boolean;
-}
-
-/**
  * Represents the data needed for creating a new project.
  * @class
- * @implements {CreateDataConfig}
  */
-class CreateData implements CreateDataConfig {
+class CreateData {
     name: string;
     coreId: string;
     appManifest: AppManifest;
-    packages: PackageAttributes[];
+    componentIds: Set<string>;
     example: boolean = false;
 
     /**
@@ -75,36 +65,13 @@ class CreateData implements CreateDataConfig {
         appName: string,
         example: boolean,
         interfaceAttributes: AppManifestInterfaceAttributes[],
-        packageIndex: PackageIndex,
+        mandatoryExtensionIds: string[],
     ) {
         this.name = appName;
         this.coreId = coreId;
         this.appManifest = new AppManifest(appName, interfaceAttributes);
-        this.packages = this._parsePackages(coreId, interfaceAttributes, packageIndex);
+        this.componentIds = new Set<string>([coreId, ...interfaceAttributes.map((ifa) => ifa.type).values(), ...mandatoryExtensionIds]);
         this.example = example;
-    }
-
-    private _parsePackages(
-        coreId: string,
-        interfaceAttributes: AppManifestInterfaceAttributes[],
-        packageIndex: PackageIndex,
-    ): PackageAttributes[] {
-        const selectedPackagesSet = new Set<PackageAttributes>();
-
-        const corePackage = packageIndex.getPackageByComponentId(coreId);
-        selectedPackagesSet.add(corePackage);
-
-        interfaceAttributes.forEach((interfaceAttribute: AppManifestInterfaceAttributes) => {
-            const packageAttribute = packageIndex.getPackageByComponentId(interfaceAttribute.type);
-            selectedPackagesSet.add(packageAttribute);
-        });
-
-        packageIndex.getMandatoryPackages().forEach((packageAttribute: PackageAttributes) => {
-            selectedPackagesSet.add(packageAttribute);
-        });
-        const selectedPackages = Array.from(selectedPackagesSet);
-
-        return selectedPackages;
     }
 }
 
@@ -137,13 +104,13 @@ export default class Create extends Command {
     };
 
     static prompts = {
-        core: (availableCores: Core[]) => {
+        core: (availableCores: CoreComponent[]) => {
             return {
                 name: 'core',
                 prefix: '>',
                 message: 'What kind of project would you like to create?',
                 type: 'list',
-                choices: () => availableCores.map((core: Core) => ({ name: core.name, value: core })),
+                choices: () => availableCores.map((core: CoreComponent) => ({ name: core.name, value: core })),
             };
         },
         coreOptions: (coreOptions: CoreOptions[]) => {
@@ -166,13 +133,13 @@ export default class Create extends Command {
                 choices: () => (parameter.values || []).map((value: DescribedId) => ({ name: value.description, value: value.id })),
             };
         },
-        extensions: (availableExtensions: Extension[]) => {
+        extensions: (availableExtensions: ExtensionComponent[]) => {
             return {
                 name: 'extensions',
                 prefix: '>',
                 message: 'Which extensions do you want to use?',
                 type: 'checkbox',
-                choices: () => availableExtensions.map((ext: Extension) => ({ name: ext.name, value: ext })),
+                choices: () => availableExtensions.map((ext: ExtensionComponent) => ({ name: ext.name, value: ext })),
             };
         },
         extensionParameters: (parameter: Parameter) => {
@@ -224,28 +191,40 @@ export default class Create extends Command {
                 }
             }
         }
-        const createData: CreateData = new CreateData(flags.core, flags.name, flags.example, appManifestInterfaceAttributes, packageIndex);
+        const createData: CreateData = new CreateData(
+            flags.core,
+            flags.name,
+            flags.example,
+            appManifestInterfaceAttributes,
+            packageIndex
+                .getExtensions()
+                .filter((ext) => ext.mandatory)
+                .map((ext) => ext.id),
+        );
         return createData;
     }
 
     private async _runInteractiveMode(packageIndex: PackageIndex): Promise<CreateData> {
         const corePromptResult = await InteractiveMode.configureCore(packageIndex.getCores());
-        const appManifestInterfaceAttributes = await InteractiveMode.configureExtension(packageIndex, corePromptResult);
+        const appManifestInterfaceAttributes = await InteractiveMode.configureExtensions(packageIndex, corePromptResult);
         const createData: CreateData = new CreateData(
             corePromptResult.chosenCore.id,
             corePromptResult.appName,
             corePromptResult.example,
             appManifestInterfaceAttributes,
-            packageIndex,
+            packageIndex
+                .getExtensions()
+                .filter((ext) => ext.mandatory)
+                .map((ext) => ext.id),
         );
         return createData;
     }
 
     private _loadDataFromPackageIndex(packageIndex: PackageIndex) {
-        Create.flags.core.options = packageIndex.getCores().map((core: Core) => {
+        Create.flags.core.options = packageIndex.getCores().map((core: CoreComponent) => {
             return core.id;
         });
-        Create.flags.interface.options = packageIndex.getExtensions().map((ext: Extension) => {
+        Create.flags.interface.options = packageIndex.getExtensions().map((ext: ExtensionComponent) => {
             return ext.id;
         });
     }
@@ -264,21 +243,16 @@ export default class Create extends Command {
         } else {
             createData = await this._parseFlags(packageIndex, flags);
         }
-        await ProjectConfig.create(createData.packages, createData.coreId.split('-').at(-1)!, this.config.version);
+        await ProjectConfig.create(createData.componentIds, packageIndex, createData.coreId.split('-').at(-1)!, this.config.version);
         createData.appManifest.write();
-        const projectConfig = ProjectConfig.read(this.config.version);
-        const coreConfig = projectConfig.packages.find(
-            (packageConfig: PackageConfig) => packageConfig.repo === packageIndex.getPackageByComponentId(createData.coreId).package,
-        );
-        await packageDownloader(coreConfig!).downloadPackage({ checkVersionOnly: false });
+
+        this.log(`... Project for Vehicle Application '${createData.name}' created!`);
+        await Init.run(['--no-hooks']);
         try {
             await Exec.run([createData.coreId, 'create-project', '-d', process.cwd(), '-e', createData.example ? createData.name : '']);
         } catch (error) {
             this.error('Unable to execute create script!');
         }
-
-        this.log(`... Project for Vehicle Application '${createData.name}' created!`);
-        await Init.run(['--no-hooks']);
         await Sync.run([]);
     }
 }

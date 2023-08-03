@@ -17,7 +17,7 @@ import { AppManifest } from '../../modules/app-manifest';
 import { ExecSpec, findComponentByName } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { ProjectConfig } from '../../modules/project-config';
-import { createEnvVars, VariableCollection } from '../../modules/variables';
+import { createEnvVars } from '../../modules/variables';
 
 export default class Exec extends Command {
     static description = 'Executes a script contained in one of your installed components.';
@@ -85,11 +85,13 @@ Executing script...
 
         const appManifestData = AppManifest.read();
 
-        const [packageConfig, componentConfig, component] = findComponentByName(projectConfig, args.component);
+        const componentContext = findComponentByName(projectConfig, args.component);
 
-        const variables = VariableCollection.build(projectConfig, packageConfig, componentConfig, component);
-
-        const envVars = createEnvVars(packageConfig.getPackageDirectoryWithVersion(), variables, appManifestData);
+        const envVars = createEnvVars(
+            componentContext.packageConfig.getPackageDirectoryWithVersion(),
+            componentContext.variableCollection,
+            appManifestData,
+        );
 
         try {
             await runExecSpec(execSpec, args.component, projectConfig, envVars, { verbose: flags.verbose });

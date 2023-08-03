@@ -17,3 +17,6 @@ CHANGELOG.md
 
 # vehicle app repo which is cloned by starting the devContainer
 /vehicle-app-repo
+
+# testbench might have created files which we do not want to track
+/testbench/test-create/vehicle-app-template
