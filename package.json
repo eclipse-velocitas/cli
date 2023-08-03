@@ -82,7 +82,7 @@
     "posttest": "npm run lint",
     "prepack": "npm build && oclif manifest && oclif readme",
     "test": "mocha \"test/**/*.test.ts\"",
-    "coverage": "nyc npm run test",
+    "coverage": "nyc --reporter=cobertura npm run test",
     "version": "oclif readme && git add README.md",
     "local-system-test": "export VELOCITAS_PROCESS=\"./bin/dev\" && mocha \"test/**/*.stest.ts\"",
     "system-test": "export VELOCITAS_PROCESS=\"./velocitas-linux-$ARCH\" && mocha \"test/**/*.stest.ts\"",
