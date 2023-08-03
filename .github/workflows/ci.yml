@@ -59,7 +59,7 @@ jobs:
 
       - uses: 5monkeys/cobertura-action@master
         with:
-          path: results/CodeCoverage/cobertura-coverage.xml
+          path: coverage/cobertura-coverage.xml
           minimum_coverage: 80
           show_line: true
           show_branch: true
