@@ -12,19 +12,27 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { cwd } from 'node:process';
 import { DEFAULT_BUFFER_ENCODING } from './constants';
 
 const DEFAULT_APP_MANIFEST_PATH = resolve(cwd(), './app/AppManifest.json');
 
-export function readAppManifest(): any | undefined {
+export function readAppManifest(appManifestPath: string = DEFAULT_APP_MANIFEST_PATH): any | undefined {
     let config: any = undefined;
-    try {
-        config = JSON.parse(readFileSync(DEFAULT_APP_MANIFEST_PATH, DEFAULT_BUFFER_ENCODING));
-    } catch (error) {
+
+    if (existsSync(appManifestPath)) {
+        try {
+            const file = readFileSync(appManifestPath, DEFAULT_BUFFER_ENCODING);
+            config = JSON.parse(file);
+        } catch (error) {
+            console.error(`Unable to read App Manifest: '${error}'`);
+            throw error;
+        }
+    } else {
         console.info('*** Info ***: No AppManifest found');
     }
+
     return config;
 }
