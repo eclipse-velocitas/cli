@@ -57,17 +57,13 @@ jobs:
       - run: npm run build
       - run: npm run coverage
 
-      - uses: irongut/CodeCoverageSummary@v1.3.0
+      - uses: 5monkeys/cobertura-action@master
         with:
-          filename: coverage/cobertura-coverage.xml
-          badge: true
-          format: markdown
-          hide_complexity: true
-          indicators: true
-          output: both
-
-      -  run: |
-          cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+          path: results/CodeCoverage/cobertura-coverage.xml
+          minimum_coverage: 80
+          show_line: true
+          show_branch: true
+          fail_below_threshold: false
 
   system-tests:
     name: "Run system tests for ${{ matrix.language }}"
