@@ -193,10 +193,13 @@ USAGE
 ARGUMENTS
   COMPONENT  The component which provides the program
   REF        Reference to the ID of the program to execute
-  ARGS...    Args for the executed program
+  ARGS...    Args for the executed program. All arguments and flags provided after the ref are forwarded to the invoked
+             program.
 
 FLAGS
-  -v, --verbose  Enable verbose logging
+  -v, --verbose  Enable verbose logging. The flag may be provided before or in between the 2 positional arguments of
+                 exec. Providing the flag after the 2nd positional argument will forward the flag to the invoked
+                 program.
 
 DESCRIPTION
   Executes a script contained in one of your installed components.
@@ -302,13 +305,12 @@ DESCRIPTION
   Syncs Velocitas components into your repo.
 
 EXAMPLES
-  $ velocitas update MyAwesomeApp --lang cpp
+  $ velocitas sync
   Syncing Velocitas components!
-  ... syncing 'devenv-github-workflows'
-  ... syncing 'devenv-github-templates'
+  ... syncing 'github-workflows'
+  ... syncing 'github-templates'
 ```
 
-_See code: [src/commands/sync/index.ts](src/commands/sync/index.ts)_
 
 ## `velocitas upgrade`
 
@@ -334,7 +336,7 @@ EXAMPLES
   ... 'devenv-github-templates' is up to date!
 ```
 
-_See code: [src/commands/upgrade/index.ts](src/commands/upgrade/index.ts)_
+_See code: [dist/commands/upgrade/index.ts](dist/commands/upgrade/index.ts)_
 <!-- commandsstop -->
 
 # Installation

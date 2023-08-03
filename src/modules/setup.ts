@@ -18,9 +18,9 @@ import path, { join } from 'path';
 import { cwd } from 'process';
 import copy from 'recursive-copy';
 import { TransformCallback, TransformOptions } from 'stream';
-import { SetupComponent } from './component';
 import { PackageConfig } from './package';
 import { VariableCollection } from './variables';
+import { ComponentManifest } from './component';
 
 const SUPPORTED_TEXT_FILES_ARRAY = ['.md', '.yaml', '.yml', '.txt', '.json', '.sh', '.html', '.htm', '.xml', '.tpl'];
 
@@ -80,9 +80,9 @@ class ReplaceVariablesStream extends Transform {
     }
 }
 
-export function installComponent(packageConfig: PackageConfig, setupComponent: SetupComponent, variables: VariableCollection) {
-    if (setupComponent.files) {
-        for (const spec of setupComponent.files) {
+export function installComponent(packageConfig: PackageConfig, component: ComponentManifest, variables: VariableCollection) {
+    if (component.files) {
+        for (const spec of component.files) {
             const src = variables.substitute(spec.src);
             const dst = variables.substitute(spec.dst);
             let ifCondition = spec.condition ? variables.substitute(spec.condition) : 'true';

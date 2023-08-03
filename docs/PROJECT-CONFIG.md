@@ -1,14 +1,18 @@
 # Project configuration
 
+The project configuration describes which packages your project is using and in which version. The versions of the referenced packages can be upgraded using the `upgrade` command. If you only want to see which new versions are available use `upgrade --dry-run`. Each package may expose variables which need to be set from the project configuration. If multiple different packages all expose the same named variable `foo`, setting this variable once in the project configuration will pass the value to all packages.
+
+Read more about variables [here](./features/VARIABLES.md).
+
 ```json
 {
   "packages": [
     {
-      "name": "package-A",
+      "repo": "package-A",
       "version": "v1.0.0"
     },
     {
-      "name": "package-B",
+      "repo": "package-B",
       "version": "v2.3.1-dev"
     }
   ],
@@ -19,6 +23,44 @@
   }
 }
 ```
+
+## Components
+
+A package always exposes 1 to n *components* each of which should provide distinct functionality, i.e. to set up a devContainer or to integrate with Github.
+
+By default, all components of a package will be used, but if desired the used components can be filtered. By providing a list of component configurations in the project configuration:
+
+```json
+{
+  "packages": [
+    {
+      "repo": "package-A",
+      "version": "v1.0.0"
+    },
+    {
+      "repo": "package-B",
+      "version": "v2.3.1-dev"
+    }
+  ],
+  "components": [
+    {
+      "id": "component-exposed-by-pkg-a"
+    },
+    {
+      "id": "component-exposed-by-pkg-b"
+    },
+  ],
+  "variables": {
+    "repoUrl": "https://github.com/eclipse-velocitas/cli",
+    "copyrightYear": 2023,
+    "autoGenerateVehicleModel": true
+  }
+}
+```
+
+The project above will only used the components `component-exposed-by-pkg-a` and `component-exposed-by-pkg-b`, ignoring any other components exposed by the packages.
+
+## File Structure
 
 ### `packages` - Array[[`PackageConfig`](#packageconfig)]
 

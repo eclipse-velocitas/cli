@@ -14,15 +14,15 @@
 
 import { expect } from 'chai';
 import 'mocha';
-import { ComponentType, SetupComponent } from '../../src/modules/component';
 import { PackageConfig } from '../../src/modules/package';
-import { ComponentConfig, ProjectConfig } from '../../src/modules/project-config';
+import { ComponentConfig, ProjectConfig, ProjectConfigOptions } from '../../src/modules/project-config';
 import { VariableCollection } from '../../src/modules/variables';
+import { ComponentManifest } from '../../src/modules/component';
 
 let projectConfig: ProjectConfig;
 let packageConfig: PackageConfig;
 let componentConfig: ComponentConfig;
-let componentManifest: SetupComponent;
+let componentManifest: ComponentManifest;
 let variablesObject: { [key: string]: any };
 let variablesMap: Map<string, any>;
 
@@ -30,7 +30,7 @@ describe('variables - module', () => {
     beforeEach(() => {
         variablesObject = { testString: 'test', testNumber: 1 };
         variablesMap = new Map(Object.entries(variablesObject));
-        packageConfig = new PackageConfig({ name: 'test-package', version: 'v1.1.1', variables: variablesMap, components: [] });
+        packageConfig = new PackageConfig({ repo: 'test-package', version: 'v1.1.1', variables: variablesMap });
         projectConfig = new ProjectConfig('v0.0.0', { packages: [packageConfig], variables: variablesMap });
 
         componentConfig = { id: 'test-component', variables: variablesMap };
@@ -61,7 +61,6 @@ describe('variables - module', () => {
                     default: false,
                 },
             ],
-            type: ComponentType.setup,
         };
     });
     describe('VariableCollection', () => {
@@ -77,8 +76,7 @@ describe('variables - module', () => {
             expect(variableCollection).to.be.an.instanceof(VariableCollection);
         });
         it('should throw an error when component expects required variables which are not configured', () => {
-            projectConfig.packages[0].variables = new Map();
-            projectConfig.variables = new Map();
+            projectConfig = new ProjectConfig('', { variables: new Map<string, any>(), packages: [packageConfig] });
             packageConfig.variables = new Map();
             componentConfig.variables = new Map();
             let expectedErrorMessage: string = '';
@@ -97,7 +95,7 @@ describe('variables - module', () => {
             );
         });
         it('should throw an error when exposed component variable has wrong type', () => {
-            projectConfig.packages[0].variables?.set('testNumber', 'wrongType');
+            projectConfig.getPackages()[0].variables?.set('testNumber', 'wrongType');
             let expectedErrorMessage: string = '';
             expectedErrorMessage += `'${componentConfig.id}' has issues with its configured variables:\n`;
             expectedErrorMessage += `Has wrongly typed variables:\n`;
@@ -132,7 +130,6 @@ describe('variables - module', () => {
             expect(vars.substitute('${{ builtin.package.github.repo }}')).to.equal('test-package');
             expect(vars.substitute('${{ builtin.package.github.ref }}')).to.equal('v1.1.1');
             expect(vars.substitute('${{ builtin.component.id }}')).to.equal('test-component');
-            expect(vars.substitute('${{ builtin.component.type }}')).to.equal('setup');
         });
         it('should transform variable names into allowed environment variable names', () => {
             const vars = VariableCollection.build(projectConfig, packageConfig, componentConfig, componentManifest);
@@ -143,7 +140,6 @@ describe('variables - module', () => {
             expect(envVars['builtin_package_github_repo']).to.equal('test-package');
             expect(envVars['builtin_package_github_ref']).to.equal('v1.1.1');
             expect(envVars['builtin_component_id']).to.equal('test-component');
-            expect(envVars['builtin_component_type']).to.equal('setup');
         });
     });
 });

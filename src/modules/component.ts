@@ -12,43 +12,69 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { getComponentByType, PackageConfig, PackageManifest } from './package';
+import { PackageConfig } from './package';
 import { ComponentConfig, ProjectConfig } from './project-config';
-import { VariableDefinition } from './variables';
+import { VariableCollection, VariableDefinition } from './variables';
 
-type IComponent = new () => { readonly type: ComponentType };
-
-const subcomponentTypes: Record<string, IComponent> = {};
-
-function serializable<T extends IComponent>(constructor: T) {
-    subcomponentTypes[new constructor().type] = constructor;
-    return constructor;
-}
-
+/**
+ * Specification of a program that is exported by a component to be used via `velocitas exec`.
+ */
 export interface ProgramSpec {
+    // Unique ID of the program. Needs to be unique within one component.
     id: string;
+
+    // Short description of the program and that it is doing.
     description?: string;
+
+    // Path to the executable (relative to the package root) of the exposed program.
     executable: string;
+
+    // Default arguments passed to the invoked program upon execution.
     args?: Array<string>;
 }
 
+/**
+ * Execution specification which invokes an exposed program and is able to model
+ * execution dependencies as well as successful startup.
+ */
 export interface ExecSpec {
+    // Reference to the id of the exposed program.
     ref: string;
+
+    // Additional arguments to be passed to the exposed program.
     args?: Array<string>;
+
+    // Regular expression which identifies a successful startup of the program.
     startupLine?: string;
+
+    // A reference to another exposed program that this one depends on.
     dependsOn?: string;
 }
 
-export enum ComponentType {
-    runtime = 'runtime',
-    deployment = 'deployment',
-    setup = 'setup',
+/**
+ * File copy specification. Describes a file or set of files to be copied from a
+ * source to a destination.
+ */
+export interface FileSpec {
+    // The source file path or directory path (relative to the package root).
+    src: string;
+
+    // The destination file path or directory path (relative to the workspace root).
+    dst: string;
+
+    // The condition which has to be fulfilled for the copy to execute. Is evaluated as JS condition.
+    condition: string;
 }
 
-// Interface definition for implementing components
-export interface Component {
+/**
+ * Interface definition for implementing components
+ */
+export interface ComponentManifest {
     // Unique ID of the component. Needs to be unique over all installed components.
     id: string;
+
+    // A list of files that need to be copied from source to target when running `velocitas sync`.
+    files?: Array<FileSpec>;
 
     // A list of all variable definitions exposed by this component.
     variables?: Array<VariableDefinition>;
@@ -58,97 +84,34 @@ export interface Component {
 
     // Hook which is called after the component has been initialized.
     onPostInit?: Array<ExecSpec>;
-
-    // The type of the component.
-    readonly type: ComponentType;
 }
 
-@serializable
-export class RuntimeComponent implements Component {
-    id = '';
-    alias = '';
-    readonly type = ComponentType.runtime;
-    programs? = new Array<ProgramSpec>();
-    onPostInit? = new Array<ExecSpec>();
-    variables? = new Array<VariableDefinition>();
-}
+/** The context in which a component is used. It holds all necessary information to operate on a component. */
+export class ComponentContext {
+    public packageConfig: PackageConfig;
+    public manifest: ComponentManifest;
+    public config: ComponentConfig;
+    public variableCollection: VariableCollection;
 
-export interface FileSpec {
-    src: string;
-    dst: string;
-    condition: string;
-}
-
-@serializable
-export class SetupComponent implements Component {
-    id = '';
-    readonly type = ComponentType.setup;
-    files? = new Array<FileSpec>();
-    programs? = new Array<ProgramSpec>();
-    onPostInit? = new Array<ExecSpec>();
-    variables? = new Array<VariableDefinition>();
-}
-
-@serializable
-export class DeployComponent implements Component {
-    id = '';
-    alias = '';
-    readonly type = ComponentType.deployment;
-    programs? = new Array<ProgramSpec>();
-    onPostInit? = new Array<ExecSpec>();
-    variables? = new Array<VariableDefinition>();
-}
-
-export function findComponentsByType<TComponentType extends Component>(
-    projectConfig: ProjectConfig,
-    type: ComponentType,
-): Array<[PackageConfig, PackageManifest, TComponentType]> {
-    const result = new Array<[PackageConfig, PackageManifest, TComponentType]>();
-    for (const packageConfig of projectConfig.packages) {
-        const componentManifest = packageConfig.readPackageManifest();
-        try {
-            result.push([packageConfig, componentManifest, getComponentByType(componentManifest, type) as TComponentType]);
-        } catch (e) {}
+    constructor(
+        packageReference: PackageConfig,
+        manifest: ComponentManifest,
+        config: ComponentConfig,
+        variableCollection: VariableCollection,
+    ) {
+        this.packageConfig = packageReference;
+        this.manifest = manifest;
+        this.config = config;
+        this.variableCollection = variableCollection;
     }
-
-    return result;
 }
 
-export function findComponentByName(projectConfig: ProjectConfig, componentId: string): [PackageConfig, ComponentConfig, Component] {
-    let result: [PackageConfig, ComponentConfig, Component] | undefined;
-    for (const packageConfig of projectConfig.packages) {
-        const packageManifest = packageConfig.readPackageManifest();
-        const matchingComponent = packageManifest.components.find((c) => c.id === componentId);
-        const matchingComponentConfig = getComponentConfig(packageConfig, componentId);
-        if (matchingComponent) {
-            result = [packageConfig, matchingComponentConfig, matchingComponent];
-            break;
-        }
-    }
+export function findComponentByName(projectConfig: ProjectConfig, componentId: string): ComponentContext {
+    let result = projectConfig.getComponents().find((c) => c.manifest.id === componentId);
 
     if (!result) {
         throw Error(`Cannot find component with id '${componentId}'!`);
     }
 
     return result;
-}
-
-export function getComponentConfig(packageConfig: PackageConfig, componentId: string): ComponentConfig {
-    var maybeComponentConfig: ComponentConfig | undefined;
-    if (packageConfig.components) {
-        maybeComponentConfig = packageConfig.components.find((c) => c.id === componentId);
-    }
-    return maybeComponentConfig ? maybeComponentConfig : new ComponentConfig();
-}
-
-const reviver = (_: string, v: any) => {
-    if (typeof v === 'object' && 'type' in v && v.type in subcomponentTypes) {
-        return Object.assign(new subcomponentTypes[v.type](), v);
-    }
-    return v;
-};
-
-// use this to deserialize JSON instead of plain JSON.parse
-export function deserializeComponentJSON(json: string) {
-    return JSON.parse(json, reviver);
 }

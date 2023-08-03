@@ -12,8 +12,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { PackageIndex, Core, Extension } from './package-index';
+import { PackageIndex, CoreComponent, ExtensionComponent } from './package-index';
 import { AppManifestInterfaceAttributes } from './app-manifest';
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import Create from '../commands/create';
 // inquirer >= v9 is an ESM package.
 // We are not using ESM in our CLI,
@@ -30,7 +31,7 @@ const inquirer = require('inquirer');
  * @prop {boolean} [example] - Indicates whether an example should be used.
  */
 export interface CorePromptResult {
-    chosenCore: Core;
+    chosenCore: CoreComponent;
     appName: string;
     example: boolean;
 }
@@ -41,10 +42,10 @@ export class InteractiveMode {
      * @param availableCores - Available cores to choose from.
      * @returns {Promise<CorePromptResult>} - Object containing all data received by prompts for the core.
      */
-    static async configureCore(availableCores: Core[]): Promise<CorePromptResult> {
+    static async configureCore(availableCores: CoreComponent[]): Promise<CorePromptResult> {
         let promptResult = await inquirer.prompt(Create.prompts.core(availableCores));
         let corePromptResult: CorePromptResult = {
-            chosenCore: promptResult.core as Core,
+            chosenCore: promptResult.core as CoreComponent,
             appName: '',
             example: false,
         };
@@ -74,7 +75,7 @@ export class InteractiveMode {
      * @param corePromptResult - The result of core configuration.
      * @returns {Promise<AppManifestInterfaceAttributes[]>} - Array of app manifest interface attributes.
      */
-    static async configureExtension(
+    static async configureExtensions(
         packageIndex: PackageIndex,
         corePromptResult: CorePromptResult,
     ): Promise<AppManifestInterfaceAttributes[]> {
@@ -84,7 +85,7 @@ export class InteractiveMode {
         }
         const availableExtensions = packageIndex
             .getExtensions()
-            .filter((ext: Extension) =>
+            .filter((ext: ExtensionComponent) =>
                 ext.compatibleCores.find((compatibleCore: string) => !ext.mandatory && compatibleCore === corePromptResult.chosenCore.id),
             );
 
@@ -95,7 +96,7 @@ export class InteractiveMode {
         let extensionPromptResult = await inquirer.prompt(Create.prompts.extensions(availableExtensions));
 
         for (const selectedExtension of extensionPromptResult.extensions) {
-            const typedExtension = selectedExtension as Extension;
+            const typedExtension = selectedExtension as ExtensionComponent;
             appManifestInterfaceEntries.push(
                 await Create.createAppManifestInterfaceAttributes(typedExtension.id, typedExtension.parameters!),
             );

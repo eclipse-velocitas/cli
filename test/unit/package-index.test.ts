@@ -14,7 +14,7 @@
 
 import 'mocha';
 import mockfs from 'mock-fs';
-import { Core, Extension, PackageIndex, PackageAttributes, Parameter } from '../../src/modules/package-index';
+import { CoreComponent, ExtensionComponent, PackageIndex, PackageAttributes, Parameter } from '../../src/modules/package-index';
 import { expect } from 'chai';
 
 const validPackageIndexMock: PackageAttributes[] = [
@@ -44,7 +44,7 @@ const validPackageIndexMock: PackageAttributes[] = [
                         type: 'object',
                     },
                 ],
-            } as Extension,
+            } as ExtensionComponent,
         ],
     },
     {
@@ -92,7 +92,7 @@ const validPackageIndexMock: PackageAttributes[] = [
                         ],
                     },
                 ],
-            } as Core,
+            } as CoreComponent,
         ],
     },
 ];
@@ -174,8 +174,8 @@ const invalidPackageIndexMock = [
         ],
     },
 ];
-const EXPECTED_AVAILABLE_CORES: Core[] = validPackageIndexMock[1].components as Core[];
-const EXPECTED_AVAILABLE_EXTENSIONS: Extension[] = validPackageIndexMock[0].components as Extension[];
+const EXPECTED_AVAILABLE_CORES: CoreComponent[] = validPackageIndexMock[1].components as CoreComponent[];
+const EXPECTED_AVAILABLE_EXTENSIONS: ExtensionComponent[] = validPackageIndexMock[0].components as ExtensionComponent[];
 const EXPECTED_AVAILABLE_EXTENSION_PARAMETER: Parameter[] = EXPECTED_AVAILABLE_EXTENSIONS[0].parameters!;
 const EXPECTED_AVAILABLE_PACKAGES = [validPackageIndexMock[0]];
 

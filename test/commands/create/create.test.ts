@@ -21,16 +21,16 @@ import sinon from 'sinon';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
 import { ProjectConfig } from '../../../src/modules/project-config';
 import { AppManifest } from '../../../src/modules/app-manifest';
-import { Core, Extension } from '../../../src/modules/package-index';
+import { CoreComponent, ExtensionComponent } from '../../../src/modules/package-index';
 const inquirer = require('inquirer');
 
 const TEST_APP_NAME = 'TestApp';
 
 const TEST_COMPONENT_EXTENSION_ID = packageIndexMock[0].components[0].id;
-const TEST_COMPONENT_EXTENSION = packageIndexMock[0].components[0] as Extension;
+const TEST_COMPONENT_EXTENSION = packageIndexMock[0].components[0] as ExtensionComponent;
 
 const TEST_COMPONENT_CORE_ID = packageIndexMock[1].components[0].id;
-const TEST_COMPONENT_CORE = packageIndexMock[1].components[0] as Core;
+const TEST_COMPONENT_CORE = packageIndexMock[1].components[0] as CoreComponent;
 
 const TEST_COMPONENT_CORE_EXAMPLE = TEST_COMPONENT_CORE.options![0].parameters[0].values![0].id;
 
@@ -40,11 +40,11 @@ const TEST_EXPOSED_INTERFACE_PARAMETER_NAME_2 = TEST_COMPONENT_EXTENSION.paramet
 const TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_2 = TEST_COMPONENT_EXTENSION.parameters![1].default as string;
 
 const TEST_PACKAGE_URI = packageIndexMock[0].package;
-const TEST_PACKAGE_NAME = velocitasConfigMock.packages[0].name;
+const TEST_PACKAGE_NAME = velocitasConfigMock.packages[0].repo;
 const TEST_PACKAGE_VERSION = velocitasConfigMock.packages[0].version;
 
 const TEST_MAIN_PACKAGE_URI = packageIndexMock[1].package;
-const TEST_MAIN_PACKAGE_NAME = velocitasConfigMock.packages[2].name;
+const TEST_MAIN_PACKAGE_NAME = velocitasConfigMock.packages[2].repo;
 const TEST_MAIN_PACKAGE_VERSION = velocitasConfigMock.packages[2].version;
 
 enum CoreOption {
@@ -89,11 +89,11 @@ describe('create', () => {
             expect(AppManifest.read()).to.not.be.undefined;
 
             const velocitasConfig = ProjectConfig.read('v0.0.0');
-            expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
-            expect(velocitasConfig.packages[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
-            expect(velocitasConfig.packages[1].repo).to.be.equal(TEST_PACKAGE_URI);
-            expect(velocitasConfig.packages[1].version).to.be.equal(TEST_PACKAGE_VERSION);
-            expect(velocitasConfig.variables.get('language')).to.be.equal('test');
+            expect(velocitasConfig.getPackages()[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
+            expect(velocitasConfig.getPackages()[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
+            expect(velocitasConfig.getPackages()[1].repo).to.be.equal(TEST_PACKAGE_URI);
+            expect(velocitasConfig.getPackages()[1].version).to.be.equal(TEST_PACKAGE_VERSION);
+            expect(velocitasConfig.getVariableMappings().get('language')).to.be.equal('test');
 
             const appManifest = AppManifest.read();
             expect(appManifest!.name).to.be.equal(TEST_APP_NAME);
@@ -108,7 +108,9 @@ describe('create', () => {
         })
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
-        .stub(exec, 'runExecSpec', () => {})
+        .stub(exec, 'awaitSpawn', () => {
+            return { exitCode: -1 };
+        })
         .command(['create', '-n', TEST_APP_NAME, '-c', TEST_COMPONENT_CORE_ID])
         .catch('Unable to execute create script!')
         .it('throws error when project-creation script cannot be executed');
@@ -177,11 +179,11 @@ describe('create', () => {
                 expect(AppManifest.read()).to.not.be.undefined;
 
                 const velocitasConfig = ProjectConfig.read('v0.0.0');
-                expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
-                expect(velocitasConfig.packages[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
-                expect(velocitasConfig.packages[1].repo).to.be.equal(TEST_PACKAGE_URI);
-                expect(velocitasConfig.packages[1].version).to.be.equal(TEST_PACKAGE_VERSION);
-                expect(velocitasConfig.variables.get('language')).to.be.equal('test');
+                expect(velocitasConfig.getPackages()[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
+                expect(velocitasConfig.getPackages()[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
+                expect(velocitasConfig.getPackages()[1].repo).to.be.equal(TEST_PACKAGE_URI);
+                expect(velocitasConfig.getPackages()[1].version).to.be.equal(TEST_PACKAGE_VERSION);
+                expect(velocitasConfig.getVariableMappings().get('language')).to.be.equal('test');
 
                 const appManifest = AppManifest.read();
                 expect(appManifest!.name).to.be.equal(TEST_APP_NAME);
@@ -223,11 +225,11 @@ describe('create', () => {
             expect(AppManifest.read()).to.not.be.undefined;
 
             const velocitasConfig = ProjectConfig.read('v0.0.0');
-            expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
-            expect(velocitasConfig.packages[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
-            expect(velocitasConfig.packages[1].repo).to.be.equal(TEST_PACKAGE_URI);
-            expect(velocitasConfig.packages[1].version).to.be.equal(TEST_PACKAGE_VERSION);
-            expect(velocitasConfig.variables.get('language')).to.be.equal('test');
+            expect(velocitasConfig.getPackages()[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
+            expect(velocitasConfig.getPackages()[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
+            expect(velocitasConfig.getPackages()[1].repo).to.be.equal(TEST_PACKAGE_URI);
+            expect(velocitasConfig.getPackages()[1].version).to.be.equal(TEST_PACKAGE_VERSION);
+            expect(velocitasConfig.getVariableMappings().get('language')).to.be.equal('test');
 
             const appManifest = AppManifest.read();
             expect(appManifest!.name).to.be.equal(TEST_APP_NAME);
@@ -272,11 +274,11 @@ describe('create', () => {
             expect(AppManifest.read()).to.not.be.undefined;
 
             const velocitasConfig = ProjectConfig.read('v0.0.0');
-            expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
-            expect(velocitasConfig.packages[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
-            expect(velocitasConfig.packages[1].repo).to.be.equal(TEST_PACKAGE_URI);
-            expect(velocitasConfig.packages[1].version).to.be.equal(TEST_PACKAGE_VERSION);
-            expect(velocitasConfig.variables.get('language')).to.be.equal('test');
+            expect(velocitasConfig.getPackages()[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
+            expect(velocitasConfig.getPackages()[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
+            expect(velocitasConfig.getPackages()[1].repo).to.be.equal(TEST_PACKAGE_URI);
+            expect(velocitasConfig.getPackages()[1].version).to.be.equal(TEST_PACKAGE_VERSION);
+            expect(velocitasConfig.getVariableMappings().get('language')).to.be.equal('test');
 
             const appManifest = AppManifest.read();
             expect(appManifest!.name).to.be.equal(TEST_COMPONENT_CORE_EXAMPLE);
