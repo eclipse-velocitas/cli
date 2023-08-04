@@ -57,6 +57,14 @@ jobs:
       - run: npm run build
       - run: npm run coverage
 
+      - uses: 5monkeys/cobertura-action@master
+        with:
+          path: coverage/cobertura-coverage.xml
+          minimum_coverage: 80
+          show_line: true
+          show_branch: true
+          fail_below_threshold: false
+
   system-tests:
     name: "Run system tests for ${{ matrix.language }}"
     runs-on: ubuntu-latest

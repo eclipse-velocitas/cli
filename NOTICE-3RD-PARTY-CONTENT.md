@@ -42,6 +42,7 @@
 ## Workflows
 | Dependency | Version | License |
 |:-----------|:-------:|--------:|
+|5monkeys/cobertura-action|master|MIT License|
 |actions/checkout|v3|MIT License|
 |actions/download-artifact|v3|MIT License|
 |actions/setup-node|v3|MIT License|
