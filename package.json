@@ -20,7 +20,7 @@
     "@oclif/core": "^2.9.3",
     "@oclif/plugin-help": "^5.2.13",
     "@oclif/plugin-not-found": "^2.3.30",
-    "@oclif/plugin-plugins": "^3.1.6",
+    "@oclif/plugin-plugins": "^3.1.10",
     "decompress": "^4.2.1",
     "node-pty": "^1.0.0",
     "recursive-copy": "^2.0.14",
