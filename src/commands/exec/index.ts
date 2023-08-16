@@ -64,7 +64,7 @@ Executing script...
 
         const variables = VariableCollection.build(projectConfig, packageConfig, componentConfig, component);
 
-        const envVars = createEnvVars(variables, appManifestData);
+        const envVars = createEnvVars(componentContext.packageReference.getPackageDirectory(), variables, appManifestData);
 
         try {
             await runExecSpec(execSpec, args.component, projectConfig, envVars, { verbose: flags.verbose });
