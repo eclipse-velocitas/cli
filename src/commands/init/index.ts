@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ux, Command, Flags } from '@oclif/core';
-import { AppManifest, readAppManifest } from '../../modules/app-manifest';
+import { readAppManifest } from '../../modules/app-manifest';
 import { Component } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { PackageConfig } from '../../modules/package';
@@ -24,7 +24,7 @@ async function runPostInitHook(
     component: Component,
     packageConfig: PackageConfig,
     projectConfig: ProjectConfig,
-    appManifest: AppManifest,
+    appManifest: any,
     verbose: boolean,
 ) {
     if (!component.onPostInit || component.onPostInit.length === 0) {
@@ -97,7 +97,7 @@ Velocitas project found!
                 const packageManifest = packageConfig.readPackageManifest();
                 for (const component of packageManifest.components) {
                     try {
-                        await runPostInitHook(component, packageConfig, projectConfig, appManifestData[0], flags.verbose);
+                        await runPostInitHook(component, packageConfig, projectConfig, appManifestData, flags.verbose);
                     } catch (e) {
                         if (e instanceof ExecExitError) {
                             this.error(e.message, { exit: e.exitCode });
