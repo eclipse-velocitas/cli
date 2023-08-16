@@ -80,6 +80,10 @@ export class PackageConfig {
         return join(getPackageFolderPath(), this.getPackageName());
     }
 
+    getPackageDirectoryWithVersion(): string {
+        return join(this.getPackageDirectory(), this.version);
+    }
+
     async getPackageVersions(): Promise<string[]> {
         try {
             const packageInformation = await packageDownloader(this).downloadPackage({ checkVersionOnly: true });

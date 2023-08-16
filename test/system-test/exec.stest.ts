@@ -55,7 +55,7 @@ describe('CLI command', () => {
             expect(result.stdout).to.contain('VELOCITAS_CACHE_DATA=');
             expect(result.stdout).to.contain('VELOCITAS_CACHE_DIR=');
             expect(result.stdout).to.contain('VELOCITAS_APP_MANIFEST=');
-            expect(result.stdout).to.contain(`VELOCITAS_PACKAGE_DIR="${VELOCITAS_HOME}/packages/test-package/test-version"`);
+            expect(result.stdout).to.contain(`VELOCITAS_PACKAGE_DIR=${VELOCITAS_HOME}/packages/test-package/test-version`);
         });
 
         it('should be able to run executables that are on the path', () => {
