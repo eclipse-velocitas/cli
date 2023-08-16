@@ -182,13 +182,14 @@ function buildErrorMessageForComponent(
     return errorMessage;
 }
 
-export function createEnvVars(variables: VariableCollection, appManifestData?: any): NodeJS.ProcessEnv {
+export function createEnvVars(packagePath: string, variables: VariableCollection, appManifestData?: any): NodeJS.ProcessEnv {
     const projectCache = ProjectCache.read();
 
     const envVars = Object.assign({}, process.env, {
         VELOCITAS_WORKSPACE_DIR: cwd(),
         VELOCITAS_CACHE_DATA: JSON.stringify(projectCache.raw(), mapReplacer),
         VELOCITAS_CACHE_DIR: ProjectCache.getCacheDir(realpathSync(process.cwd())),
+        VELOCITAS_PACKAGE_DIR: packagePath,
     });
 
     if (appManifestData) {

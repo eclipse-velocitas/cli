@@ -44,7 +44,7 @@ async function runPostInitHook(
         } else {
             console.log(message);
         }
-        const envVars = createEnvVars(variables, appManifest);
+        const envVars = createEnvVars(packageConfig.getPackageDirectoryWithVersion(), variables, appManifest);
         await runExecSpec(execSpec, component.id, projectConfig, envVars, { writeStdout: verbose, verbose: verbose });
         if (!verbose) {
             ux.action.stop();
