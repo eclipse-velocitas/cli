@@ -21,7 +21,8 @@ describe('app-manifest - module', () => {
     before(() => {
         const mockfsConf: any = {
             '/AppManifestInvalid.json': 'foo',
-            '/AppManifestValid.json': '{ "name": "AppName", "manifestVersion": "v3" }'
+            '/AppManifestValid.json': '{ "name": "AppName", "manifestVersion": "v3" }',
+            '/AppManifestArray.json': '[ { "name": "AppName", "manifestVersion": "v3" } ]'
         };
         mockfs(mockfsConf, { createCwd: false });
     });
@@ -36,6 +37,13 @@ describe('app-manifest - module', () => {
 
         it('should read the file and return proper content', () => {
             const appManifest = readAppManifest('/AppManifestValid.json');
+
+            expect(appManifest['name']).to.be.eq('AppName');
+            expect(appManifest['manifestVersion']).to.be.eq('v3');
+        });
+
+        it('should omit the root array, if it exists and return proper content', () => {
+            const appManifest = readAppManifest('/AppManifestArray.json');
 
             expect(appManifest['name']).to.be.eq('AppName');
             expect(appManifest['manifestVersion']).to.be.eq('v3');
