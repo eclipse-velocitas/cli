@@ -20,7 +20,8 @@ import { expect } from 'chai';
 describe('app-manifest - module', () => {
     before(() => {
         const mockfsConf: any = {
-            '/AppManifest.json': 'foo',
+            '/AppManifestInvalid.json': 'foo',
+            '/AppManifestValid.json': '{ "name": "AppName", "manifestVersion": "v3" }'
         };
         mockfs(mockfsConf, { createCwd: false });
     });
@@ -30,7 +31,14 @@ describe('app-manifest - module', () => {
         });
 
         it('should throw an error if file is present, but cannot be read.', () => {
-            expect(readAppManifest.bind(readAppManifest, '/AppManifest.json')).to.throw();
+            expect(readAppManifest.bind(readAppManifest, '/AppManifestInvalid.json')).to.throw();
+        });
+
+        it('should read the file and return proper content', () => {
+            const appManifest = readAppManifest('/AppManifestValid.json');
+
+            expect(appManifest['name']).to.be.eq('AppName');
+            expect(appManifest['manifestVersion']).to.be.eq('v3');
         });
     });
     after(() => {
