@@ -20,12 +20,16 @@ import { DEFAULT_BUFFER_ENCODING } from './constants';
 const DEFAULT_APP_MANIFEST_PATH = resolve(cwd(), './app/AppManifest.json');
 
 export function readAppManifest(appManifestPath: string = DEFAULT_APP_MANIFEST_PATH): any | undefined {
-    let config: any = undefined;
+    let manifest: any;
 
     if (existsSync(appManifestPath)) {
         try {
             const file = readFileSync(appManifestPath, DEFAULT_BUFFER_ENCODING);
-            config = JSON.parse(file);
+            manifest = JSON.parse(file);
+            if (manifest instanceof Array) {
+                // for backwards compatibility we use the first entry from the array
+                manifest = manifest[0];
+            }
         } catch (error) {
             console.error(`Unable to read App Manifest: '${error}'`);
             throw error;
@@ -34,5 +38,5 @@ export function readAppManifest(appManifestPath: string = DEFAULT_APP_MANIFEST_P
         console.info('*** Info ***: No AppManifest found');
     }
 
-    return config;
+    return manifest;
 }

@@ -20,6 +20,7 @@ import { join } from 'path';
 import { cwd } from 'process';
 import YAML from 'yaml';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
+import { readFileSync } from 'fs';
 
 const VELOCITAS_PROCESS = join('..', '..', process.env['VELOCITAS_PROCESS'] ? process.env['VELOCITAS_PROCESS'] : 'velocitas');
 const TEST_ROOT = cwd();
@@ -51,10 +52,11 @@ describe('CLI command', () => {
         it('should pass environment variables to the spawned process', async () => {
             const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'echo-env'], { encoding: DEFAULT_BUFFER_ENCODING });
 
+            const expectedString = JSON.stringify(JSON.parse(readFileSync('./app/AppManifest.json', 'utf-8')));
             expect(result.stdout).to.contain('VELOCITAS_WORKSPACE_DIR=');
             expect(result.stdout).to.contain('VELOCITAS_CACHE_DATA=');
             expect(result.stdout).to.contain('VELOCITAS_CACHE_DIR=');
-            expect(result.stdout).to.contain('VELOCITAS_APP_MANIFEST=');
+            expect(result.stdout).to.contain(`VELOCITAS_APP_MANIFEST=${expectedString}`);
             expect(result.stdout).to.contain(`VELOCITAS_PACKAGE_DIR=${VELOCITAS_HOME}/packages/test-package/test-version`);
         });
 
