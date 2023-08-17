@@ -20,7 +20,7 @@ import { DEFAULT_BUFFER_ENCODING } from './constants';
 const DEFAULT_APP_MANIFEST_PATH = resolve(cwd(), './app/AppManifest.json');
 
 export function readAppManifest(appManifestPath: string = DEFAULT_APP_MANIFEST_PATH): any | undefined {
-    let manifest: any = undefined;
+    let manifest: any;
 
     if (existsSync(appManifestPath)) {
         try {
