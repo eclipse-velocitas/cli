@@ -110,6 +110,7 @@ Velocitas project found!
                 }
             }
         } else {
+            this.log('Directory is no velocitas project, yet!');
             this.log('... Creating .velocitas.json at the root of your repository.');
             projectConfig = new ProjectConfig();
             projectConfig.write();
