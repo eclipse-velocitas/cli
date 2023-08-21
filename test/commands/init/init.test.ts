@@ -87,7 +87,9 @@ describe('init', () => {
         .command(['init'])
         .it('creates config file from default velocitas.json', (ctx) => {
             expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
-            expect(ctx.stdout).to.contain('... Creating .velocitas.json at the root of your repository.');
+            expect(ctx.stdout).to.contain(
+                '... Directory is no velocitas project. Creating .velocitas.json at the root of your repository.',
+            );
             expect(fs.existsSync(`${process.cwd()}/.velocitas.json`)).to.be.true;
         });
 

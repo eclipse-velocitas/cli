@@ -37,7 +37,7 @@ describe('project-config - module', () => {
         it('should throw an error when .velocitas.json is invalid.', () => {
             expect(ProjectConfig.read.bind(ProjectConfig.read, '/.velocitasInvalid.json')).to.throw();
         });
-        it('should be able to read the ProjectConfig when .velocitas.json is valid.', () => {
+        it('should read the ProjectConfig when .velocitas.json is valid.', () => {
             expect(ProjectConfig.read.bind(ProjectConfig.read, '/.velocitasValid.json')).to.not.throw();
         });
     });
