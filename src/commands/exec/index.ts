@@ -33,29 +33,46 @@ Executing script...
     static args = {
         component: Args.string({ description: 'The component which provides the program', required: true }),
         ref: Args.string({ description: 'Reference to the ID of the program to execute', required: true }),
-        'args...': Args.string({ description: 'Args for the executed program', required: false }),
+        'args...': Args.string({
+            description: 'Args for the executed program. All arguments after the ref are arguments for the invoked program.',
+            required: false,
+        }),
     };
 
     static flags = {
         verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false, default: false }),
-        args: Flags.string({ description: 'Args for the executed program', multiple: true, required: false }),
     };
 
+    public extractProgramArgsAndFlags(): string[] {
+        // we expect 2 positional args: component and program-ref
+        // everything after that is an argument for the invoked
+        // program.
+        // the verbose flag may be anywhere in between but **NOT**
+        // after the program-ref.
+        let positionalArgsCount = 0;
+        let programArgsStartIndex;
+        for (programArgsStartIndex = 0; programArgsStartIndex < this.argv.length; ++programArgsStartIndex) {
+            if (!this.argv[programArgsStartIndex].startsWith('-')) {
+                ++positionalArgsCount;
+            }
+
+            if (positionalArgsCount >= 2) {
+                break;
+            }
+        }
+
+        return this.argv.splice(Math.min(programArgsStartIndex + 1, this.argv.length - 1));
+    }
+
     async run(): Promise<void> {
+        const programArgsAndFlags = this.extractProgramArgsAndFlags();
         const { args, flags } = await this.parse(Exec);
 
         const projectConfig = ProjectConfig.read();
 
-        // OCLIF does not support varargs (lists) out of the box.
-        // Their suggestion is to set "strict" argument parsing to false but no further documentation is available.
-        // Hence we access the Command.argv attribute which holds all arguments passed to the CLI
-        // and access everything STARTING AFTER the args."ref" argument as "custom args" for the invoked program.
-        const customArgsOffset = Object.keys(args).indexOf('ref') + 1;
-        const execArgs: string[] = this.argv.length > customArgsOffset ? this.argv.slice(customArgsOffset) : [];
-
         const execSpec: ExecSpec = {
             ref: args.ref,
-            args: execArgs,
+            args: programArgsAndFlags,
         };
 
         const appManifestData = readAppManifest();
