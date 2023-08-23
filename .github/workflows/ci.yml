@@ -30,7 +30,7 @@ on:
 jobs:
   lint-job:
     name: "Run linters"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout repository
@@ -42,7 +42,7 @@ jobs:
   cli-tests:
     strategy:
       matrix:
-        os: ["ubuntu-latest"]
+        os: ["ubuntu-22.04"]
         # TODO: eclipse-velocitas/cli/issues/141
         node_version: [lts/-1, lts/*, 20.4.0]
       fail-fast: false
@@ -67,7 +67,7 @@ jobs:
 
   system-tests:
     name: "Run system tests for ${{ matrix.language }}"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     container: ghcr.io/eclipse-velocitas/devcontainer-base-images/${{ matrix.language }}:v0.1
     strategy:
       matrix:
