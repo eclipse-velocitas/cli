@@ -39,12 +39,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.ref }}
+          ref: v${{ inputs.ref }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - uses: actions/setup-node@v3
         with:
           node-version: 18
+
+      - name: Set correct version in package.json
+        run: |
+          echo "`jq '.version="${{ inputs.ref }}"' package.json`" > package.json
+          echo ${{ inputs.ref }}
+          cat package.json
+
       # This step is needed to install needed dependencies (node-pty) for arm based architecture
       - name: Install dependencies for ARM64
         if: ${{ matrix.arch == 'arm64' }}
