@@ -54,10 +54,16 @@ jobs:
         with:
           node-version: 18
 
-      - name: Set correct version in package.json
-        if: ${{ inputs.cliVersion != '' }}
+      - name: Set version in package.json
         run: |
-          echo "`jq '.version="${{ inputs.cliVersion }}"' package.json`" > package.json
+          if [ ${{ inputs.cliVersion }} != '' ]; then
+            echo "Set new release version in package.json"
+            VERSION=${{ inputs.cliVersion }}
+          else
+            echo "Set new release version in package.json"
+            VERSION=$GITHUB_SHA
+          fi
+          echo "$(jq --arg VERSION $VERSION '.version=$VERSION' package.json)" > package.json
 
       # This step is needed to install needed dependencies (node-pty) for arm based architecture
       - name: Install dependencies for ARM64
