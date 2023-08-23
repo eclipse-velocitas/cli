@@ -12,9 +12,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { PathLike, readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { cwd } from 'node:process';
+import { existsSync, PathLike, readFileSync, writeFileSync } from 'fs';
+import { resolve } from 'path';
+import { cwd } from 'process';
 import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { mapReplacer } from './helpers';
 import { PackageConfig } from './package';
@@ -47,7 +47,13 @@ export class ProjectConfig implements ProjectConfigOptions {
     }
 
     static read(path: PathLike = DEFAULT_CONFIG_FILE_PATH): ProjectConfig {
-        let config: ProjectConfig = new ProjectConfig(JSON.parse(readFileSync(path, DEFAULT_BUFFER_ENCODING)));
+        let config: ProjectConfig;
+
+        try {
+            config = new ProjectConfig(JSON.parse(readFileSync(path, DEFAULT_BUFFER_ENCODING)));
+        } catch (error) {
+            throw new Error(`Error in parsing .velocitas.json: ${(error as Error).message}`);
+        }
 
         if (config.variables) {
             config.variables = new Map(Object.entries(config.variables));
@@ -70,15 +76,7 @@ export class ProjectConfig implements ProjectConfigOptions {
         return config;
     }
 
-    static isAvailable(path: PathLike = DEFAULT_CONFIG_FILE_PATH): boolean {
-        try {
-            ProjectConfig.read(path);
-        } catch (error) {
-            console.log('Directory is no velocitas project, yet!');
-            return false;
-        }
-        return true;
-    }
+    static isAvailable = (path: PathLike = DEFAULT_CONFIG_FILE_PATH) => existsSync(path);
 
     write(path: PathLike = DEFAULT_CONFIG_FILE_PATH): void {
         // replaceAll because of having "backward compatibility" before deprecate "name" completely
