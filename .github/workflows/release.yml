@@ -43,7 +43,8 @@ jobs:
     uses: ./.github/workflows/build-exe.yml
     needs: [bump-version]
     with:
-      ref: ${{ needs.bump-version.outputs.packageVersion }}
+      ref: v${{ needs.bump-version.outputs.packageVersion }}
+      cliVersion: ${{ needs.bump-version.outputs.packageVersion }}
 
   create-release:
     runs-on: ubuntu-22.04
