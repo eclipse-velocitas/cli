@@ -61,7 +61,7 @@ Executing script...
             }
         }
 
-        return this.argv.splice(Math.min(programArgsStartIndex + 1, this.argv.length - 1));
+        return this.argv.splice(Math.min(programArgsStartIndex + 1, this.argv.length));
     }
 
     async run(): Promise<void> {
