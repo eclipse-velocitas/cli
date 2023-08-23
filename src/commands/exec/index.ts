@@ -34,13 +34,21 @@ Executing script...
         component: Args.string({ description: 'The component which provides the program', required: true }),
         ref: Args.string({ description: 'Reference to the ID of the program to execute', required: true }),
         'args...': Args.string({
-            description: 'Args for the executed program. All arguments after the ref are arguments for the invoked program.',
+            description:
+                'Args for the executed program. All arguments and flags provided after the ref are forwarded to the invoked program.',
             required: false,
         }),
     };
 
     static flags = {
-        verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false, default: false }),
+        verbose: Flags.boolean({
+            char: 'v',
+            aliases: ['verbose'],
+            description:
+                'Enable verbose logging. The flag may be provided before or in between the 2 positional arguments of exec. Providing the flag after the 2nd positional argument will forward the flag to the invoked program.',
+            required: false,
+            default: false,
+        }),
     };
 
     private _extractProgramArgsAndFlags(): string[] {
