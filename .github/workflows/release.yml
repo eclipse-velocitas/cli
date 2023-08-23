@@ -16,10 +16,7 @@ name: Trigger Manual Release
 
 on:
   workflow_dispatch:
-  push:
-    # Run only on branches/commits and not tags
-    branches:
-      - fix/velocitas-version
+
 jobs:
   bump-version:
     runs-on: ubuntu-22.04
@@ -44,6 +41,7 @@ jobs:
     needs: [bump-version]
     with:
       ref: v${{ needs.bump-version.outputs.packageVersion }}
+      cliVersion: ${{ needs.bump-version.outputs.packageVersion }}
 
   create-release:
     runs-on: ubuntu-22.04

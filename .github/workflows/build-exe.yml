@@ -24,13 +24,17 @@ on:
         required: false
         type: string
       cliVersion:
-        description: 'CLI Version to compile'
+        description: 'CLI package version to compile'
         required: false
         type: string
   workflow_dispatch:
     inputs:
       ref:
         description: 'Commit ref to use'
+        required: false
+        type: string
+      cliVersion:
+        description: 'CLI package version to compile'
         required: false
         type: string
 
