@@ -44,7 +44,6 @@ jobs:
     needs: [bump-version]
     with:
       ref: v${{ needs.bump-version.outputs.packageVersion }}
-      cliVersion: ${{ needs.bump-version.outputs.packageVersion }}
 
   create-release:
     runs-on: ubuntu-22.04
