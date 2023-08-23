@@ -19,7 +19,7 @@ on:
 
 jobs:
   bump-version:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       packageVersion: ${{ steps.changelog.outputs.version }}
     steps:
@@ -35,16 +35,16 @@ jobs:
           tag-prefix: 'v'
 
       - run: echo ${{ steps.changelog.outputs.version }}
-      - run: echo "`jq '.version="${{ steps.changelog.outputs.version }}"' package.json`" > package.json
 
   compile:
     uses: ./.github/workflows/build-exe.yml
     needs: [bump-version]
     with:
       ref: v${{ needs.bump-version.outputs.packageVersion }}
+      cliVersion: ${{ needs.bump-version.outputs.packageVersion }}
 
   create-release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [bump-version, compile]
     steps:
       - uses: actions/download-artifact@v3

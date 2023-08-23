@@ -23,10 +23,18 @@ on:
         description: 'Commit ref to use'
         required: false
         type: string
+      cliVersion:
+        description: 'CLI package version to compile'
+        required: false
+        type: string
   workflow_dispatch:
     inputs:
       ref:
         description: 'Commit ref to use'
+        required: false
+        type: string
+      cliVersion:
+        description: 'CLI package version to compile'
         required: false
         type: string
 
@@ -45,6 +53,18 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
+
+      - name: Set version in package.json
+        run: |
+          if [ ${{ inputs.cliVersion }} != '' ]; then
+            echo "Set new release version in package.json"
+            VERSION=${{ inputs.cliVersion }}
+          else
+            echo "Set new release version in package.json"
+            VERSION=$GITHUB_SHA
+          fi
+          echo "$(jq --arg VERSION $VERSION '.version=$VERSION' package.json)" > package.json
+
       # This step is needed to install needed dependencies (node-pty) for arm based architecture
       - name: Install dependencies for ARM64
         if: ${{ matrix.arch == 'arm64' }}
