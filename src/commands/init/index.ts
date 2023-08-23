@@ -84,35 +84,34 @@ Velocitas project found!
 
         const appManifestData = readAppManifest();
 
-        if (ProjectConfig.isAvailable()) {
-            projectConfig = ProjectConfig.read();
+        if (!ProjectConfig.isAvailable()) {
+            this.log('... Directory is no velocitas project. Creating .velocitas.json at the root of your repository.');
+            projectConfig = new ProjectConfig();
+            projectConfig.write();
+        }
+        projectConfig = ProjectConfig.read();
 
-            for (const packageConfig of projectConfig.packages) {
-                if (!flags.force && packageConfig.isPackageInstalled()) {
-                    this.log(`... '${packageConfig.getPackageName()}:${packageConfig.version}' already initialized.`);
-                    continue;
-                }
-                this.log(`... Downloading package: '${packageConfig.getPackageName()}:${packageConfig.version}'`);
-                await packageConfig.downloadPackageVersion(flags.verbose);
-                const packageManifest = packageConfig.readPackageManifest();
-                for (const component of packageManifest.components) {
-                    try {
-                        await runPostInitHook(component, packageConfig, projectConfig, appManifestData, flags.verbose);
-                    } catch (e) {
-                        if (e instanceof ExecExitError) {
-                            this.error(e.message, { exit: e.exitCode });
-                        } else if (e instanceof Error) {
-                            this.error(e.message);
-                        } else {
-                            this.error(`An unexpected error occured during initialization of component: ${component.id}`);
-                        }
+        for (const packageConfig of projectConfig.packages) {
+            if (!flags.force && packageConfig.isPackageInstalled()) {
+                this.log(`... '${packageConfig.getPackageName()}:${packageConfig.version}' already initialized.`);
+                continue;
+            }
+            this.log(`... Downloading package: '${packageConfig.getPackageName()}:${packageConfig.version}'`);
+            await packageConfig.downloadPackageVersion(flags.verbose);
+            const packageManifest = packageConfig.readPackageManifest();
+            for (const component of packageManifest.components) {
+                try {
+                    await runPostInitHook(component, packageConfig, projectConfig, appManifestData, flags.verbose);
+                } catch (e) {
+                    if (e instanceof ExecExitError) {
+                        this.error(e.message, { exit: e.exitCode });
+                    } else if (e instanceof Error) {
+                        this.error(e.message);
+                    } else {
+                        this.error(`An unexpected error occured during initialization of component: ${component.id}`);
                     }
                 }
             }
-        } else {
-            this.log('... Creating .velocitas.json at the root of your repository.');
-            projectConfig = new ProjectConfig();
-            projectConfig.write();
         }
     }
 }
