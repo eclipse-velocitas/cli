@@ -100,7 +100,7 @@ describe('CLI command', () => {
                 encoding: DEFAULT_BUFFER_ENCODING,
             });
 
-            const lines = result.stdout.split('\r\n');
+            const lines = result.stdout.split('\n').map((line) => line.trim());
             expect(lines.length).to.be.equal(6);
             expect(lines[0]).to.be.equal('./print-args.py');
             expect(lines[1]).to.be.equal('default');
@@ -115,10 +115,61 @@ describe('CLI command', () => {
                 encoding: DEFAULT_BUFFER_ENCODING,
             });
 
-            const lines = result.stdout.split('\r\n');
+            const lines = result.stdout.split('\n').map((line) => line.trim());
             expect(lines.length).to.be.equal(2);
             expect(lines[0]).to.be.equal('./print-args.py');
             expect(lines[1]).to.be.equal('');
+        });
+
+        it('should pass flags after the program-ref to the executed program', async () => {
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'print-args-no-default', '--flag', 'myValue'], {
+                encoding: DEFAULT_BUFFER_ENCODING,
+            });
+
+            const lines = result.stdout.split('\n').map((line) => line.trim());
+            expect(lines.length).to.be.equal(4);
+            expect(lines[0]).to.be.equal('./print-args.py');
+            expect(lines[1]).to.be.equal('--flag');
+            expect(lines[2]).to.be.equal('myValue');
+            expect(lines[3]).to.be.equal('');
+        });
+
+        it('should not pass the verbose flag in 2nd position to the executed program', async () => {
+            const result = spawnSync(
+                VELOCITAS_PROCESS,
+                ['exec', 'test-component', '-v', 'print-args-no-default', '-random', 'flag', 'regular=flag2'],
+                {
+                    encoding: DEFAULT_BUFFER_ENCODING,
+                },
+            );
+
+            const lines = result.stdout.split('\n').map((line) => line.trim());
+            expect(lines.length).to.be.equal(6);
+            expect(lines[0]).to.be.equal('Starting test-component/print-args-no-default');
+            expect(lines[1]).to.be.equal('./print-args.py');
+            expect(lines[2]).to.be.equal('-random');
+            expect(lines[3]).to.be.equal('flag');
+            expect(lines[4]).to.be.equal('regular=flag2');
+            expect(lines[5]).to.be.equal('');
+        });
+
+        it('should not pass the verbose flag in 1st position to the executed program', async () => {
+            const result = spawnSync(
+                VELOCITAS_PROCESS,
+                ['exec', '-v', 'test-component', 'print-args-no-default', '-other', 'thing', 'regular=flag2'],
+                {
+                    encoding: DEFAULT_BUFFER_ENCODING,
+                },
+            );
+
+            const lines = result.stdout.split('\n').map((line) => line.trim());
+            expect(lines.length).to.be.equal(6);
+            expect(lines[0]).to.be.equal('Starting test-component/print-args-no-default');
+            expect(lines[1]).to.be.equal('./print-args.py');
+            expect(lines[2]).to.be.equal('-other');
+            expect(lines[3]).to.be.equal('thing');
+            expect(lines[4]).to.be.equal('regular=flag2');
+            expect(lines[5]).to.be.equal('');
         });
 
         it('should return the error code of the first executed program which returns an error', async () => {

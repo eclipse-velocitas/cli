@@ -33,29 +33,54 @@ Executing script...
     static args = {
         component: Args.string({ description: 'The component which provides the program', required: true }),
         ref: Args.string({ description: 'Reference to the ID of the program to execute', required: true }),
-        'args...': Args.string({ description: 'Args for the executed program', required: false }),
+        'args...': Args.string({
+            description:
+                'Args for the executed program. All arguments and flags provided after the ref are forwarded to the invoked program.',
+            required: false,
+        }),
     };
 
     static flags = {
-        verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false, default: false }),
-        args: Flags.string({ description: 'Args for the executed program', multiple: true, required: false }),
+        verbose: Flags.boolean({
+            char: 'v',
+            aliases: ['verbose'],
+            description:
+                'Enable verbose logging. The flag may be provided before or in between the 2 positional arguments of exec. Providing the flag after the 2nd positional argument will forward the flag to the invoked program.',
+            required: false,
+            default: false,
+        }),
     };
 
+    private _extractProgramArgsAndFlags(): string[] {
+        // we expect 2 positional args: component and program-ref
+        // everything after that is an argument for the invoked
+        // program.
+        // the verbose flag may be anywhere in between but **NOT**
+        // after the program-ref.
+        let positionalArgsCount = 0;
+        let programArgsStartIndex;
+        for (programArgsStartIndex = 0; programArgsStartIndex < this.argv.length; ++programArgsStartIndex) {
+            if (!this.argv[programArgsStartIndex].startsWith('-')) {
+                ++positionalArgsCount;
+            }
+
+            if (positionalArgsCount >= 2) {
+                break;
+            }
+        }
+
+        return this.argv.splice(Math.min(programArgsStartIndex + 1, this.argv.length));
+    }
+
     async run(): Promise<void> {
+        const programArgsAndFlags = this._extractProgramArgsAndFlags();
         const { args, flags } = await this.parse(Exec);
 
         const projectConfig = ProjectConfig.read();
 
-        // OCLIF does not support varargs (lists) out of the box.
-        // Their suggestion is to set "strict" argument parsing to false but no further documentation is available.
-        // Hence we access the Command.argv attribute which holds all arguments passed to the CLI
-        // and access everything STARTING AFTER the args."ref" argument as "custom args" for the invoked program.
-        const customArgsOffset = Object.keys(args).indexOf('ref') + 1;
-        const execArgs: string[] = this.argv.length > customArgsOffset ? this.argv.slice(customArgsOffset) : [];
-
         const execSpec: ExecSpec = {
             ref: args.ref,
-            args: execArgs,
+            args: programArgsAndFlags,
         };
 
         const appManifestData = readAppManifest();
