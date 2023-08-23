@@ -43,7 +43,7 @@ Executing script...
         verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false, default: false }),
     };
 
-    public extractProgramArgsAndFlags(): string[] {
+    private _extractProgramArgsAndFlags(): string[] {
         // we expect 2 positional args: component and program-ref
         // everything after that is an argument for the invoked
         // program.
@@ -65,7 +65,7 @@ Executing script...
     }
 
     async run(): Promise<void> {
-        const programArgsAndFlags = this.extractProgramArgsAndFlags();
+        const programArgsAndFlags = this._extractProgramArgsAndFlags();
         const { args, flags } = await this.parse(Exec);
 
         const projectConfig = ProjectConfig.read();
