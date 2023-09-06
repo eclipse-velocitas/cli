@@ -316,6 +316,11 @@ _See code: [src/commands/upgrade/index.ts](src/commands/upgrade/index.ts)_
 
 # Installation
 
+**Prerequisites**
+* NodeJS >= 18
+* NPM
+* Linux environment (others may work, but are untested)
+
 ## Obtaining prebuilt binaries
 
 You can obtain prebuilt binaries of the CLI which have no dependency to NodeJS. These can be found [here](https://github.com/eclipse-velocitas/cli/releases).
