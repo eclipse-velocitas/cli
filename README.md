@@ -324,7 +324,8 @@ _See code: [src/commands/upgrade/index.ts](src/commands/upgrade/index.ts)_
 ## Obtaining prebuilt binaries
 
 You can obtain prebuilt binaries of the CLI which have no dependency to NodeJS. These can be found [here](https://github.com/eclipse-velocitas/cli/releases).
-Currently we are supporting only linux `arm64` and `x64` architecture. This package is already pre-intalled with our [devcontainer-base-image](https://github.com/eclipse-velocitas/devcontainer-base-images)
+Currently we are supporting only linux `arm64` and `x64` architecture. 
+Velocitas CLI is already pre-intalled with our [devcontainer-base-image](https://github.com/eclipse-velocitas/devcontainer-base-images).
 
 If you need to install it on custom setup, please use follow, where `<version_tag>` any released tag version, e.g. `v0.5.5`, and `<arch>` - architecture type, e.g. `arm64` or `x64`:
 ```
