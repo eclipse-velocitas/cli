@@ -316,31 +316,17 @@ _See code: [src/commands/upgrade/index.ts](src/commands/upgrade/index.ts)_
 
 # Installation
 
-There are 2 ways to get ahold of the CLI.
-
-## NPM
-
----
-
-**Prerequisites**
-* NodeJS >= 18
-* NPM
-* Linux environment (others may work, but are untested)
-
----
-
-**Steps**
-1. Clone this repo
-2. cd into the cloned repo
-3. Run the following command:
-
-```sh-session
-$ npm install -g velocitas-cli
-```
-
 ## Obtaining prebuilt binaries
 
-In case you do not want to install NodeJS on your system, you can obtain prebuilt binaries of the CLI which have no dependency to NodeJS. These can be found [here](https://github.com/eclipse-velocitas/cli/releases).
+You can obtain prebuilt binaries of the CLI which have no dependency to NodeJS. These can be found [here](https://github.com/eclipse-velocitas/cli/releases).
+Currently we are supporting only linux `arm64` and `x64` architecture. This package is already pre-intalled with our [devcontainer-base-image](https://github.com/eclipse-velocitas/devcontainer-base-images)
+
+If you need to install it on custom setup, please use follow:
+```
+curl -L https://github.com/eclipse-velocitas/cli/releases/download/v0.5.5/velocitas-linux-x64 -o /usr/bin/velocitas
+chmod -x /usr/bin/velocitas
+```
+
 
 # Configuration
 ## Changing default VELOCITAS_HOME directory
