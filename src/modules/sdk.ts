@@ -12,6 +12,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+import { homedir } from 'os';
+
 export class SdkConfig {
     // name of the package to the package repository
     // @deprecated use repo instead
@@ -30,6 +32,6 @@ export class SdkConfig {
     }
 
     getPackageDirectory(): string {
-        return `/home/vscode/.velocitas/sdk/${this.repo}`;
+        return `${homedir()}/.velocitas/sdk/${this.repo}`;
     }
 }
