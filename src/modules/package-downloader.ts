@@ -16,12 +16,14 @@ import { existsSync } from 'fs-extra';
 import { posix as pathPosix } from 'path';
 import { CheckRepoActions, SimpleGit, simpleGit } from 'simple-git';
 import { PackageConfig } from './package';
+import { getLatestVersion } from './semver';
+import { SdkConfig } from './sdk';
 
 export class PackageDownloader {
-    packageConfig: PackageConfig;
+    packageConfig: PackageConfig | SdkConfig;
     git: SimpleGit = simpleGit();
 
-    constructor(packageConfig: PackageConfig) {
+    constructor(packageConfig: PackageConfig | SdkConfig) {
         this.packageConfig = packageConfig;
     }
 
@@ -40,7 +42,12 @@ export class PackageDownloader {
     }
 
     async checkoutVersion(): Promise<void> {
-        await this.git.checkout(this.packageConfig.version);
+        if (this.packageConfig.version === 'latest') {
+            const repositoryVersions = await this.git.tags();
+            this.packageConfig.version = repositoryVersions.latest ? repositoryVersions.latest : getLatestVersion(repositoryVersions.all);
+        } else {
+            await this.git.checkout(this.packageConfig.version);
+        }
     }
 
     async downloadPackage(option: { checkVersionOnly: boolean }): Promise<SimpleGit> {
@@ -74,4 +81,8 @@ export class PackageDownloader {
 
 export const packageDownloader = (packageConfig: PackageConfig) => {
     return new PackageDownloader(packageConfig);
+};
+
+export const sdkDownloader = (sdkConfig: SdkConfig) => {
+    return new PackageDownloader(sdkConfig);
 };

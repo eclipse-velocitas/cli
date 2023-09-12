@@ -1,0 +1,87 @@
+[
+    {
+        "type": "extension",
+        "package": "https://github.com/eclipse-velocitas/devenv-devcontainer-setup.git",
+        "exposedInterfaces": [
+            {
+                "type": "vehicle-signal-interface",
+                "description": "Vehicle Signal Interface based on VSS and KUKSA Databroker",
+                "args": [
+                    {
+                        "name": "src",
+                        "description": "URI or path to VSS json",
+                        "default": "https://github.com/COVESA/vehicle_signal_specification/releases/download/v3.0/vss_rel_3.0.json",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "datapoints",
+                        "description": "Datapoints to be used in your Vehicle Application",
+                        "default": "{\"required\":[{\"path\":\"\",\"access\":\"\"}]}",
+                        "required": false,
+                        "type": "object"
+                    }
+                ]
+            },
+            {
+                "type": "grpc-interface",
+                "description": "gRPC service contraact based on a proto interface description",
+                "args": []
+            }
+        ]
+    },
+    {
+        "type": "extension",
+        "package": "https://github.com/eclipse-velocitas/devenv-runtimes.git",
+        "exposedInterfaces": []
+    },
+    {
+        "type": "extension",
+        "package": "https://github.com/eclipse-velocitas/devenv-github-templates.git",
+        "exposedInterfaces": []
+    },
+    {
+        "type": "extension",
+        "package": "https://github.com/eclipse-velocitas/devenv-github-workflows.git",
+        "exposedInterfaces": []
+    },
+    {
+        "type": "core",
+        "package": "https://github.com/eclipse-velocitas/vehicle-app-python-sdk",
+        "exposedInterfaces": [
+            {
+                "type": "examples",
+                "description": "Provided Examples from SDK",
+                "args": [
+                    {
+                        "name": "seat-adjuster",
+                        "description": "Seat Adjuster Example",
+                        "type": "string"
+                    },
+                    {
+                        "name": "Test",
+                        "description": "Test",
+                        "type": "string"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": "core",
+        "package": "https://github.com/eclipse-velocitas/vehicle-app-cpp-sdk",
+        "exposedInterfaces": [
+            {
+                "type": "examples",
+                "description": "Provided Examples from SDK",
+                "args": [
+                    {
+                        "name": "seat-adjuster",
+                        "description": "Seat Adjuster Example",
+                        "type": "string"
+                    }
+                ]
+            }
+        ]
+    }
+]

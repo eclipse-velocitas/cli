@@ -13,29 +13,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ux, Command, Flags } from '@oclif/core';
+import { ProjectConfig } from '../../modules/project-config';
+import { PackageConfig } from '../../modules/package';
+import { getLatestVersion } from '../../modules/semver';
+import { sdkDownloader } from '../../modules/package-downloader';
+import { SdkConfig } from '../../modules/sdk';
+import { awaitSpawn } from '../../modules/exec';
+import { DEFAULT_BUFFER_ENCODING } from '../../modules/constants';
+import { outputFileSync, readFileSync } from 'fs-extra';
+import { posix as pathPosix } from 'path';
 
-const AVAILABLE_LANGUAGES = [
-    { name: 'Python', value: 'python' },
-    { name: 'C++', value: 'cpp' },
-];
+let AVAILABLE_LANGUAGES: any[] = [];
+let AVAILABLE_PACKAGES: any[] = [];
+let AVAILABLE_EXAMPLES: any[] = [];
+let AVAILABLE_INTERFACES: any[] = [];
 
-const AVAILABLE_PACKAGES = [
-    { name: 'devenv-devcontainer-setup', value: 'devenv-devcontainer-setup@latest', checked: true },
-    { name: 'devenv-github-templates', value: 'devenv-github-templates@latest', checked: true },
-    { name: 'devenv-github-workflows', value: 'devenv-github-workflows@latest', checked: true },
-    { name: 'devenv-devcontainer-runtimes', value: 'devenv-runtimes@latest', checked: true },
-];
-
-const AVAILABLE_EXAMPLES = [
-    { name: 'SeatAdjuster', value: 'SeatAdjuster' },
-    { name: 'DogMode', value: 'DogMode' },
-    { name: 'none', value: 'none' },
-];
-
-const AVAILABLE_INTERFACES = [
-    { name: 'Vehicle Signal Interface based on VSS and KUKSA Databroker', value: 'vehicle-signal-interface' },
-    { name: 'gRPC service contract based on a proto interface description', value: 'grpc-interface' },
-];
+const DEFAULT_APP_MANIFEST_PATH = './app/AppManifest.json';
 
 export default class Create extends Command {
     static description = 'Create a new Velocitas Vehicle App project.';
@@ -51,7 +44,6 @@ export default class Create extends Command {
             char: 'l',
             description: 'Programming language of velocitas framework to use.',
             required: false,
-            options: ['python', 'cpp'],
         }),
         template: Flags.boolean({
             char: 't',
@@ -65,7 +57,7 @@ export default class Create extends Command {
             multiple: true,
             required: false,
         }),
-        example: Flags.string({
+        example: Flags.boolean({
             char: 'e',
             description: 'Use an example on which the Vehicle App will be generated.',
             required: false,
@@ -74,7 +66,6 @@ export default class Create extends Command {
             char: 'i',
             description: 'Functional interface your Vehicle App should use.',
             required: false,
-            options: ['vehicle-signal-interface', 'grpc-interface'],
         }),
     };
 
@@ -82,9 +73,12 @@ export default class Create extends Command {
         name: '> What is the name of your project?',
         language: '> Which programming language would you like to use for your project?',
         package: '> Which packages would you like to use? (multiple selections are possible - all packages are selected by default)',
-        example: '> Which example would you like to use?',
+        exampleQuestion: '> Would you like to use a provided example?',
+        exampleUse: '> Which provided example would you like to use?',
         interface: '> Which functional interfaces does your application have?',
     };
+
+    appManifestInterfaces: any = { interfaces: [] };
 
     private async _runInteractiveMode(flags: any) {
         flags.name = await ux.prompt(Create.promptMessages.name, { required: true });
@@ -94,7 +88,7 @@ export default class Create extends Command {
         // and import inquirer using "await import"
         // @ts-ignore: declaration file not found
         const { default: inquirer } = await import('inquirer');
-        let promptResponses: any = await inquirer.prompt([
+        let interactiveResponses: any = await inquirer.prompt([
             {
                 name: 'language',
                 prefix: '',
@@ -112,30 +106,115 @@ export default class Create extends Command {
             {
                 name: 'example',
                 prefix: '',
-                message: Create.promptMessages.example,
-                type: 'list',
-                choices: AVAILABLE_EXAMPLES,
-            },
-            {
-                name: 'interface',
-                prefix: '',
-                message: Create.promptMessages.interface,
-                type: 'checkbox',
-                choices: AVAILABLE_INTERFACES,
+                message: Create.promptMessages.exampleQuestion,
+                type: 'confirm',
             },
         ]);
-        flags.language = promptResponses.language;
-        flags.package = promptResponses.package;
-        flags.example = promptResponses.example;
-        flags.interface = promptResponses.interface;
+
+        flags.language = interactiveResponses.language;
+        flags.package = interactiveResponses.package;
+        flags.example = interactiveResponses.example;
+
+        if (flags.example) {
+            AVAILABLE_EXAMPLES = AVAILABLE_EXAMPLES.filter((examples: any) => examples.language === flags.language);
+            interactiveResponses = await inquirer.prompt([
+                {
+                    name: 'example',
+                    prefix: '',
+                    message: Create.promptMessages.exampleUse,
+                    type: 'list',
+                    choices: AVAILABLE_EXAMPLES,
+                },
+            ]);
+        } else {
+            interactiveResponses = await inquirer.prompt([
+                {
+                    name: 'interface',
+                    prefix: '',
+                    message: Create.promptMessages.interface,
+                    type: 'checkbox',
+                    choices: AVAILABLE_INTERFACES,
+                },
+            ]);
+        }
+
+        flags.example = interactiveResponses.example;
+        flags.interface = interactiveResponses.interface;
+
+        if (flags.interface && flags.interface.length > 0) {
+            await this._handleAdditionalInterfaceArgs(flags.interface, inquirer);
+        }
+    }
+
+    private async _handleAdditionalInterfaceArgs(interfaces: any, inquirer: any) {
+        for (const interfaceEntry of interfaces) {
+            const additionalInterfacePromptResponses: any = { type: interfaceEntry, config: {} };
+            const interfaceObject = AVAILABLE_INTERFACES.find((availableInterface: any) => availableInterface.value === interfaceEntry);
+
+            for (const arg of interfaceObject.args) {
+                const interfaceArgResponse = await inquirer.prompt([
+                    {
+                        name: arg.name,
+                        prefix: '',
+                        message: `Config '${arg.name}' for interface '${interfaceEntry}': ${arg.description}`,
+                        type: 'input',
+                    },
+                ]);
+                if (!interfaceArgResponse[arg.name]) {
+                    additionalInterfacePromptResponses.config[arg.name] = arg.default;
+                    if (arg.type === 'object') {
+                        additionalInterfacePromptResponses.config[arg.name] = JSON.parse(arg.default);
+                    }
+                }
+            }
+            this.appManifestInterfaces.interfaces.push(additionalInterfacePromptResponses);
+        }
+    }
+
+    private async _createPackageConfig(createConfig: any) {
+        const projectConfig = new ProjectConfig();
+        for (const packageName of createConfig.package) {
+            const packageConfig = new PackageConfig({ name: packageName });
+            const versions = await packageConfig.getPackageVersions();
+            const latestVersion = getLatestVersion(versions);
+
+            packageConfig.repo = packageName;
+            packageConfig.version = latestVersion;
+            projectConfig.packages.push(packageConfig);
+        }
+        projectConfig.variables.set('language', createConfig.language);
+        projectConfig.variables.set('repoType', 'app');
+        projectConfig.variables.set('appManifestPath', DEFAULT_APP_MANIFEST_PATH);
+        projectConfig.variables.set('githubRepoId', '<myrepo>');
+        projectConfig.cliVersion = this.config.version;
+        projectConfig.write();
+    }
+
+    private _handlePackageIndex() {
+        const packageIndex = getPackageIndex();
+        setLanguages(packageIndex);
+        setExamples(packageIndex);
+        setPackages(packageIndex);
+        setInterfaces(packageIndex);
+        Create.flags.language.options = AVAILABLE_LANGUAGES.map((packages: any) => {
+            return packages.name;
+        });
+        Create.flags.interface.options = AVAILABLE_INTERFACES.map((packages: any) => {
+            return packages.value;
+        });
+    }
+
+    private async _createAppManifestV3(name: string, interfaces: any) {
+        const appManifest = { manifestVersion: 'v3', name: name, ...interfaces };
+        outputFileSync(DEFAULT_APP_MANIFEST_PATH, JSON.stringify(appManifest, null, 4));
     }
 
     async run(): Promise<void> {
+        this._handlePackageIndex();
         const { flags } = await this.parse(Create);
-
         this.log(`... Creating a new Velocitas project!`);
-        this.log(JSON.stringify(flags));
 
+        // because 'template' is default false
         if (Object.keys(flags).length <= 1) {
             this.log('Interactive project creation started');
             await this._runInteractiveMode(flags);
@@ -148,14 +227,85 @@ export default class Create extends Command {
             throw new Error("Missing required flag 'language'");
         }
         if (!flags.package) {
-            flags.package = [
-                'devenv-devcontainer-setup@latest',
-                'devenv-github-templates@latest',
-                'devenv-github-workflows@latest',
-                'devenv-runtimes@latest',
-            ];
+            flags.package = AVAILABLE_PACKAGES.map((packages: any) => {
+                return packages.name;
+            });
         }
         // this.log(JSON.stringify(flags));
+        await this._createPackageConfig(flags);
+        await this._createAppManifestV3(flags.name, this.appManifestInterfaces);
+        const sdkConfig = new SdkConfig(flags.language);
+        await sdkDownloader(sdkConfig).downloadPackage({ checkVersionOnly: false });
+        const scriptPath = pathPosix.join(sdkConfig.getPackageDirectory(), 'latest', '.project-creation', 'run.py');
+        await awaitSpawn(`python3`, [scriptPath], process.cwd(), process.env, true);
+
         this.log(`... Project for Vehicle Application '${flags.name}' created!`);
     }
+}
+
+function getPackageIndex() {
+    const packageIndexFile = readFileSync('./package-index.json', DEFAULT_BUFFER_ENCODING);
+    const packageIndex = JSON.parse(packageIndexFile);
+    return packageIndex;
+}
+
+function setLanguages(packageIndex: any) {
+    packageIndex = packageIndex.filter((packageEle: any) => packageEle.type === 'core');
+    const pattern = /vehicle-app-(.*?)-sdk/;
+    packageIndex.forEach((packageEntry: any) => {
+        const match = packageEntry.package.match(pattern);
+        if (match) {
+            const language = match[1];
+            AVAILABLE_LANGUAGES.push({ name: language });
+        }
+    });
+}
+
+function setExamples(packageIndex: any) {
+    packageIndex = packageIndex.filter((packageEle: any) => packageEle.type === 'core');
+
+    const pattern = /vehicle-app-(.*?)-sdk/;
+    packageIndex.forEach((packageEntry: any) => {
+        const match = packageEntry.package.match(pattern);
+        if (match) {
+            const examples = packageEntry.exposedInterfaces.filter((exposed: any) => exposed.type === 'examples');
+            for (const example in examples[0].args) {
+                const language = match[1];
+                AVAILABLE_EXAMPLES.push({
+                    name: examples[0].args[example].description,
+                    value: examples[0].args[example].name,
+                    language: language,
+                });
+            }
+        }
+    });
+}
+
+function setPackages(packageIndex: any) {
+    packageIndex = packageIndex.filter((packageEle: any) => packageEle.type === 'extension');
+    const pattern = /velocitas\/(.*?)\.git/;
+    packageIndex.forEach((packageEntry: any) => {
+        const match = packageEntry.package.match(pattern);
+        const packageName = match ? match[1] : null;
+        if (packageName) {
+            AVAILABLE_PACKAGES.push({ name: packageName, checked: true });
+        }
+    });
+}
+
+function setInterfaces(packageIndex: any) {
+    packageIndex = packageIndex.filter((packageEle: any) => packageEle.type === 'extension');
+    packageIndex.forEach((packageEntry: any) => {
+        if (packageEntry.exposedInterfaces && Array.isArray(packageEntry.exposedInterfaces)) {
+            packageEntry.exposedInterfaces.forEach((exposedInterface: any) => {
+                if (exposedInterface.type && exposedInterface.description) {
+                    AVAILABLE_INTERFACES.push({
+                        name: exposedInterface.description,
+                        value: exposedInterface.type,
+                        args: exposedInterface.args,
+                    });
+                }
+            });
+        }
+    });
 }

@@ -74,6 +74,13 @@ Velocitas project found!
             required: false,
             default: false,
         }),
+        ['skip-post-init']: Flags.boolean({
+            char: 's',
+            aliases: ['skip'],
+            description: 'Skip post init hooks',
+            required: false,
+            default: false,
+        }),
     };
 
     async run(): Promise<void> {
@@ -99,16 +106,18 @@ Velocitas project found!
             this.log(`... Downloading package: '${packageConfig.getPackageName()}:${packageConfig.version}'`);
             await packageConfig.downloadPackageVersion(flags.verbose);
             const packageManifest = packageConfig.readPackageManifest();
-            for (const component of packageManifest.components) {
-                try {
-                    await runPostInitHook(component, packageConfig, projectConfig, appManifestData, flags.verbose);
-                } catch (e) {
-                    if (e instanceof ExecExitError) {
-                        this.error(e.message, { exit: e.exitCode });
-                    } else if (e instanceof Error) {
-                        this.error(e.message);
-                    } else {
-                        this.error(`An unexpected error occured during initialization of component: ${component.id}`);
+            if (!flags['skip-post-init']) {
+                for (const component of packageManifest.components) {
+                    try {
+                        await runPostInitHook(component, packageConfig, projectConfig, appManifestData, flags.verbose);
+                    } catch (e) {
+                        if (e instanceof ExecExitError) {
+                            this.error(e.message, { exit: e.exitCode });
+                        } else if (e instanceof Error) {
+                            this.error(e.message);
+                        } else {
+                            this.error(`An unexpected error occured during initialization of component: ${component.id}`);
+                        }
                     }
                 }
             }
