@@ -57,7 +57,7 @@ export default class Create extends Command {
             multiple: true,
             required: false,
         }),
-        example: Flags.boolean({
+        example: Flags.string({
             char: 'e',
             description: 'Use an example on which the Vehicle App will be generated.',
             required: false,
@@ -72,7 +72,6 @@ export default class Create extends Command {
     static promptMessages = {
         name: '> What is the name of your project?',
         language: '> Which programming language would you like to use for your project?',
-        package: '> Which packages would you like to use? (multiple selections are possible - all packages are selected by default)',
         exampleQuestion: '> Would you like to use a provided example?',
         exampleUse: '> Which provided example would you like to use?',
         interface: '> Which functional interfaces does your application have?',
@@ -97,13 +96,6 @@ export default class Create extends Command {
                 choices: AVAILABLE_LANGUAGES,
             },
             {
-                name: 'package',
-                prefix: '',
-                message: Create.promptMessages.package,
-                type: 'checkbox',
-                choices: AVAILABLE_PACKAGES,
-            },
-            {
                 name: 'example',
                 prefix: '',
                 message: Create.promptMessages.exampleQuestion,
@@ -112,7 +104,6 @@ export default class Create extends Command {
         ]);
 
         flags.language = interactiveResponses.language;
-        flags.package = interactiveResponses.package;
         flags.example = interactiveResponses.example;
 
         if (flags.example) {
@@ -152,14 +143,19 @@ export default class Create extends Command {
             const interfaceObject = AVAILABLE_INTERFACES.find((availableInterface: any) => availableInterface.value === interfaceEntry);
 
             for (const arg of interfaceObject.args) {
-                const interfaceArgResponse = await inquirer.prompt([
-                    {
-                        name: arg.name,
-                        prefix: '',
-                        message: `Config '${arg.name}' for interface '${interfaceEntry}': ${arg.description}`,
-                        type: 'input',
-                    },
-                ]);
+                let interfaceArgResponse: any = {};
+                if (arg.required) {
+                    interfaceArgResponse = await inquirer.prompt([
+                        {
+                            name: arg.name,
+                            prefix: '',
+                            message: `Config '${arg.name}' for interface '${interfaceEntry}': ${arg.description}`,
+                            type: 'input',
+                        },
+                    ]);
+                } else {
+                    interfaceArgResponse[arg.name] = '';
+                }
                 if (!interfaceArgResponse[arg.name]) {
                     additionalInterfacePromptResponses.config[arg.name] = arg.default;
                     if (arg.type === 'object') {
@@ -196,11 +192,14 @@ export default class Create extends Command {
         setExamples(packageIndex);
         setPackages(packageIndex);
         setInterfaces(packageIndex);
-        Create.flags.language.options = AVAILABLE_LANGUAGES.map((packages: any) => {
-            return packages.name;
+        Create.flags.language.options = AVAILABLE_LANGUAGES.map((languageEntry: any) => {
+            return languageEntry.name;
         });
-        Create.flags.interface.options = AVAILABLE_INTERFACES.map((packages: any) => {
-            return packages.value;
+        Create.flags.package.options = AVAILABLE_PACKAGES.map((packageEntry: any) => {
+            return packageEntry.name;
+        });
+        Create.flags.interface.options = AVAILABLE_INTERFACES.map((interfaceEntry: any) => {
+            return interfaceEntry.value;
         });
     }
 
@@ -209,9 +208,26 @@ export default class Create extends Command {
         outputFileSync(DEFAULT_APP_MANIFEST_PATH, JSON.stringify(appManifest, null, 4));
     }
 
+    private async _setDefaultAppManifestInterfaceConfig() {
+        for (const interfaceEntry of AVAILABLE_INTERFACES) {
+            if (interfaceEntry.default) {
+                console.log(interfaceEntry);
+                const defaultAppManifestInterfaceConfig: any = { type: interfaceEntry.value, config: {} };
+                for (const arg of interfaceEntry.args) {
+                    defaultAppManifestInterfaceConfig.config[arg.name] = arg.default;
+                    if (arg.type === 'object') {
+                        defaultAppManifestInterfaceConfig.config[arg.name] = JSON.parse(arg.default);
+                    }
+                }
+                this.appManifestInterfaces.interfaces.push(defaultAppManifestInterfaceConfig);
+            }
+        }
+    }
+
     async run(): Promise<void> {
         this._handlePackageIndex();
         const { flags } = await this.parse(Create);
+        console.log(flags);
         this.log(`... Creating a new Velocitas project!`);
 
         // because 'template' is default false
@@ -230,6 +246,9 @@ export default class Create extends Command {
             flags.package = AVAILABLE_PACKAGES.map((packages: any) => {
                 return packages.name;
             });
+        }
+        if (!flags.example && !flags.interface) {
+            this._setDefaultAppManifestInterfaceConfig();
         }
         // this.log(JSON.stringify(flags));
         await this._createPackageConfig(flags);
@@ -303,6 +322,7 @@ function setInterfaces(packageIndex: any) {
                         name: exposedInterface.description,
                         value: exposedInterface.type,
                         args: exposedInterface.args,
+                        default: exposedInterface.default,
                     });
                 }
             });
