@@ -211,7 +211,6 @@ export default class Create extends Command {
     private async _setDefaultAppManifestInterfaceConfig() {
         for (const interfaceEntry of AVAILABLE_INTERFACES) {
             if (interfaceEntry.default) {
-                console.log(interfaceEntry);
                 const defaultAppManifestInterfaceConfig: any = { type: interfaceEntry.value, config: {} };
                 for (const arg of interfaceEntry.args) {
                     defaultAppManifestInterfaceConfig.config[arg.name] = arg.default;
@@ -256,7 +255,13 @@ export default class Create extends Command {
         const sdkConfig = new SdkConfig(flags.language);
         await sdkDownloader(sdkConfig).downloadPackage({ checkVersionOnly: false });
         const scriptPath = pathPosix.join(sdkConfig.getPackageDirectory(), 'latest', '.project-creation', 'run.py');
-        await awaitSpawn(`python3`, [scriptPath], process.cwd(), process.env, true);
+        await awaitSpawn(
+            `python3`,
+            [scriptPath, '-d', process.cwd(), '-e', flags.example ? flags.example : ''],
+            process.cwd(),
+            process.env,
+            true,
+        );
 
         this.log(`... Project for Vehicle Application '${flags.name}' created!`);
     }
