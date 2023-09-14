@@ -19,9 +19,11 @@ import { getLatestVersion } from '../../modules/semver';
 import { sdkDownloader } from '../../modules/package-downloader';
 import { SdkConfig } from '../../modules/sdk';
 import { awaitSpawn } from '../../modules/exec';
-import { DEFAULT_BUFFER_ENCODING } from '../../modules/constants';
-import { outputFileSync, readFileSync } from 'fs-extra';
+import { outputFileSync } from 'fs-extra';
 import { posix as pathPosix } from 'path';
+import Init from '../init';
+import Sync from '../sync';
+import { getPackageIndex, setExamples, setInterfaces, setLanguages, setPackages } from '../../modules/package-index';
 
 let AVAILABLE_LANGUAGES: any[] = [];
 let AVAILABLE_PACKAGES: any[] = [];
@@ -35,7 +37,7 @@ export default class Create extends Command {
 
     static examples = [
         `$ velocitas create -n VApp -l python ...
-        ... Creating a new Velocitas project!`,
+        Creating a new Velocitas project ...`,
     ];
 
     static flags = {
@@ -96,7 +98,7 @@ export default class Create extends Command {
                 choices: AVAILABLE_LANGUAGES,
             },
             {
-                name: 'example',
+                name: 'exampleQuestion',
                 prefix: '',
                 message: Create.promptMessages.exampleQuestion,
                 type: 'confirm',
@@ -104,13 +106,13 @@ export default class Create extends Command {
         ]);
 
         flags.language = interactiveResponses.language;
-        flags.example = interactiveResponses.example;
+        flags.example = interactiveResponses.exampleQuestion;
 
         if (flags.example) {
             AVAILABLE_EXAMPLES = AVAILABLE_EXAMPLES.filter((examples: any) => examples.language === flags.language);
             interactiveResponses = await inquirer.prompt([
                 {
-                    name: 'example',
+                    name: 'exampleUse',
                     prefix: '',
                     message: Create.promptMessages.exampleUse,
                     type: 'list',
@@ -129,7 +131,7 @@ export default class Create extends Command {
             ]);
         }
 
-        flags.example = interactiveResponses.example;
+        flags.example = interactiveResponses.exampleUse;
         flags.interface = interactiveResponses.interface;
 
         if (flags.interface && flags.interface.length > 0) {
@@ -153,6 +155,7 @@ export default class Create extends Command {
                             type: 'input',
                         },
                     ]);
+                    additionalInterfacePromptResponses.config[arg.name] = interfaceArgResponse[arg.name];
                 } else {
                     interfaceArgResponse[arg.name] = '';
                 }
@@ -188,10 +191,10 @@ export default class Create extends Command {
 
     private _handlePackageIndex() {
         const packageIndex = getPackageIndex();
-        setLanguages(packageIndex);
-        setExamples(packageIndex);
-        setPackages(packageIndex);
-        setInterfaces(packageIndex);
+        AVAILABLE_LANGUAGES = setLanguages(packageIndex);
+        AVAILABLE_EXAMPLES = setExamples(packageIndex);
+        AVAILABLE_PACKAGES = setPackages(packageIndex);
+        AVAILABLE_INTERFACES = setInterfaces(packageIndex);
         Create.flags.language.options = AVAILABLE_LANGUAGES.map((languageEntry: any) => {
             return languageEntry.name;
         });
@@ -226,8 +229,7 @@ export default class Create extends Command {
     async run(): Promise<void> {
         this._handlePackageIndex();
         const { flags } = await this.parse(Create);
-        console.log(flags);
-        this.log(`... Creating a new Velocitas project!`);
+        this.log(`Creating a new Velocitas project ...`);
 
         // because 'template' is default false
         if (Object.keys(flags).length <= 1) {
@@ -249,7 +251,6 @@ export default class Create extends Command {
         if (!flags.example && !flags.interface) {
             this._setDefaultAppManifestInterfaceConfig();
         }
-        // this.log(JSON.stringify(flags));
         await this._createPackageConfig(flags);
         await this._createAppManifestV3(flags.name, this.appManifestInterfaces);
         const sdkConfig = new SdkConfig(flags.language);
@@ -264,73 +265,7 @@ export default class Create extends Command {
         );
 
         this.log(`... Project for Vehicle Application '${flags.name}' created!`);
+        await Init.run(['-s']);
+        await Sync.run([]);
     }
-}
-
-function getPackageIndex() {
-    const packageIndexFile = readFileSync('./package-index.json', DEFAULT_BUFFER_ENCODING);
-    const packageIndex = JSON.parse(packageIndexFile);
-    return packageIndex;
-}
-
-function setLanguages(packageIndex: any) {
-    packageIndex = packageIndex.filter((packageEle: any) => packageEle.type === 'core');
-    const pattern = /vehicle-app-(.*?)-sdk/;
-    packageIndex.forEach((packageEntry: any) => {
-        const match = packageEntry.package.match(pattern);
-        if (match) {
-            const language = match[1];
-            AVAILABLE_LANGUAGES.push({ name: language });
-        }
-    });
-}
-
-function setExamples(packageIndex: any) {
-    packageIndex = packageIndex.filter((packageEle: any) => packageEle.type === 'core');
-
-    const pattern = /vehicle-app-(.*?)-sdk/;
-    packageIndex.forEach((packageEntry: any) => {
-        const match = packageEntry.package.match(pattern);
-        if (match) {
-            const examples = packageEntry.exposedInterfaces.filter((exposed: any) => exposed.type === 'examples');
-            for (const example in examples[0].args) {
-                const language = match[1];
-                AVAILABLE_EXAMPLES.push({
-                    name: examples[0].args[example].description,
-                    value: examples[0].args[example].name,
-                    language: language,
-                });
-            }
-        }
-    });
-}
-
-function setPackages(packageIndex: any) {
-    packageIndex = packageIndex.filter((packageEle: any) => packageEle.type === 'extension');
-    const pattern = /velocitas\/(.*?)\.git/;
-    packageIndex.forEach((packageEntry: any) => {
-        const match = packageEntry.package.match(pattern);
-        const packageName = match ? match[1] : null;
-        if (packageName) {
-            AVAILABLE_PACKAGES.push({ name: packageName, checked: true });
-        }
-    });
-}
-
-function setInterfaces(packageIndex: any) {
-    packageIndex = packageIndex.filter((packageEle: any) => packageEle.type === 'extension');
-    packageIndex.forEach((packageEntry: any) => {
-        if (packageEntry.exposedInterfaces && Array.isArray(packageEntry.exposedInterfaces)) {
-            packageEntry.exposedInterfaces.forEach((exposedInterface: any) => {
-                if (exposedInterface.type && exposedInterface.description) {
-                    AVAILABLE_INTERFACES.push({
-                        name: exposedInterface.description,
-                        value: exposedInterface.type,
-                        args: exposedInterface.args,
-                        default: exposedInterface.default,
-                    });
-                }
-            });
-        }
-    });
 }

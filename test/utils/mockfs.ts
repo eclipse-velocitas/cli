@@ -19,6 +19,7 @@ import { ProjectCache } from '../../src/modules/project-cache';
 import {
     appManifestMock,
     mockCacheContent,
+    packageIndexMock,
     runtimeComponentManifestMock,
     setupComponentManifestMock,
     velocitasConfigMock,
@@ -33,6 +34,7 @@ type MockConfig = {
     installedComponents?: boolean;
     appManifest?: boolean;
     mockCache?: boolean;
+    packageIndex?: boolean;
 };
 
 export const mockFolders = (mockConfig?: MockConfig) => {
@@ -65,6 +67,9 @@ export const mockFolders = (mockConfig?: MockConfig) => {
         mockfsConf[ProjectCache.getCacheDir()] = {
             'cache.json': JSON.stringify(mockCacheContent),
         };
+    }
+    if (mockConfig && mockConfig.packageIndex) {
+        mockfsConf['package-index.json'] = JSON.stringify(packageIndexMock);
     }
     mockfs(mockfsConf, { createCwd: false });
 };

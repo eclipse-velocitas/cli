@@ -34,6 +34,55 @@ export const velocitasConfigMock = {
     },
 };
 
+export const packageIndexMock = [
+    {
+        type: 'extension',
+        package: 'https://github.com/eclipse-velocitas/test-runtime.git',
+        exposedInterfaces: [
+            {
+                type: 'test-interface',
+                description: 'Test interface',
+                default: true,
+                args: [
+                    {
+                        name: 'test-arg-required',
+                        description: 'Test config for required arg',
+                        default: 'test-arg-required',
+                        required: true,
+                        type: 'string',
+                    },
+                    {
+                        name: 'test',
+                        description: 'Test config for not required arg',
+                        default: '{"required":[{"path":"","access":""}]}',
+                        required: false,
+                        type: 'object',
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        type: 'core',
+        package: 'https://github.com/eclipse-velocitas/vehicle-app-test-sdk',
+        exposedInterfaces: [
+            {
+                type: 'examples',
+                description: 'Provided test examples from test SDK',
+                args: [
+                    {
+                        name: 'test-example',
+                        description: 'Test Example',
+                        type: 'string',
+                        default: '',
+                        required: false,
+                    },
+                ],
+            },
+        ],
+    },
+];
+
 export const appManifestMock = [
     {
         name: 'sampleapp',
