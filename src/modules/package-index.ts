@@ -15,84 +15,43 @@
 import { readFileSync } from 'fs-extra';
 import { DEFAULT_BUFFER_ENCODING } from './constants';
 
-const packagesPattern = /.*\/(.*?)\.git/;
-const sdkPattern = /vehicle-app-(.*?)-sdk/;
+export interface Parameter {
+    id: string;
+    prompt: string;
+    type: string;
+}
 
-export function getPackageIndex(packageIndexPath: string = './package-index.json') {
-    try {
-        const packageIndexFile = readFileSync(packageIndexPath, DEFAULT_BUFFER_ENCODING);
-        const packageIndex = JSON.parse(packageIndexFile);
-        return packageIndex;
-    } catch (error) {
-        throw new Error('No package-index.json found.');
+export interface ComponentEntry {
+    id: string;
+    description: string;
+    type: string;
+    supportedCores?: string[];
+    parameters: Parameter[];
+}
+
+export interface PkgIndexEntry {
+    package: string;
+    components: ComponentEntry[];
+}
+
+export class PackageIndex {
+    private _packages: PkgIndexEntry[];
+
+    private constructor(packages: PkgIndexEntry[]) {
+        this._packages = packages;
     }
-}
 
-export function setLanguages(packageIndex: any): any[] {
-    const AVAILABLE_LANGUAGES: any[] = [];
-    packageIndex = packageIndex.filter((packageEle: any) => packageEle.type === 'core');
-    packageIndex.forEach((packageEntry: any) => {
-        const match = packageEntry.package.match(sdkPattern);
-        if (match) {
-            const language = match[1];
-            AVAILABLE_LANGUAGES.push({ name: language });
-        }
-    });
-    return AVAILABLE_LANGUAGES;
-}
+    static read(path: string = './package-index.json'): PackageIndex {
+        const packageIndexFile = readFileSync(path, DEFAULT_BUFFER_ENCODING);
+        const packageIndex: PkgIndexEntry[] = JSON.parse(packageIndexFile);
+        return new PackageIndex(packageIndex);
+    }
 
-export function setExamples(packageIndex: any): any[] {
-    const AVAILABLE_EXAMPLES: any[] = [];
-    packageIndex = packageIndex.filter((packageEle: any) => packageEle.type === 'core');
-    packageIndex.forEach((packageEntry: any) => {
-        const match = packageEntry.package.match(sdkPattern);
-        if (match) {
-            const examples = packageEntry.exposedInterfaces.filter((exposed: any) => exposed.type === 'examples');
-            for (const example in examples[0].args) {
-                const language = match[1];
-                AVAILABLE_EXAMPLES.push({
-                    name: examples[0].args[example].description,
-                    value: examples[0].args[example].name,
-                    language: language,
-                });
-            }
-        }
-    });
-    return AVAILABLE_EXAMPLES;
-}
+    getCores(): ComponentEntry[] {
+        return this._packages.flatMap((pkg) => pkg.components).filter((comp) => comp.type === 'core');
+    }
 
-export function setPackages(packageIndex: any): any[] {
-    const AVAILABLE_PACKAGES: any[] = [];
-    packageIndex = packageIndex.filter((packageEle: any) => packageEle.type === 'extension');
-    packageIndex.forEach((packageEntry: any) => {
-        const match = packageEntry.package.match(packagesPattern);
-        const packageName = match ? match[1] : null;
-        if (packageName) {
-            AVAILABLE_PACKAGES.push({ name: packageName, checked: true });
-        }
-    });
-    return AVAILABLE_PACKAGES;
-}
-
-export function setInterfaces(packageIndex: any): any[] {
-    const AVAILABLE_INTERFACES: any[] = [];
-    packageIndex = packageIndex.filter((packageEle: any) => packageEle.type === 'extension');
-    packageIndex.forEach((packageEntry: any) => {
-        const match = packageEntry.package.match(packagesPattern);
-        if (match) {
-            if (packageEntry.exposedInterfaces && Array.isArray(packageEntry.exposedInterfaces)) {
-                packageEntry.exposedInterfaces.forEach((exposedInterface: any) => {
-                    if (exposedInterface.type && exposedInterface.description) {
-                        AVAILABLE_INTERFACES.push({
-                            name: exposedInterface.description,
-                            value: exposedInterface.type,
-                            args: exposedInterface.args,
-                            default: exposedInterface.default,
-                        });
-                    }
-                });
-            }
-        }
-    });
-    return AVAILABLE_INTERFACES;
+    getExtensions(): ComponentEntry[] {
+        return this._packages.flatMap((pkg) => pkg.components).filter((comp) => comp.type === 'extension');
+    }
 }
