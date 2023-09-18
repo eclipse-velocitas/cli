@@ -46,6 +46,16 @@
         "package": "https://github.com/eclipse-velocitas/devenv-devcontainer-setup.git",
         "components": [
             {
+                "id": "setup",
+                "type": "extension",
+                "target": "devenv",
+                "description": "Basic setup of the devContainer",
+                "supportedCores": [
+                    "vehicle-app-python-sdk",
+                    "vehicle-app-cpp-sdk"
+                ]
+            },
+            {
                 "id": "vehicle-signal-interface",
                 "type": "extension",
                 "target": "runtime",
@@ -74,7 +84,7 @@
             {
                 "id": "grpc-interface",
                 "type": "extension", # possible types: "core",
-                "extension""target": "manifest", # where does the information go? manifest -> "AppManifest.json" / "devenv" -> ".velocitas.json""description": "gRPC service contract based on a proto interface description",
+                "target": "manifest", # where does the information go? manifest -> "AppManifest.json" / "devenv" -> ".velocitas.json""description": "gRPC service contract based on a proto interface description",
                 "supportedCores": [ # which core IDs are supported by this component?
                     "vehicle-app-python-sdk",
                     "vehicle-app-cpp-sdk"
@@ -95,7 +105,7 @@
                     },
                     {
                         "id": "provided",
-                        "prompt": "Configuration for the \"Provider\" of the service. (Leave empty for now)",
+                        "description": "Configuration for the \"Provider\" of the service. (Leave empty for now)",
                         "required": false,
                         "default": "{}",
                         "type": "object"
@@ -158,9 +168,9 @@
         "package": "https://github.com/eclipse-velocitas/devenv-github-workflows.git",
         "components": [
             {
-                "type": "extension",
                 "id": "github-workflows",
-                "group": "devenv",
+                "type": "extension",
+                "target": "devenv",
                 "description": "CI workflows for SCA, building and verifying vehicle applications.",
                 "supportedCores": [
                     "vehicle-app-python-sdk",
