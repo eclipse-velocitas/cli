@@ -8,8 +8,8 @@
                 "description": "Python-based Velocitas Vehicle App",
                 "parameters": [
                     {
-                        "id": "example-choice",
-                        "prompt": "Choose an example to base your your application on.",
+                        "id": "example",
+                        "description": "Available examples",
                         "type": "choice",
                         "required": false,
                         "values": [
@@ -27,16 +27,18 @@
             {
                 "id": "velocitas-app-cpp-core",
                 "type": "core",
-                "description": "C++-based Velocitas Vehicle App"
-            }
-        ]
-    },
-    {
-        "package": "https://github.com/eclipse-velocitas/uprotocol-cpp-api-glue",
-        "components": [
-            {
-                "type": "core",
-                "description": "uProtocol uApp (c++)"
+                "description": "C++-based Velocitas Vehicle App",
+                "parameters": [
+                    {
+                        "id": "example",
+                        "description": "Available examples",
+                        "type": "choice",
+                        "required": false,
+                        "values": [
+                            "seat-adjuster"
+                        ]
+                    }
+                ]
             }
         ]
     },
@@ -46,6 +48,7 @@
             {
                 "id": "vehicle-signal-interface",
                 "type": "extension",
+                "target": "runtime",
                 "description": "Vehicle Signal Interface based on VSS and KUKSA Databroker",
                 "supportedCores": [
                     "vehicle-app-python-sdk",
@@ -54,14 +57,14 @@
                 "parameters": [
                     {
                         "id": "src",
-                        "prompt": "URI or path to VSS json (Leave empty for default: v3.0)",
+                        "description": "URI or path to VSS json (Leave empty for default: v3.0)",
                         "default": "https://github.com/COVESA/vehicle_signal_specification/releases/download/v3.0/vss_rel_3.0.json",
                         "required": true,
                         "type": "string"
                     },
                     {
                         "id": "datapoints",
-                        "prompt": "Datapoints to be used in your Vehicle Application",
+                        "description": "Datapoints to be used in your Vehicle Application",
                         "default": "{\"required\":[{\"path\":\"\",\"access\":\"\"}]}",
                         "required": false,
                         "type": "object"
@@ -69,27 +72,101 @@
                 ]
             },
             {
-                "type": "extension",
                 "id": "grpc-interface",
-                "description": "gRPC service contraact based on a proto interface description",
-                "supportedCores": [
+                "type": "extension", # possible types: "core",
+                "extension""target": "manifest", # where does the information go? manifest -> "AppManifest.json" / "devenv" -> ".velocitas.json""description": "gRPC service contract based on a proto interface description",
+                "supportedCores": [ # which core IDs are supported by this component?
                     "vehicle-app-python-sdk",
                     "vehicle-app-cpp-sdk"
                 ],
-                "parameters": []
+                "parameters": [
+                    {
+                        "id": "src",
+                        "description": "URI to the proto file which acts as the service interface",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "id": "required",
+                        "description": "Configuration for the \"Client\" of the service. (Leave empty for now)",
+                        "required": false,
+                        "default": "{}",
+                        "type": "object"
+                    },
+                    {
+                        "id": "provided",
+                        "prompt": "Configuration for the \"Provider\" of the service. (Leave empty for now)",
+                        "required": false,
+                        "default": "{}",
+                        "type": "object"
+                    }
+                ]
             }
         ]
     },
     {
         "package": "https://github.com/eclipse-velocitas/devenv-runtimes.git",
-        "components": []
+        "components": [
+            {
+                "id": "runtime-local",
+                "type": "extension",
+                "target": "devenv",
+                "description": "A runtime environment for local execution of an application and required services.",
+                "supportedCores": [
+                    "vehicle-app-python-sdk",
+                    "vehicle-app-cpp-sdk"
+                ]
+            },
+            {
+                "id": "runtime-kanto",
+                "type": "extension",
+                "target": "devenv",
+                "description": "A kanto-based runtime environment for execution of an application and required services with conditions closed to the LEDA distribution.",
+                "supportedCores": [
+                    "vehicle-app-python-sdk",
+                    "vehicle-app-cpp-sdk"
+                ]
+            },
+            {
+                "id": "runtime-k3d",
+                "type": "extension",
+                "target": "devenv",
+                "description": "A kubernetes-based runtime environment for execution of an application and required services.",
+                "supportedCores": [
+                    "vehicle-app-python-sdk",
+                    "vehicle-app-cpp-sdk"
+                ]
+            }
+        ]
     },
     {
         "package": "https://github.com/eclipse-velocitas/devenv-github-templates.git",
-        "components": []
+        "components": [
+            {
+                "id": "github-templates",
+                "type": "extension",
+                "target": "devenv",
+                "description": "Issue and bug templates for vehicle application repositories.",
+                "supportedCores": [
+                    "vehicle-app-python-sdk",
+                    "vehicle-app-cpp-sdk"
+                ]
+            }
+        ]
     },
     {
         "package": "https://github.com/eclipse-velocitas/devenv-github-workflows.git",
-        "components": []
+        "components": [
+            {
+                "type": "extension",
+                "id": "github-workflows",
+                "group": "devenv",
+                "description": "CI workflows for SCA, building and verifying vehicle applications.",
+                "supportedCores": [
+                    "vehicle-app-python-sdk",
+                    "vehicle-app-cpp-sdk"
+                ]
+            }
+        ]
     }
 ]
