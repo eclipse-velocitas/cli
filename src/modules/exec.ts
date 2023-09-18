@@ -66,16 +66,19 @@ export async function awaitSpawn(
 
     return new Promise((resolveFunc) => {
         // Needed to kill all childprocesses inside the spawned tty to avoid having leftovers
-        process.on('SIGINT', () => {
+        const sigintCallback = () => {
             const spawnedTtyId = (ptyProcess as any)._pty.split('/dev/')[1];
             exec(`pkill -t ${spawnedTtyId}`);
-        });
+        };
+        process.on('SIGINT', sigintCallback);
         ptyProcess.onExit((code) => {
             process.stdin.unref();
             ptyProcess.kill();
             resolveFunc(code);
             projectCache.write();
         });
+        process.removeListener('SIGINT', sigintCallback);
+        process.stdin.removeAllListeners('data');
     });
 }
 
