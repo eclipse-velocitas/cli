@@ -23,14 +23,22 @@ import { outputFileSync } from 'fs-extra';
 import { posix as pathPosix } from 'path';
 import Init from '../init';
 import Sync from '../sync';
-import { getPackageIndex, setExamples, setInterfaces, setLanguages, setPackages } from '../../modules/package-index';
+import { ExampleDescription, FunctionalInterfaceDescription, PackageIndex } from '../../modules/package-index';
 
-let AVAILABLE_LANGUAGES: any[] = [];
-let AVAILABLE_PACKAGES: any[] = [];
-let AVAILABLE_EXAMPLES: any[] = [];
-let AVAILABLE_INTERFACES: any[] = [];
+let AVAILABLE_LANGUAGES: string[] = [];
+let AVAILABLE_EXAMPLES: ExampleDescription[] = [];
+let AVAILABLE_INTERFACES: FunctionalInterfaceDescription[] = [];
 
 const DEFAULT_APP_MANIFEST_PATH = './app/AppManifest.json';
+interface AppManifestInterfaces {
+    interfaces: AppManifestInterfaceEntry[];
+}
+interface AppManifestInterfaceEntry {
+    type: string;
+    config: {
+        [key: string]: any;
+    };
+}
 
 export default class Create extends Command {
     static description = 'Create a new Velocitas Vehicle App project.';
@@ -45,18 +53,6 @@ export default class Create extends Command {
         language: Flags.string({
             char: 'l',
             description: 'Programming language of velocitas framework to use.',
-            required: false,
-        }),
-        template: Flags.boolean({
-            char: 't',
-            description: 'Default value `false`. Enable content required to generate a template.',
-            required: false,
-            default: false,
-        }),
-        package: Flags.string({
-            char: 'p',
-            description: 'Packages to install. Default all packages are installed.',
-            multiple: true,
             required: false,
         }),
         example: Flags.string({
@@ -79,7 +75,7 @@ export default class Create extends Command {
         interface: '> Which functional interfaces does your application have?',
     };
 
-    appManifestInterfaces: any = { interfaces: [] };
+    appManifestInterfaces: AppManifestInterfaces = { interfaces: [] };
 
     private async _runInteractiveMode(flags: any) {
         flags.name = await ux.prompt(Create.promptMessages.name, { required: true });
@@ -109,7 +105,7 @@ export default class Create extends Command {
         flags.example = interactiveResponses.exampleQuestion;
 
         if (flags.example) {
-            AVAILABLE_EXAMPLES = AVAILABLE_EXAMPLES.filter((examples: any) => examples.language === flags.language);
+            AVAILABLE_EXAMPLES = AVAILABLE_EXAMPLES.filter((examples: ExampleDescription) => examples.language === flags.language);
             interactiveResponses = await inquirer.prompt([
                 {
                     name: 'exampleUse',
@@ -139,49 +135,54 @@ export default class Create extends Command {
         }
     }
 
-    private async _handleAdditionalInterfaceArgs(interfaces: any, inquirer: any) {
+    private async _handleAdditionalInterfaceArgs(interfaces: string[], inquirer: any) {
         for (const interfaceEntry of interfaces) {
-            const additionalInterfacePromptResponses: any = { type: interfaceEntry, config: {} };
-            const interfaceObject = AVAILABLE_INTERFACES.find((availableInterface: any) => availableInterface.value === interfaceEntry);
-
-            for (const arg of interfaceObject.args) {
-                let interfaceArgResponse: any = {};
-                if (arg.required) {
-                    interfaceArgResponse = await inquirer.prompt([
-                        {
-                            name: arg.name,
-                            prefix: '',
-                            message: `Config '${arg.name}' for interface '${interfaceEntry}': ${arg.description}`,
-                            type: 'input',
-                        },
-                    ]);
-                    additionalInterfacePromptResponses.config[arg.name] = interfaceArgResponse[arg.name];
-                } else {
-                    interfaceArgResponse[arg.name] = '';
-                }
-                if (!interfaceArgResponse[arg.name]) {
-                    additionalInterfacePromptResponses.config[arg.name] = arg.default;
-                    if (arg.type === 'object') {
-                        additionalInterfacePromptResponses.config[arg.name] = JSON.parse(arg.default);
+            const appManifestInterfaceEntry: AppManifestInterfaceEntry = { type: interfaceEntry, config: {} };
+            const interfaceObject = AVAILABLE_INTERFACES.find(
+                (availableInterface: FunctionalInterfaceDescription) => availableInterface.value === interfaceEntry,
+            );
+            if (interfaceObject) {
+                for (const arg of interfaceObject.args) {
+                    let interfaceArgResponse: any = {};
+                    if (arg.required) {
+                        interfaceArgResponse = await inquirer.prompt([
+                            {
+                                name: arg.id,
+                                prefix: '',
+                                message: `Config '${arg.id}' for interface '${interfaceEntry}': ${arg.description}`,
+                                type: 'input',
+                            },
+                        ]);
+                        appManifestInterfaceEntry.config[arg.id] = interfaceArgResponse[arg.id];
+                    } else {
+                        interfaceArgResponse[arg.id] = '';
+                    }
+                    if (!interfaceArgResponse[arg.id]) {
+                        appManifestInterfaceEntry.config[arg.id] = arg.default;
+                        if (arg.type === 'object') {
+                            appManifestInterfaceEntry.config[arg.id] = JSON.parse(arg.default);
+                        }
                     }
                 }
             }
-            this.appManifestInterfaces.interfaces.push(additionalInterfacePromptResponses);
+
+            this.appManifestInterfaces.interfaces.push(appManifestInterfaceEntry);
         }
     }
 
-    private async _createPackageConfig(createConfig: any) {
+    private async _createPackageConfig(packageIndex: PackageIndex, language: string) {
+        const packageIndexExtensions = packageIndex.getExtensions();
         const projectConfig = new ProjectConfig();
-        for (const packageName of createConfig.package) {
-            const packageConfig = new PackageConfig({ name: packageName });
+        for (const extension of packageIndexExtensions) {
+            const packageConfig = new PackageConfig({ name: extension.package });
             const versions = await packageConfig.getPackageVersions();
             const latestVersion = getLatestVersion(versions);
 
-            packageConfig.repo = packageName;
+            packageConfig.repo = extension.package;
             packageConfig.version = latestVersion;
             projectConfig.packages.push(packageConfig);
         }
-        projectConfig.variables.set('language', createConfig.language);
+        projectConfig.variables.set('language', language);
         projectConfig.variables.set('repoType', 'app');
         projectConfig.variables.set('appManifestPath', DEFAULT_APP_MANIFEST_PATH);
         projectConfig.variables.set('githubRepoId', '<myrepo>');
@@ -189,24 +190,19 @@ export default class Create extends Command {
         projectConfig.write();
     }
 
-    private _handlePackageIndex() {
-        const packageIndex = getPackageIndex();
-        AVAILABLE_LANGUAGES = setLanguages(packageIndex);
-        AVAILABLE_EXAMPLES = setExamples(packageIndex);
-        AVAILABLE_PACKAGES = setPackages(packageIndex);
-        AVAILABLE_INTERFACES = setInterfaces(packageIndex);
-        Create.flags.language.options = AVAILABLE_LANGUAGES.map((languageEntry: any) => {
-            return languageEntry.name;
+    private _handlePackageIndex(packageIndex: PackageIndex) {
+        AVAILABLE_LANGUAGES = packageIndex.getAvailableLanguages();
+        AVAILABLE_EXAMPLES = packageIndex.getAvailableExamples();
+        AVAILABLE_INTERFACES = packageIndex.getAvailableInterfaces();
+        Create.flags.language.options = AVAILABLE_LANGUAGES.map((languageEntry: string) => {
+            return languageEntry;
         });
-        Create.flags.package.options = AVAILABLE_PACKAGES.map((packageEntry: any) => {
-            return packageEntry.name;
-        });
-        Create.flags.interface.options = AVAILABLE_INTERFACES.map((interfaceEntry: any) => {
+        Create.flags.interface.options = AVAILABLE_INTERFACES.map((interfaceEntry: FunctionalInterfaceDescription) => {
             return interfaceEntry.value;
         });
     }
 
-    private async _createAppManifestV3(name: string, interfaces: any) {
+    private async _createAppManifestV3(name: string, interfaces: AppManifestInterfaces) {
         const appManifest = { manifestVersion: 'v3', name: name, ...interfaces };
         outputFileSync(DEFAULT_APP_MANIFEST_PATH, JSON.stringify(appManifest, null, 4));
     }
@@ -214,11 +210,11 @@ export default class Create extends Command {
     private async _setDefaultAppManifestInterfaceConfig() {
         for (const interfaceEntry of AVAILABLE_INTERFACES) {
             if (interfaceEntry.default) {
-                const defaultAppManifestInterfaceConfig: any = { type: interfaceEntry.value, config: {} };
+                const defaultAppManifestInterfaceConfig: AppManifestInterfaceEntry = { type: interfaceEntry.value, config: {} };
                 for (const arg of interfaceEntry.args) {
-                    defaultAppManifestInterfaceConfig.config[arg.name] = arg.default;
+                    defaultAppManifestInterfaceConfig.config[arg.id] = arg.default;
                     if (arg.type === 'object') {
-                        defaultAppManifestInterfaceConfig.config[arg.name] = JSON.parse(arg.default);
+                        defaultAppManifestInterfaceConfig.config[arg.id] = JSON.parse(arg.default);
                     }
                 }
                 this.appManifestInterfaces.interfaces.push(defaultAppManifestInterfaceConfig);
@@ -227,12 +223,12 @@ export default class Create extends Command {
     }
 
     async run(): Promise<void> {
-        this._handlePackageIndex();
+        const packageIndex = PackageIndex.read();
+        this._handlePackageIndex(packageIndex);
         const { flags } = await this.parse(Create);
         this.log(`Creating a new Velocitas project ...`);
 
-        // because 'template' is default false
-        if (Object.keys(flags).length <= 1) {
+        if (Object.keys(flags).length === 0) {
             this.log('Interactive project creation started');
             await this._runInteractiveMode(flags);
         }
@@ -243,15 +239,11 @@ export default class Create extends Command {
         if (!flags.language) {
             throw new Error("Missing required flag 'language'");
         }
-        if (!flags.package) {
-            flags.package = AVAILABLE_PACKAGES.map((packages: any) => {
-                return packages.name;
-            });
-        }
         if (!flags.example && !flags.interface) {
             this._setDefaultAppManifestInterfaceConfig();
         }
-        await this._createPackageConfig(flags);
+
+        await this._createPackageConfig(packageIndex, flags.language);
         await this._createAppManifestV3(flags.name, this.appManifestInterfaces);
         const sdkConfig = new SdkConfig(flags.language);
         await sdkDownloader(sdkConfig).downloadPackage({ checkVersionOnly: false });

@@ -56,20 +56,12 @@ describe('CLI command', () => {
                 DEFAULT_BUFFER_ENCODING,
             );
             const creationConfig = JSON.parse(creationConfigFile);
-            console.log(JSON.stringify(creationConfig));
             const fileCheck: any = [];
             creationConfig.files.forEach((file: string) => {
-                console.log(file);
                 file = file.replace('.project-creation/', '');
                 fileCheck.push(existsSync(`${TEST_ROOT}/testbench/test-create/vehicle-app-template/${file}`));
             });
-            console.log('FileCheck');
-            console.log(fileCheck);
-            console.log('Files in');
-            console.log(`${TEST_ROOT}/testbench/test-create/vehicle-app-template`);
-            readdirSync(`${TEST_ROOT}/testbench/test-create/vehicle-app-template`).forEach((file) => {
-                console.log(file);
-            });
+
             expect(fileCheck.every((v: boolean) => v === true)).to.be.true;
             expect(existsSync(`${TEST_ROOT}/testbench/test-create/vehicle-app-template/.velocitas.json`)).to.be.true;
             expect(existsSync(`${TEST_ROOT}/testbench/test-create/vehicle-app-template/app/AppManifest.json`)).to.be.true;

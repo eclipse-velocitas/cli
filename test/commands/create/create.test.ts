@@ -26,10 +26,11 @@ const inquirer = require('inquirer');
 
 const TEST_APP_NAME = 'TestApp';
 const TEST_EXPOSED_INTERFACE_TYPE = packageIndexMock[0].exposedInterfaces[0].type;
-const TEST_EXPOSED_INTERFACE_ARG_NAME_1 = packageIndexMock[0].exposedInterfaces[0].args[0].name;
+const TEST_EXPOSED_INTERFACE_ARG_NAME_1 = packageIndexMock[0].exposedInterfaces[0].args[0].id;
 const TEST_EXPOSED_INTERFACE_ARG_DEFAULT_1 = packageIndexMock[0].exposedInterfaces[0].args[0].default;
-const TEST_EXPOSED_INTERFACE_ARG_NAME_2 = packageIndexMock[0].exposedInterfaces[0].args[1].name;
+const TEST_EXPOSED_INTERFACE_ARG_NAME_2 = packageIndexMock[0].exposedInterfaces[0].args[1].id;
 const TEST_EXPOSED_INTERFACE_ARG_DEFAULT_2 = packageIndexMock[0].exposedInterfaces[0].args[1].default;
+const TEST_PACKAGE_URI = packageIndexMock[0].package;
 const TEST_PACKAGE_NAME = velocitasConfigMock.packages[0].name;
 const TEST_PACKAGE_VERSION = velocitasConfigMock.packages[0].version;
 
@@ -57,7 +58,7 @@ describe('create', () => {
 
             const velocitasConfigFile = fs.readFileSync(`${process.cwd()}/.velocitas.json`, DEFAULT_BUFFER_ENCODING);
             const velocitasConfig = JSON.parse(velocitasConfigFile);
-            expect(velocitasConfig.packages[0].name).to.be.equal(TEST_PACKAGE_NAME);
+            expect(velocitasConfig.packages[0].name).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
             expect(velocitasConfig.variables.language).to.be.equal('test');
 
@@ -133,7 +134,7 @@ describe('create', () => {
 
             const velocitasConfigFile = fs.readFileSync(`${process.cwd()}/.velocitas.json`, DEFAULT_BUFFER_ENCODING);
             const velocitasConfig = JSON.parse(velocitasConfigFile);
-            expect(velocitasConfig.packages[0].name).to.be.equal(TEST_PACKAGE_NAME);
+            expect(velocitasConfig.packages[0].name).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
             expect(velocitasConfig.variables.language).to.be.equal('test');
 
@@ -180,7 +181,7 @@ describe('create', () => {
 
             const velocitasConfigFile = fs.readFileSync(`${process.cwd()}/.velocitas.json`, DEFAULT_BUFFER_ENCODING);
             const velocitasConfig = JSON.parse(velocitasConfigFile);
-            expect(velocitasConfig.packages[0].name).to.be.equal(TEST_PACKAGE_NAME);
+            expect(velocitasConfig.packages[0].name).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
             expect(velocitasConfig.variables.language).to.be.equal('test');
 
@@ -223,7 +224,7 @@ describe('create', () => {
 
             const velocitasConfigFile = fs.readFileSync(`${process.cwd()}/.velocitas.json`, DEFAULT_BUFFER_ENCODING);
             const velocitasConfig = JSON.parse(velocitasConfigFile);
-            expect(velocitasConfig.packages[0].name).to.be.equal(TEST_PACKAGE_NAME);
+            expect(velocitasConfig.packages[0].name).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
             expect(velocitasConfig.variables.language).to.be.equal('test');
 

@@ -45,14 +45,14 @@ export const packageIndexMock = [
                 default: true,
                 args: [
                     {
-                        name: 'test-arg-required',
+                        id: 'test-arg-required',
                         description: 'Test config for required arg',
                         default: 'test-arg-required',
                         required: true,
                         type: 'string',
                     },
                     {
-                        name: 'test',
+                        id: 'test',
                         description: 'Test config for not required arg',
                         default: '{"required":[{"path":"","access":""}]}',
                         required: false,
@@ -71,7 +71,7 @@ export const packageIndexMock = [
                 description: 'Provided test examples from test SDK',
                 args: [
                     {
-                        name: 'test-example',
+                        id: 'test-example',
                         description: 'Test Example',
                         type: 'string',
                         default: '',
