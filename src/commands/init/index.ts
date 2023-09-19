@@ -16,7 +16,7 @@ import { ux, Command, Flags } from '@oclif/core';
 import { readAppManifest } from '../../modules/app-manifest';
 import { Component } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
-import { PackageConfig } from '../../modules/package';
+import { PackageConfig, PackageManifest } from '../../modules/package';
 import { ComponentConfig, ProjectConfig } from '../../modules/project-config';
 import { createEnvVars, VariableCollection } from '../../modules/variables';
 
@@ -52,6 +52,28 @@ async function runPostInitHook(
     }
 }
 
+async function runPostInitHooks(
+    packageManifest: PackageManifest,
+    packageConfig: PackageConfig,
+    projectConfig: ProjectConfig,
+    appManifestData: any,
+    verbose: boolean,
+) {
+    for (const component of packageManifest.components) {
+        try {
+            await runPostInitHook(component, packageConfig, projectConfig, appManifestData, verbose);
+        } catch (e) {
+            if (e instanceof ExecExitError) {
+                throw e;
+            } else if (e instanceof Error) {
+                throw new Error(e.message);
+            } else {
+                throw new Error(`An unexpected error occured during initialization of component: ${component.id}`);
+            }
+        }
+    }
+}
+
 export default class Init extends Command {
     static description = 'Initializes Velocitas Vehicle App';
 
@@ -74,9 +96,7 @@ Velocitas project found!
             required: false,
             default: false,
         }),
-        ['skip-post-init']: Flags.boolean({
-            char: 's',
-            aliases: ['skip'],
+        ['no-hooks']: Flags.boolean({
             description: 'Skip post init hooks',
             required: false,
             default: false,
@@ -106,20 +126,8 @@ Velocitas project found!
             this.log(`... Downloading package: '${packageConfig.getPackageName()}:${packageConfig.version}'`);
             await packageConfig.downloadPackageVersion(flags.verbose);
             const packageManifest = packageConfig.readPackageManifest();
-            if (!flags['skip-post-init']) {
-                for (const component of packageManifest.components) {
-                    try {
-                        await runPostInitHook(component, packageConfig, projectConfig, appManifestData, flags.verbose);
-                    } catch (e) {
-                        if (e instanceof ExecExitError) {
-                            this.error(e.message, { exit: e.exitCode });
-                        } else if (e instanceof Error) {
-                            this.error(e.message);
-                        } else {
-                            this.error(`An unexpected error occured during initialization of component: ${component.id}`);
-                        }
-                    }
-                }
+            if (!flags['no-hooks']) {
+                await runPostInitHooks(packageManifest, packageConfig, projectConfig, appManifestData, flags.verbose);
             }
         }
     }

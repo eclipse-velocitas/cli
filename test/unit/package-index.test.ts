@@ -116,7 +116,6 @@ const invalidPackageIndexMock = [
 ];
 const EXPECTED_AVAILABLE_LANGUAGES = ['test'];
 const EXPECTED_AVAILABLE_EXAMPLES = [{ name: 'Test Example', value: 'test-example', language: 'test' }];
-const EXPECTED_AVAILABLE_PACKAGES = [{ name: 'test', checked: true }];
 const EXPECTED_AVAILABLE_INTERFACES = [
     {
         name: 'Test interface',
@@ -156,36 +155,35 @@ describe('package-index - module', () => {
         it('should throw an error if package-index.json is not found.', () => {
             expect(() => PackageIndex.read('no-package-index.json')).to.throw();
         });
-        it('should parse AVAILABLE_LANGUAGES correctly from valid package-index.json.', () => {
+        it('should parse availableLanguages correctly from valid package-index.json.', () => {
             const packageIndex = PackageIndex.read();
-            const AVAILABLE_LANGUAGES = packageIndex.getAvailableLanguages();
-            expect(AVAILABLE_LANGUAGES).to.be.deep.equal(EXPECTED_AVAILABLE_LANGUAGES);
+            const availableLanguages = packageIndex.getAvailableLanguages();
+            expect(availableLanguages).to.be.deep.equal(EXPECTED_AVAILABLE_LANGUAGES);
         });
-        it('should parse AVAILABLE_EXAMPLES correctly from valid package-index.json.', () => {
+        it('should parse availableExamples correctly from valid package-index.json.', () => {
             const packageIndex = PackageIndex.read();
-            const AVAILABLE_EXAMPLES = packageIndex.getAvailableExamples();
-            expect(AVAILABLE_EXAMPLES).to.be.deep.equal(EXPECTED_AVAILABLE_EXAMPLES);
+            const availableExamples = packageIndex.getAvailableExamples();
+            expect(availableExamples).to.be.deep.equal(EXPECTED_AVAILABLE_EXAMPLES);
         });
-        it('should parse AVAILABLE_INTERFACES correctly from valid package-index.json.', () => {
+        it('should parse availableInterfaces correctly from valid package-index.json.', () => {
             const packageIndex = PackageIndex.read();
-            const AVAILABLE_INTERFACES = packageIndex.getAvailableInterfaces();
-            expect(AVAILABLE_INTERFACES).to.be.deep.equal(EXPECTED_AVAILABLE_INTERFACES);
+            const availableInterfaces = packageIndex.getAvailableInterfaces();
+            expect(availableInterfaces).to.be.deep.equal(EXPECTED_AVAILABLE_INTERFACES);
         });
-        it('should parse AVAILABLE_LANGUAGES correctly from valid invalidPackage-index.json.', () => {
+        it('should parse availableLanguages correctly from valid invalidPackage-index.json.', () => {
             const packageIndex = PackageIndex.read('./invalidPackage-index.json');
-            const AVAILABLE_LANGUAGES = packageIndex.getAvailableLanguages();
-            expect(AVAILABLE_LANGUAGES).to.be.empty;
+            const availableLanguages = packageIndex.getAvailableLanguages();
+            expect(availableLanguages).to.be.empty;
         });
-        it('should parse AVAILABLE_EXAMPLES correctly from valid invalidPackage-index.json.', () => {
+        it('should parse availableExamples correctly from valid invalidPackage-index.json.', () => {
             const packageIndex = PackageIndex.read('./invalidPackage-index.json');
-            const AVAILABLE_EXAMPLES = packageIndex.getAvailableExamples();
-            expect(AVAILABLE_EXAMPLES).to.be.empty;
+            const availableExamples = packageIndex.getAvailableExamples();
+            expect(availableExamples).to.be.empty;
         });
-        it('should parse AVAILABLE_INTERFACES correctly from valid invalidPackage-index.json.', () => {
+        it('should parse availableInterfaces correctly from valid invalidPackage-index.json.', () => {
             const packageIndex = PackageIndex.read('./invalidPackage-index.json');
-            const AVAILABLE_INTERFACES = packageIndex.getAvailableInterfaces();
-            console.log(AVAILABLE_INTERFACES);
-            expect(AVAILABLE_INTERFACES).to.be.empty;
+            const availableInterfaces = packageIndex.getAvailableInterfaces();
+            expect(availableInterfaces).to.be.empty;
         });
     });
     after(() => {

@@ -16,7 +16,6 @@ import { homedir } from 'os';
 
 export class SdkConfig {
     // name of the package to the package repository
-    // @deprecated use repo instead
     repo: string = '';
 
     // version of the package to use

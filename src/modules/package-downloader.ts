@@ -45,9 +45,8 @@ export class PackageDownloader {
         if (this.packageConfig.version === 'latest') {
             const repositoryVersions = await this.git.tags();
             this.packageConfig.version = repositoryVersions.latest ? repositoryVersions.latest : getLatestVersion(repositoryVersions.all);
-        } else {
-            await this.git.checkout(this.packageConfig.version);
         }
+        await this.git.checkout(this.packageConfig.version);
     }
 
     async downloadPackage(option: { checkVersionOnly: boolean }): Promise<SimpleGit> {

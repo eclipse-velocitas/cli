@@ -257,7 +257,7 @@ export default class Create extends Command {
         );
 
         this.log(`... Project for Vehicle Application '${flags.name}' created!`);
-        await Init.run(['-s']);
+        await Init.run(['--no-hooks']);
         await Sync.run([]);
     }
 }
