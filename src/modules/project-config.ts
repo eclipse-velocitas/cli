@@ -18,6 +18,9 @@ import { cwd } from 'process';
 import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { mapReplacer } from './helpers';
 import { PackageConfig } from './package';
+import { getLatestVersion } from './semver';
+import { PkgIndexEntry } from './package-index';
+import { DEFAULT_APP_MANIFEST_PATH } from './app-manifest';
 
 export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), './.velocitas.json');
 
@@ -78,6 +81,25 @@ export class ProjectConfig implements ProjectConfigOptions {
     }
 
     static isAvailable = (path: PathLike = DEFAULT_CONFIG_FILE_PATH) => existsSync(path);
+
+    static async create(usedExtensions: PkgIndexEntry[], language: string, cliVersion: string) {
+        const projectConfig = new ProjectConfig();
+        for (const extension of usedExtensions) {
+            const packageConfig = new PackageConfig({ name: extension.package });
+            const versions = await packageConfig.getPackageVersions();
+            const latestVersion = getLatestVersion(versions);
+
+            packageConfig.repo = extension.package;
+            packageConfig.version = latestVersion;
+            projectConfig.packages.push(packageConfig);
+        }
+        projectConfig.variables.set('language', language);
+        projectConfig.variables.set('repoType', 'app');
+        projectConfig.variables.set('appManifestPath', DEFAULT_APP_MANIFEST_PATH);
+        projectConfig.variables.set('githubRepoId', '<myrepo>');
+        projectConfig.cliVersion = cliVersion;
+        projectConfig.write();
+    }
 
     write(path: PathLike = DEFAULT_CONFIG_FILE_PATH): void {
         // replaceAll because of having "backward compatibility" before deprecate "name" completely

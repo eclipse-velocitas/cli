@@ -6,7 +6,6 @@
             {
                 "type": "vehicle-signal-interface",
                 "description": "Vehicle Signal Interface based on VSS and KUKSA Databroker",
-                "default": true,
                 "args": [
                     {
                         "id": "src",
@@ -26,7 +25,7 @@
             },
             {
                 "type": "grpc-interface",
-                "description": "gRPC service contraact based on a proto interface description",
+                "description": "gRPC service contract based on a proto interface description",
                 "args": [
                     {
                         "id": "src",
@@ -44,7 +43,7 @@
                     },
                     {
                         "id": "provided",
-                        "prompt": "Configuration for the \"Provider\" of the service. (Leave empty for now)",
+                        "description": "Configuration for the \"Provider\" of the service. (Leave empty for now)",
                         "required": false,
                         "default": "{}",
                         "type": "object"
@@ -77,12 +76,12 @@
                 "description": "Provided Examples from SDK",
                 "args": [
                     {
-                        "name": "seat-adjuster",
+                        "id": "seat-adjuster",
                         "description": "Seat Adjuster Example",
                         "type": "string"
                     },
                     {
-                        "name": "dog-mode",
+                        "id": "dog-mode",
                         "description": "Dog Mode Example",
                         "type": "string"
                     }

@@ -15,13 +15,14 @@
 import { expect, test } from '@oclif/test';
 import * as fs from 'fs';
 import { packageIndexMock, velocitasConfigMock } from '../../utils/mockConfig';
-import { mockFolders, mockRestore, userHomeDir } from '../../utils/mockfs';
+import { mockFolders, mockRestore } from '../../utils/mockfs';
 import * as gitModule from 'simple-git';
 import * as exec from '../../../src/modules/exec';
 import sinon from 'sinon';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
 import { ux } from '@oclif/core';
-import { DEFAULT_BUFFER_ENCODING } from '../../../src/modules/constants';
+import { ProjectConfig } from '../../../src/modules/project-config';
+import { readAppManifest } from '../../../src/modules/app-manifest';
 const inquirer = require('inquirer');
 
 const TEST_APP_NAME = 'TestApp';
@@ -29,7 +30,7 @@ const TEST_EXPOSED_INTERFACE_TYPE = packageIndexMock[0].exposedInterfaces[0].typ
 const TEST_EXPOSED_INTERFACE_ARG_NAME_1 = packageIndexMock[0].exposedInterfaces[0].args[0].id;
 const TEST_EXPOSED_INTERFACE_ARG_DEFAULT_1 = packageIndexMock[0].exposedInterfaces[0].args[0].default;
 const TEST_EXPOSED_INTERFACE_ARG_NAME_2 = packageIndexMock[0].exposedInterfaces[0].args[1].id;
-const TEST_EXPOSED_INTERFACE_ARG_DEFAULT_2 = packageIndexMock[0].exposedInterfaces[0].args[1].default;
+const TEST_EXPOSED_INTERFACE_ARG_DEFAULT_2 = packageIndexMock[0].exposedInterfaces[0].args[1].default as string;
 const TEST_PACKAGE_URI = packageIndexMock[0].package;
 const TEST_PACKAGE_NAME = velocitasConfigMock.packages[0].name;
 const TEST_PACKAGE_VERSION = velocitasConfigMock.packages[0].version;
@@ -56,14 +57,12 @@ describe('create', () => {
             expect(fs.existsSync(`${process.cwd()}/.velocitas.json`)).to.be.true;
             expect(fs.existsSync(`${process.cwd()}/app/AppManifest.json`)).to.be.true;
 
-            const velocitasConfigFile = fs.readFileSync(`${process.cwd()}/.velocitas.json`, DEFAULT_BUFFER_ENCODING);
-            const velocitasConfig = JSON.parse(velocitasConfigFile);
-            expect(velocitasConfig.packages[0].name).to.be.equal(TEST_PACKAGE_URI);
+            const velocitasConfig = ProjectConfig.read();
+            expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
-            expect(velocitasConfig.variables.language).to.be.equal('test');
+            expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
-            const appManifestFile = fs.readFileSync(`${process.cwd()}/app/AppManifest.json`, DEFAULT_BUFFER_ENCODING);
-            const appManifest = JSON.parse(appManifestFile);
+            const appManifest = readAppManifest();
             expect(appManifest.name).to.be.equal(TEST_APP_NAME);
             expect(appManifest.interfaces[0].type).to.be.equal(TEST_EXPOSED_INTERFACE_TYPE);
             expect(appManifest.interfaces[0].config[TEST_EXPOSED_INTERFACE_ARG_NAME_1]).to.be.equal(TEST_EXPOSED_INTERFACE_ARG_DEFAULT_1);
@@ -132,14 +131,12 @@ describe('create', () => {
             expect(fs.existsSync(`${process.cwd()}/.velocitas.json`)).to.be.true;
             expect(fs.existsSync(`${process.cwd()}/app/AppManifest.json`)).to.be.true;
 
-            const velocitasConfigFile = fs.readFileSync(`${process.cwd()}/.velocitas.json`, DEFAULT_BUFFER_ENCODING);
-            const velocitasConfig = JSON.parse(velocitasConfigFile);
-            expect(velocitasConfig.packages[0].name).to.be.equal(TEST_PACKAGE_URI);
+            const velocitasConfig = ProjectConfig.read();
+            expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
-            expect(velocitasConfig.variables.language).to.be.equal('test');
+            expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
-            const appManifestFile = fs.readFileSync(`${process.cwd()}/app/AppManifest.json`, DEFAULT_BUFFER_ENCODING);
-            const appManifest = JSON.parse(appManifestFile);
+            const appManifest = readAppManifest();
             expect(appManifest.name).to.be.equal(TEST_APP_NAME);
             expect(appManifest.interfaces[0].type).to.be.equal(TEST_EXPOSED_INTERFACE_TYPE);
             expect(appManifest.interfaces[0].config[TEST_EXPOSED_INTERFACE_ARG_NAME_1]).to.be.equal(TEST_EXPOSED_INTERFACE_ARG_DEFAULT_1);
@@ -179,14 +176,12 @@ describe('create', () => {
             expect(fs.existsSync(`${process.cwd()}/.velocitas.json`)).to.be.true;
             expect(fs.existsSync(`${process.cwd()}/app/AppManifest.json`)).to.be.true;
 
-            const velocitasConfigFile = fs.readFileSync(`${process.cwd()}/.velocitas.json`, DEFAULT_BUFFER_ENCODING);
-            const velocitasConfig = JSON.parse(velocitasConfigFile);
-            expect(velocitasConfig.packages[0].name).to.be.equal(TEST_PACKAGE_URI);
+            const velocitasConfig = ProjectConfig.read();
+            expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
-            expect(velocitasConfig.variables.language).to.be.equal('test');
+            expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
-            const appManifestFile = fs.readFileSync(`${process.cwd()}/app/AppManifest.json`, DEFAULT_BUFFER_ENCODING);
-            const appManifest = JSON.parse(appManifestFile);
+            const appManifest = readAppManifest();
             expect(appManifest.name).to.be.equal(TEST_APP_NAME);
             expect(appManifest.interfaces[0].type).to.be.equal(TEST_EXPOSED_INTERFACE_TYPE);
             expect(appManifest.interfaces[0].config[TEST_EXPOSED_INTERFACE_ARG_NAME_1]).to.be.equal('testNotDefault');
@@ -222,15 +217,12 @@ describe('create', () => {
             expect(fs.existsSync(`${process.cwd()}/.velocitas.json`)).to.be.true;
             expect(fs.existsSync(`${process.cwd()}/app/AppManifest.json`)).to.be.true;
 
-            const velocitasConfigFile = fs.readFileSync(`${process.cwd()}/.velocitas.json`, DEFAULT_BUFFER_ENCODING);
-            const velocitasConfig = JSON.parse(velocitasConfigFile);
-            expect(velocitasConfig.packages[0].name).to.be.equal(TEST_PACKAGE_URI);
+            const velocitasConfig = ProjectConfig.read();
+            expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
-            expect(velocitasConfig.variables.language).to.be.equal('test');
+            expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
-            const appManifestFile = fs.readFileSync(`${process.cwd()}/app/AppManifest.json`, DEFAULT_BUFFER_ENCODING);
-            const appManifest = JSON.parse(appManifestFile);
+            const appManifest = readAppManifest();
             expect(appManifest.name).to.be.equal(TEST_APP_NAME);
-            expect(appManifest.interfaces).to.be.empty;
         });
 });

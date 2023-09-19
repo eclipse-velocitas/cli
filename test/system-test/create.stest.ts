@@ -56,7 +56,7 @@ describe('CLI command', () => {
                 DEFAULT_BUFFER_ENCODING,
             );
             const creationConfig = JSON.parse(creationConfigFile);
-            const fileCheck: any = [];
+            const fileCheck: boolean[] = [];
             creationConfig.files.forEach((file: string) => {
                 file = file.replace('.project-creation/', '');
                 fileCheck.push(existsSync(`${TEST_ROOT}/testbench/test-create/vehicle-app-template/${file}`));

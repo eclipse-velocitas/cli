@@ -171,7 +171,7 @@ USAGE
 FLAGS
   -n --name      Name of the Vehicle App
   -l --language  Programming language of velocitas framework to use
-  -e --example   Use an example on which the Vehicle App will be generated
+  -e --example   Use an example upon which to base your Vehicle App
   -i --interface Functional interface your Vehicle App should use
 
 DESCRIPTION

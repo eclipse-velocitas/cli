@@ -13,6 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ComponentType } from '../../src/modules/component';
+import { PkgIndexEntry } from '../../src/modules/package-index';
 
 export const velocitasConfigMock = {
     packages: [
@@ -34,7 +35,7 @@ export const velocitasConfigMock = {
     },
 };
 
-export const packageIndexMock = [
+export const packageIndexMock: PkgIndexEntry[] = [
     {
         type: 'extension',
         package: 'https://github.com/eclipse-velocitas/test-runtime.git',
@@ -42,7 +43,6 @@ export const packageIndexMock = [
             {
                 type: 'test-interface',
                 description: 'Test interface',
-                default: true,
                 args: [
                     {
                         id: 'test-arg-required',
@@ -74,8 +74,6 @@ export const packageIndexMock = [
                         id: 'test-example',
                         description: 'Test Example',
                         type: 'string',
-                        default: '',
-                        required: false,
                     },
                 ],
             },

@@ -136,7 +136,6 @@ const EXPECTED_AVAILABLE_INTERFACES = [
                 type: 'object',
             },
         ],
-        default: true,
     },
 ];
 
