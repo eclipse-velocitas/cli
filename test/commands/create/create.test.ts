@@ -13,7 +13,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
-import * as fs from 'fs';
 import { packageIndexMock, velocitasConfigMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore } from '../../utils/mockfs';
 import * as gitModule from 'simple-git';
@@ -35,6 +34,21 @@ const TEST_PACKAGE_URI = packageIndexMock[0].package;
 const TEST_PACKAGE_NAME = velocitasConfigMock.packages[0].name;
 const TEST_PACKAGE_VERSION = velocitasConfigMock.packages[0].version;
 
+const EXPECTED_NON_INTERACTIVE_STDOUT = `Creating a new Velocitas project ...
+... Project for Vehicle Application '${TEST_APP_NAME}' created!
+Initializing Velocitas packages ...
+... Downloading package: '${TEST_PACKAGE_NAME}:${TEST_PACKAGE_VERSION}'
+Syncing Velocitas components!
+`;
+
+const EXPECTED_INTERACTIVE_STDOUT = `Creating a new Velocitas project ...
+Interactive project creation started
+... Project for Vehicle Application '${TEST_APP_NAME}' created!
+Initializing Velocitas packages ...
+... Downloading package: '${TEST_PACKAGE_NAME}:${TEST_PACKAGE_VERSION}'
+Syncing Velocitas components!
+`;
+
 describe('create', () => {
     test.do(() => {
         mockFolders({ packageIndex: true });
@@ -48,14 +62,9 @@ describe('create', () => {
         .stub(exec, 'awaitSpawn', () => {})
         .command(['create', '-n', TEST_APP_NAME, '-l', 'test'])
         .it('creates project with provided flags and generates .velocitas.json and AppManifest', (ctx) => {
-            expect(ctx.stdout).to.contain('Creating a new Velocitas project ...');
-            expect(ctx.stdout).to.contain(`... Project for Vehicle Application '${TEST_APP_NAME}' created!`);
-            expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
-            expect(ctx.stdout).to.contain(`... Downloading package: '${TEST_PACKAGE_NAME}:${TEST_PACKAGE_VERSION}'`);
-            expect(ctx.stdout).to.contain('Syncing Velocitas components!');
-
-            expect(fs.existsSync(`${process.cwd()}/.velocitas.json`)).to.be.true;
-            expect(fs.existsSync(`${process.cwd()}/app/AppManifest.json`)).to.be.true;
+            expect(ctx.stdout).to.equal(EXPECTED_NON_INTERACTIVE_STDOUT);
+            expect(ProjectConfig.isAvailable()).to.be.true;
+            expect(readAppManifest()).to.not.be.undefined;
 
             const velocitasConfig = ProjectConfig.read();
             expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
@@ -121,15 +130,9 @@ describe('create', () => {
         })
         .command(['create'])
         .it('creates project in interactive mode without example and generates .velocitas.json and AppManifest with defaults', (ctx) => {
-            expect(ctx.stdout).to.contain('Creating a new Velocitas project ...');
-            expect(ctx.stdout).to.contain('Interactive project creation started');
-            expect(ctx.stdout).to.contain(`... Project for Vehicle Application '${TEST_APP_NAME}' created!`);
-            expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
-            expect(ctx.stdout).to.contain(`... Downloading package: '${TEST_PACKAGE_NAME}:${TEST_PACKAGE_VERSION}'`);
-            expect(ctx.stdout).to.contain('Syncing Velocitas components!');
-
-            expect(fs.existsSync(`${process.cwd()}/.velocitas.json`)).to.be.true;
-            expect(fs.existsSync(`${process.cwd()}/app/AppManifest.json`)).to.be.true;
+            expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
+            expect(ProjectConfig.isAvailable()).to.be.true;
+            expect(readAppManifest()).to.not.be.undefined;
 
             const velocitasConfig = ProjectConfig.read();
             expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
@@ -152,6 +155,38 @@ describe('create', () => {
             mockRestore();
         })
         .stdout()
+        .command(['create', '-l', 'test'])
+        .catch(`Missing required flag 'name'`)
+        .it('throws error when required name flag is missing');
+
+    test.do(() => {
+        mockFolders({ packageIndex: true });
+    })
+        .finally(() => {
+            mockRestore();
+        })
+        .stdout()
+        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', () => {})
+        .stub(exec, 'awaitSpawn', () => {})
+        .stub(ux, 'prompt', () => TEST_APP_NAME)
+        .stub(inquirer, 'prompt', () => {
+            return {
+                language: 'no-example',
+                exampleQuestion: true,
+            };
+        })
+        .command(['create'])
+        .catch(`No example for your chosen language 'no-example' available`)
+        .it('throws error when no example exists for chosen language');
+
+    test.do(() => {
+        mockFolders({ packageIndex: true });
+    })
+        .finally(() => {
+            mockRestore();
+        })
+        .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})
         .stub(exec, 'awaitSpawn', () => {})
@@ -166,15 +201,9 @@ describe('create', () => {
         })
         .command(['create'])
         .it('creates project in interactive mode without example and generates .velocitas.json and AppManifest without defaults', (ctx) => {
-            expect(ctx.stdout).to.contain('Creating a new Velocitas project ...');
-            expect(ctx.stdout).to.contain('Interactive project creation started');
-            expect(ctx.stdout).to.contain(`... Project for Vehicle Application '${TEST_APP_NAME}' created!`);
-            expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
-            expect(ctx.stdout).to.contain(`... Downloading package: '${TEST_PACKAGE_NAME}:${TEST_PACKAGE_VERSION}'`);
-            expect(ctx.stdout).to.contain('Syncing Velocitas components!');
-
-            expect(fs.existsSync(`${process.cwd()}/.velocitas.json`)).to.be.true;
-            expect(fs.existsSync(`${process.cwd()}/app/AppManifest.json`)).to.be.true;
+            expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
+            expect(ProjectConfig.isAvailable()).to.be.true;
+            expect(readAppManifest()).to.not.be.undefined;
 
             const velocitasConfig = ProjectConfig.read();
             expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
@@ -207,15 +236,9 @@ describe('create', () => {
         })
         .command(['create'])
         .it('creates project in interactive mode with example and generates .velocitas.json and AppManifest', (ctx) => {
-            expect(ctx.stdout).to.contain('Creating a new Velocitas project ...');
-            expect(ctx.stdout).to.contain('Interactive project creation started');
-            expect(ctx.stdout).to.contain(`... Project for Vehicle Application '${TEST_APP_NAME}' created!`);
-            expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
-            expect(ctx.stdout).to.contain(`... Downloading package: '${TEST_PACKAGE_NAME}:${TEST_PACKAGE_VERSION}'`);
-            expect(ctx.stdout).to.contain('Syncing Velocitas components!');
-
-            expect(fs.existsSync(`${process.cwd()}/.velocitas.json`)).to.be.true;
-            expect(fs.existsSync(`${process.cwd()}/app/AppManifest.json`)).to.be.true;
+            expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
+            expect(ProjectConfig.isAvailable()).to.be.true;
+            expect(readAppManifest()).to.not.be.undefined;
 
             const velocitasConfig = ProjectConfig.read();
             expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);

@@ -23,6 +23,13 @@ import Sync from '../sync';
 import { Argument, ExampleDescription, FunctionalInterfaceDescription, PackageIndex } from '../../modules/package-index';
 import { AppManifestInterfaceEntry, AppManifestInterfaces, createAppManifestV3 } from '../../modules/app-manifest';
 
+// inquirer >= v9 is an ESM package.
+// We are not using ESM in our CLI,
+// We need to set moduleResolution to node16 in tsconfig.json
+// and import inquirer using "await import"
+// @ts-ignore: declaration file not found
+const inquirer = require('inquirer');
+
 let availableLanguages: string[] = [];
 let availableExamples: ExampleDescription[] = [];
 let availableInterfaces: FunctionalInterfaceDescription[] = [];
@@ -96,14 +103,16 @@ export default class Create extends Command {
 
     appManifestInterfaces: AppManifestInterfaces = { interfaces: [] };
 
+    private _filterAvailableExamplesByLanguage(language: string) {
+        const filteredExamples = availableExamples.filter((example) => example.language === language);
+        if (!filteredExamples.length) {
+            throw new Error(`No example for your chosen language '${language}' available`);
+        }
+        return filteredExamples;
+    }
+
     private async _runInteractiveMode(flags: any) {
         flags.name = await ux.prompt(Create.prompts.name, { required: true });
-        // inquirer >= v9 is an ESM package.
-        // We are not using ESM in our CLI,
-        // We need to set moduleResolution to node16 in tsconfig.json
-        // and import inquirer using "await import"
-        // @ts-ignore: declaration file not found
-        const { default: inquirer } = await import('inquirer');
 
         let interactiveResponses: any = await inquirer.prompt([Create.prompts.language, Create.prompts.exampleQuestion]);
 
@@ -111,7 +120,7 @@ export default class Create extends Command {
         flags.example = interactiveResponses.exampleQuestion;
 
         if (flags.example) {
-            availableExamples = availableExamples.filter((examples: ExampleDescription) => examples.language === flags.language);
+            availableExamples = this._filterAvailableExamplesByLanguage(flags.language);
             interactiveResponses = await inquirer.prompt([Create.prompts.exampleUse]);
         } else {
             interactiveResponses = await inquirer.prompt([Create.prompts.interface]);
@@ -120,11 +129,11 @@ export default class Create extends Command {
         flags.interface = interactiveResponses.interface;
 
         if (flags.interface && flags.interface.length > 0) {
-            await this._handleAdditionalInterfaceArgs(flags.interface, inquirer);
+            await this._handleAdditionalInterfaceArgs(flags.interface);
         }
     }
 
-    private async _handleAdditionalInterfaceArgs(interfaces: string[], inquirer: any) {
+    private async _handleAdditionalInterfaceArgs(interfaces: string[]) {
         for (const interfaceEntry of interfaces) {
             const appManifestInterfaceEntry: AppManifestInterfaceEntry = { type: interfaceEntry, config: {} };
             const interfaceObject = availableInterfaces.find(
@@ -163,6 +172,9 @@ export default class Create extends Command {
     }
 
     private async _setDefaultAppManifestInterfaceConfig(interfaces: string[]) {
+        if (this.appManifestInterfaces.interfaces.length > 0) {
+            return;
+        }
         const interfacesToUse =
             Array.isArray(interfaces) && interfaces.length
                 ? availableInterfaces.filter((interfaceEntry) => interfaces.includes(interfaceEntry.value))
@@ -209,7 +221,7 @@ export default class Create extends Command {
             throw new Error("Missing required flag 'language'");
         }
 
-        if (!flags.example || !Array.isArray(flags.interface)) {
+        if (!flags.example) {
             this._setDefaultAppManifestInterfaceConfig(flags.interface!);
         }
 

@@ -79,6 +79,11 @@ export const packageIndexMock: PkgIndexEntry[] = [
             },
         ],
     },
+    {
+        type: 'core',
+        package: 'https://github.com/eclipse-velocitas/vehicle-app-no-example-sdk',
+        exposedInterfaces: [],
+    },
 ];
 
 export const appManifestMock = [

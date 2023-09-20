@@ -140,16 +140,20 @@ export class PackageIndex {
         const availableExamples: ExampleDescription[] = [];
         this.getCores().forEach((packageEntry: PkgIndexEntry) => {
             const match = packageEntry.package.match(sdkPattern);
-            if (match) {
-                const examples = packageEntry.exposedInterfaces.filter((exposed: ExposedInterface) => exposed.type === 'examples');
-                for (const example in examples[0].args) {
-                    const language = match[1];
-                    availableExamples.push({
-                        name: examples[0].args[example].description,
-                        value: examples[0].args[example].id,
-                        language: language,
-                    });
-                }
+            if (!match) {
+                return [];
+            }
+            const examples = packageEntry.exposedInterfaces.filter((exposed: ExposedInterface) => exposed.type === 'examples');
+            if (!examples.length) {
+                return [];
+            }
+            for (const example in examples[0].args) {
+                const language = match[1];
+                availableExamples.push({
+                    name: examples[0].args[example].description,
+                    value: examples[0].args[example].id,
+                    language: language,
+                });
             }
         });
         return availableExamples;
