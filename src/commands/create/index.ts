@@ -17,7 +17,7 @@ import { ProjectConfig } from '../../modules/project-config';
 import { sdkDownloader } from '../../modules/package-downloader';
 import { SdkConfig } from '../../modules/sdk';
 import { awaitSpawn } from '../../modules/exec';
-import { posix as pathPosix } from 'path';
+import { join } from 'path';
 import Init from '../init';
 import Sync from '../sync';
 import { Argument, ExampleDescription, FunctionalInterfaceDescription, PackageIndex } from '../../modules/package-index';
@@ -183,6 +183,14 @@ export default class Create extends Command {
         }
     }
 
+    private _getScriptExecutionPath(sdkConfig: SdkConfig): string {
+        const basePath = process.env.VELOCITAS_SDK_PATH_OVERRIDE
+            ? process.env.VELOCITAS_SDK_PATH_OVERRIDE
+            : join(sdkConfig.getPackageDirectory(), 'latest');
+
+        return join(basePath, '.project-creation', 'run.py');
+    }
+
     async run(): Promise<void> {
         const packageIndex = PackageIndex.read();
         this._handlePackageIndex(packageIndex);
@@ -209,10 +217,10 @@ export default class Create extends Command {
         await createAppManifestV3(flags.name, this.appManifestInterfaces);
         const sdkConfig = new SdkConfig(flags.language);
         await sdkDownloader(sdkConfig).downloadPackage({ checkVersionOnly: false });
-        const scriptPath = pathPosix.join(sdkConfig.getPackageDirectory(), 'latest', '.project-creation', 'run.py');
+
         await awaitSpawn(
             `python3`,
-            [scriptPath, '-d', process.cwd(), '-e', flags.example ? flags.example : ''],
+            [this._getScriptExecutionPath(sdkConfig), '-d', process.cwd(), '-e', flags.example ? flags.example : ''],
             process.cwd(),
             process.env,
             true,
