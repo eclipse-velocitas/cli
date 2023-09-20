@@ -27,6 +27,7 @@ export class PackageDownloader {
 
     async cloneRepository(packageDir: string, cloneOpts: string[]): Promise<void> {
         await this.git.clone(this.packageConfig.getPackageRepo(), packageDir, cloneOpts);
+        await this.git.addConfig('safe.directory', packageDir, undefined, 'global');
     }
 
     async updateRepository(checkRepoAction: CheckRepoActions, packageDir: string, cloneOpts: string[]): Promise<void> {
