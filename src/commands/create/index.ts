@@ -244,13 +244,17 @@ export default class Create extends Command {
         const sdkConfig = new SdkConfig(flags.language);
         await sdkDownloader(sdkConfig).downloadPackage({ checkVersionOnly: false });
 
-        await awaitSpawn(
+        const result = await awaitSpawn(
             `python3`,
             [this._getScriptExecutionPath(sdkConfig), '-d', process.cwd(), '-e', flags.example ? flags.example : ''],
             process.cwd(),
             process.env,
             true,
         );
+
+        if (result === null || result.exitCode !== 0) {
+            this.error('Unable to execute create script!');
+        }
 
         this.log(`... Project for Vehicle Application '${flags.name}' created!`);
         await Init.run(['--no-hooks']);

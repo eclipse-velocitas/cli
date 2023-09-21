@@ -5,9 +5,7 @@ const VELOCITAS_CONFIG = '.velocitas.json';
 const PACKAGE_INDEX = 'package-index.json';
 // This check is only for executing the CLI locally inside devcontainer
 if (!(fs.existsSync(VELOCITAS_CONFIG) || fs.existsSync(PACKAGE_INDEX))) {
-    console.log(
-        `No ${VELOCITAS_CONFIG} or ${VELOCITAS_CONFIG} found in current working directory. Change directory to 'vehicle-app-repo'.`,
-    );
+    console.log(`No ${VELOCITAS_CONFIG} or ${PACKAGE_INDEX} found in current working directory. Change directory to 'vehicle-app-repo'.`);
     process.exit(1);
 }
 

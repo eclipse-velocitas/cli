@@ -77,6 +77,20 @@ describe('create', () => {
         });
 
     test.do(() => {
+        mockFolders({ packageIndex: true });
+    })
+        .finally(() => {
+            mockRestore();
+        })
+        .stdout()
+        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', () => {})
+        .command(['create', '-n', TEST_APP_NAME, '-l', 'test'])
+        .catch('Unable to execute create script!')
+        .only()
+        .it('throws error when project-creation script cannot be executed');
+
+    test.do(() => {
         mockFolders();
     })
         .finally(() => {
