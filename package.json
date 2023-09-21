@@ -87,7 +87,7 @@
     "version": "oclif readme && git add README.md",
     "local-system-test": "export VELOCITAS_PROCESS=\"./bin/dev\" && mocha \"test/**/*.stest.ts\"",
     "system-test": "export VELOCITAS_PROCESS=\"./velocitas-linux-$ARCH\" && mocha \"test/**/*.stest.ts\"",
-    "compile-exe": "npm run build && pkg --target=$TARGET --compress=Brotli --output=velocitas-linux-$ARCH ."
+    "compile-exe": "npm run build && pkg --target=$TARGET --compress=Brotli --output=velocitas-$OS-$ARCH ."
   },
   "engines": {
     "node": ">=18.0.0"

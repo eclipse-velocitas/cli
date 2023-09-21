@@ -43,6 +43,7 @@ jobs:
     strategy:
       matrix:
         arch: [arm64, x64]
+        os: [linux, alpine]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
@@ -80,8 +81,8 @@ jobs:
           npm install .
 
       - name: Compile EXE for ${{ matrix.arch }}
-        run: TARGET=node18-linux-${{ matrix.arch }} ARCH=${{ matrix.arch }} npm run compile-exe
+        run: TARGET=node18-${{ matrix.os }}-${{ matrix.arch }} ARCH=${{ matrix.arch }} OS=${{ matrix.os }} npm run compile-exe
       - uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.arch }}
-          path: velocitas-linux-${{ matrix.arch }}
+          name: ${{ matrix.os }}-${{ matrix.arch }}
+          path: velocitas-${{ matrix.os }}-${{ matrix.arch }}

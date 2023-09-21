@@ -85,6 +85,6 @@ jobs:
           apt-get update && apt-get install build-essential -y
           npm install
       - name: Compile EXE
-        run: TARGET=node18-linux-x64 ARCH=x64 npm run compile-exe
+        run: TARGET=node18-linux-x64 ARCH=x64 OS=linux npm run compile-exe
       - name: Run system test
         run: ARCH=x64 npm run system-test
