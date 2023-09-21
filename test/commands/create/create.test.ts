@@ -19,7 +19,6 @@ import * as gitModule from 'simple-git';
 import * as exec from '../../../src/modules/exec';
 import sinon from 'sinon';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
-import { ux } from '@oclif/core';
 import { ProjectConfig } from '../../../src/modules/project-config';
 import { readAppManifest } from '../../../src/modules/app-manifest';
 const inquirer = require('inquirer');
@@ -120,9 +119,9 @@ describe('create', () => {
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})
         .stub(exec, 'awaitSpawn', () => {})
-        .stub(ux, 'prompt', () => TEST_APP_NAME)
         .stub(inquirer, 'prompt', () => {
             return {
+                name: TEST_APP_NAME,
                 language: 'test',
                 exampleQuestion: false,
                 interface: [TEST_EXPOSED_INTERFACE_TYPE],
@@ -169,9 +168,9 @@ describe('create', () => {
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})
         .stub(exec, 'awaitSpawn', () => {})
-        .stub(ux, 'prompt', () => TEST_APP_NAME)
         .stub(inquirer, 'prompt', () => {
             return {
+                name: TEST_APP_NAME,
                 language: 'no-example',
                 exampleQuestion: true,
             };
@@ -190,9 +189,9 @@ describe('create', () => {
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})
         .stub(exec, 'awaitSpawn', () => {})
-        .stub(ux, 'prompt', () => TEST_APP_NAME)
         .stub(inquirer, 'prompt', () => {
             return {
+                name: TEST_APP_NAME,
                 language: 'test',
                 exampleQuestion: false,
                 interface: [TEST_EXPOSED_INTERFACE_TYPE],
@@ -226,9 +225,9 @@ describe('create', () => {
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})
         .stub(exec, 'awaitSpawn', () => {})
-        .stub(ux, 'prompt', () => TEST_APP_NAME)
         .stub(inquirer, 'prompt', () => {
             return {
+                name: TEST_APP_NAME,
                 language: 'test',
                 exampleQuestion: true,
                 exampleUse: true,

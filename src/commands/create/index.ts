@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { ux, Command, Flags } from '@oclif/core';
+import { Command, Flags } from '@oclif/core';
 import { ProjectConfig } from '../../modules/project-config';
 import { sdkDownloader } from '../../modules/package-downloader';
 import { SdkConfig } from '../../modules/sdk';
@@ -21,7 +21,7 @@ import { join } from 'path';
 import Init from '../init';
 import Sync from '../sync';
 import { Argument, ExampleDescription, FunctionalInterfaceDescription, PackageIndex } from '../../modules/package-index';
-import { AppManifestInterfaceEntry, AppManifestInterfaces, createAppManifestV3 } from '../../modules/app-manifest';
+import { AppManifestInterfaceEntry, AppManifestInterfaces, createAppManifest } from '../../modules/app-manifest';
 
 // inquirer >= v9 is an ESM package.
 // We are not using ESM in our CLI,
@@ -46,7 +46,7 @@ export default class Create extends Command {
         name: Flags.string({ char: 'n', description: 'Name of the Vehicle App.', required: false }),
         language: Flags.string({
             char: 'l',
-            description: 'Programming language of velocitas framework to use.',
+            description: 'Programming language used for the Vehicle App (python, cpp).',
             required: false,
         }),
         example: Flags.string({
@@ -63,7 +63,12 @@ export default class Create extends Command {
     };
 
     static prompts = {
-        name: '> What is the name of your project?',
+        name: {
+            name: 'name',
+            prefix: '',
+            message: '> What is the name of your project?',
+            type: 'input',
+        },
         language: {
             name: 'language',
             prefix: '',
@@ -112,10 +117,13 @@ export default class Create extends Command {
     }
 
     private async _runInteractiveMode(flags: any) {
-        flags.name = await ux.prompt(Create.prompts.name, { required: true });
+        let interactiveResponses: any = await inquirer.prompt([
+            Create.prompts.name,
+            Create.prompts.language,
+            Create.prompts.exampleQuestion,
+        ]);
 
-        let interactiveResponses: any = await inquirer.prompt([Create.prompts.language, Create.prompts.exampleQuestion]);
-
+        flags.name = interactiveResponses.name;
         flags.language = interactiveResponses.language;
         flags.example = interactiveResponses.exampleQuestion;
 
@@ -133,6 +141,24 @@ export default class Create extends Command {
         }
     }
 
+    private async _queryArgsForInterface(arg: Argument, interfaceEntry: string) {
+        let interfaceArgResponse: any = {};
+        let config: any = {};
+        if (arg.required) {
+            interfaceArgResponse = await inquirer.prompt([Create.prompts.additionalArg(arg, interfaceEntry)]);
+            config[arg.id] = interfaceArgResponse[arg.id];
+        } else {
+            interfaceArgResponse[arg.id] = '';
+        }
+        if (!interfaceArgResponse[arg.id] && arg.default) {
+            config[arg.id] = arg.default;
+            if (arg.type === 'object') {
+                config[arg.id] = JSON.parse(arg.default);
+            }
+        }
+        return config;
+    }
+
     private async _handleAdditionalInterfaceArgs(interfaces: string[]) {
         for (const interfaceEntry of interfaces) {
             const appManifestInterfaceEntry: AppManifestInterfaceEntry = { type: interfaceEntry, config: {} };
@@ -140,26 +166,14 @@ export default class Create extends Command {
                 (availableInterface: FunctionalInterfaceDescription) => availableInterface.value === interfaceEntry,
             );
             for (const arg of interfaceObject!.args) {
-                let interfaceArgResponse: any = {};
-                if (arg.required) {
-                    interfaceArgResponse = await inquirer.prompt([Create.prompts.additionalArg(arg, interfaceEntry)]);
-                    appManifestInterfaceEntry.config[arg.id] = interfaceArgResponse[arg.id];
-                } else {
-                    interfaceArgResponse[arg.id] = '';
-                }
-                if (!interfaceArgResponse[arg.id] && arg.default) {
-                    appManifestInterfaceEntry.config[arg.id] = arg.default;
-                    if (arg.type === 'object') {
-                        appManifestInterfaceEntry.config[arg.id] = JSON.parse(arg.default);
-                    }
-                }
+                const interfaceConfig = await this._queryArgsForInterface(arg, interfaceEntry);
+                appManifestInterfaceEntry.config = { ...appManifestInterfaceEntry.config, ...interfaceConfig };
             }
-
             this.appManifestInterfaces.interfaces.push(appManifestInterfaceEntry);
         }
     }
 
-    private _handlePackageIndex(packageIndex: PackageIndex) {
+    private _loadDataFromPackageIndex(packageIndex: PackageIndex) {
         availableLanguages = packageIndex.getAvailableLanguages();
         availableExamples = packageIndex.getAvailableExamples();
         availableInterfaces = packageIndex.getAvailableInterfaces();
@@ -205,7 +219,7 @@ export default class Create extends Command {
 
     async run(): Promise<void> {
         const packageIndex = PackageIndex.read();
-        this._handlePackageIndex(packageIndex);
+        this._loadDataFromPackageIndex(packageIndex);
         const { flags } = await this.parse(Create);
         this.log(`Creating a new Velocitas project ...`);
 
@@ -226,7 +240,7 @@ export default class Create extends Command {
         }
 
         await ProjectConfig.create(packageIndex.getExtensions(), flags.language, this.config.version);
-        await createAppManifestV3(flags.name, this.appManifestInterfaces);
+        await createAppManifest(flags.name, this.appManifestInterfaces);
         const sdkConfig = new SdkConfig(flags.language);
         await sdkDownloader(sdkConfig).downloadPackage({ checkVersionOnly: false });
 
