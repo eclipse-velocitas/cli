@@ -141,7 +141,7 @@ export default class Create extends Command {
         }
     }
 
-    private async _queryArgsForInterface(arg: Argument, interfaceEntry: string) {
+    private async _queryArgsForInterface(arg: Argument, interfaceEntry: string): Promise<any> {
         let interfaceArgResponse: any = {};
         let config: any = {};
         if (arg.required) {
