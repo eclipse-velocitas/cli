@@ -19,8 +19,10 @@ import { Component, ComponentType, deserializeComponentJSON } from './component'
 import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { ComponentConfig } from './project-config';
 import { packageDownloader } from './package-downloader';
+import { ProjectCache } from './project-cache';
 
 export const MANIFEST_FILE_NAME = 'manifest.json';
+export const LATEST_VERSION_LITERAL = 'latest';
 
 export interface PackageManifest {
     components: Component[];
@@ -80,15 +82,9 @@ export class PackageConfig {
         return join(getPackageFolderPath(), this.getPackageName());
     }
 
-    getPackageDirectoryWithVersion(): string {
-        return join(this.getPackageDirectory(), this.version);
-    }
-
     async getPackageVersions(): Promise<string[]> {
         try {
-            const packageInformation = await packageDownloader(this).downloadPackage({ checkVersionOnly: true });
-            const packageVersionTags = await packageInformation.tags();
-            return packageVersionTags.all;
+            return (await packageDownloader(this).getPackageInfo()).versions;
         } catch (error) {
             console.log(error);
         }
@@ -97,7 +93,9 @@ export class PackageConfig {
 
     async downloadPackageVersion(verbose?: boolean): Promise<void> {
         try {
-            await packageDownloader(this).downloadPackage({ checkVersionOnly: false });
+            let downloader = packageDownloader(this);
+            await downloader.downloadOrUpdatePackage();
+            await downloader.checkoutVersion();
         } catch (error) {
             console.error(error);
         }
@@ -105,8 +103,7 @@ export class PackageConfig {
     }
 
     isPackageInstalled(): boolean {
-        const packageDir = `${getPackageFolderPath()}/${this.repo}/${this.version}`;
-        if (!existsSync(packageDir)) {
+        if (!existsSync(this.getPackageDirectory())) {
             return false;
         }
         return true;
@@ -114,13 +111,12 @@ export class PackageConfig {
 
     readPackageManifest(): PackageManifest {
         try {
-            const config: PackageManifest = deserializeComponentJSON(
-                readFileSync(join(this.getPackageDirectory(), this.version, MANIFEST_FILE_NAME), DEFAULT_BUFFER_ENCODING),
-            );
+            const filename = join(this.getPackageDirectory(), MANIFEST_FILE_NAME);
+            const config: PackageManifest = deserializeComponentJSON(readFileSync(filename, DEFAULT_BUFFER_ENCODING));
             return config;
         } catch (error) {
-            console.log(`Cannot find component ${this.getPackageName()}:${this.version}. Please upgrade or init first!`);
-            throw new Error(`Cannot find component ${this.getPackageName()}:${this.version}`);
+            console.log(`Cannot find package ${this.getPackageName()}:${this.version}. Please upgrade or init first!`);
+            throw new Error(`Cannot find package ${this.getPackageName()}:${this.version}`);
         }
     }
 }
@@ -129,8 +125,8 @@ export function getVelocitasRoot(): string {
     return join(process.env.VELOCITAS_HOME ? process.env.VELOCITAS_HOME : homedir(), '.velocitas');
 }
 
-function getPackageFolderPath(): string {
-    return join(getVelocitasRoot(), 'packages');
+export function getPackageFolderPath(): string {
+    return join(ProjectCache.getCacheDir(), 'packages');
 }
 
 export function getComponentByType(packageManifest: PackageManifest, type: ComponentType): Component {

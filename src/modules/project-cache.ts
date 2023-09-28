@@ -18,6 +18,7 @@ import { join, parse } from 'node:path';
 import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { mapReplacer } from './helpers';
 import { getVelocitasRoot } from './package';
+import { env } from 'node:process';
 
 const FILE_NAME = 'cache.json';
 
@@ -58,6 +59,10 @@ export class ProjectCache {
     }
 
     static getCacheDir(projectPath: PathLike = process.cwd()): string {
+        const projectDirOverride = process.env['VELOCITAS_PROJECT_DIR'];
+        if (projectDirOverride) {
+            return projectDirOverride;
+        }
         const projectPathHash = createHash('md5').update(projectPath.toString()).digest('hex');
         return join(getVelocitasRoot(), 'projects', projectPathHash);
     }

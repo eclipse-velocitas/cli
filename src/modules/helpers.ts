@@ -26,3 +26,7 @@ export function mapReplacer(key: string, value: any) {
         return value;
     }
 }
+
+export function wait(milliseconds: number): Promise<number> {
+    return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}

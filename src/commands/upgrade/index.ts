@@ -44,17 +44,6 @@ Checking for updates!
                 const latestVersion = getLatestVersion(availableVersions);
 
                 if (packageConfig.version === latestVersion) {
-                    if (!packageConfig.isPackageInstalled()) {
-                        this.log(`... No installed sources for ${packageConfig.repo}:${packageConfig.version} found`);
-                        if (flags['dry-run']) {
-                            continue;
-                        }
-                        const response = await ux.prompt(`... Do you want to download them? [y/n]`, { default: 'y' });
-                        if (response === 'y') {
-                            await packageConfig.downloadPackageVersion(flags.verbose);
-                        }
-                        continue;
-                    }
                     this.log(`... '${packageConfig.getPackageName()}' is up to date!`);
                     continue;
                 }

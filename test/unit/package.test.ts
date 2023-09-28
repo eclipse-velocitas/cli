@@ -21,13 +21,11 @@ describe('package - module', () => {
     let envCache: any;
     before(() => {
         envCache = process.env;
-        const mockfsConf: any = {
-            '/my/custom/path/.velocitas/packages': {
-                TestPackage: {
-                    'v1.2.3': {
-                        'manifest.json': '{}',
-                    },
-                },
+        let folderPath = '/my/custom/path/.velocitas/projects/16ecd5f381f8ddafb40ec903bdd251de/packages';
+        const mockfsConf: any = {};
+        mockfsConf[folderPath] = {
+            TestPackage: {
+                'manifest.json': '{}',
             },
         };
         mockfs(mockfsConf, { createCwd: false });

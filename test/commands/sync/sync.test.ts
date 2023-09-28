@@ -18,7 +18,7 @@ import { mockFolders, mockRestore } from '../../utils/mockfs';
 
 describe('sync', () => {
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, installedPackages: true });
     })
         .finally(() => {
             mockRestore();

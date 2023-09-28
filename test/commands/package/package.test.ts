@@ -15,10 +15,11 @@
 import { expect, test } from '@oclif/test';
 import { velocitasConfigMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore, userHomeDir } from '../../utils/mockfs';
+import { getPackageFolderPath } from '../../../src/modules/package';
 
 describe('package', () => {
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, installedPackages: true });
     })
         .finally(() => {
             mockRestore();
@@ -31,7 +32,7 @@ describe('package', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, installedPackages: true });
     })
         .finally(() => {
             mockRestore();
@@ -39,9 +40,7 @@ describe('package', () => {
         .stdout()
         .command(['package', '-p', `${velocitasConfigMock.packages[0].name}`])
         .it('prints the path of specified package', (ctx) => {
-            expect(ctx.stdout).to.contain(
-                `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}/${velocitasConfigMock.packages[0].version}`
-            );
+            expect(ctx.stdout).to.contain(`${getPackageFolderPath()}/${velocitasConfigMock.packages[0].name}`);
         });
 
     test.do(() => {
@@ -52,11 +51,11 @@ describe('package', () => {
         })
         .stdout()
         .command(['package'])
-        .catch(`Cannot find component ${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version}`)
-        .it('throws error when configured component cannot be found');
+        .catch(`Cannot find package ${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version}`)
+        .it('throws error when configured package cannot be found');
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, installedPackages: true });
     })
         .finally(() => {
             mockRestore();

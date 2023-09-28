@@ -20,18 +20,18 @@ import {
     appManifestMock,
     mockCacheContent,
     packageIndexMock,
-    runtimeComponentManifestMock,
-    setupComponentManifestMock,
+    runtimeComponentManifestMock as runtimePackageManifestMock,
+    setupComponentManifestMock as setupPackageManifestMock,
     velocitasConfigMock,
 } from './mockConfig';
 
 export const userHomeDir = os.homedir();
-const runtimeComponentPath = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}/${velocitasConfigMock.packages[0].version}`;
-const setupComponentPath = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}/${velocitasConfigMock.packages[1].version}`;
+const runtimePackagePath = `${ProjectCache.getCacheDir()}/packages/${velocitasConfigMock.packages[0].name}`;
+const setupPackagePath = `${ProjectCache.getCacheDir()}/packages/${velocitasConfigMock.packages[1].name}`;
 
 type MockConfig = {
     velocitasConfig?: boolean;
-    installedComponents?: boolean;
+    installedPackages?: boolean;
     appManifest?: boolean;
     mockCache?: boolean;
     packageIndex?: boolean;
@@ -54,13 +54,13 @@ export const mockFolders = (mockConfig?: MockConfig) => {
     if (mockConfig && mockConfig.velocitasConfig) {
         mockfsConf['.velocitas.json'] = JSON.stringify(velocitasConfigMock);
     }
-    if (mockConfig && mockConfig.installedComponents) {
-        mockfsConf[runtimeComponentPath] = {
-            'manifest.json': JSON.stringify(runtimeComponentManifestMock),
+    if (mockConfig && mockConfig.installedPackages) {
+        mockfsConf[runtimePackagePath] = {
+            'manifest.json': JSON.stringify(runtimePackageManifestMock),
             src: {},
         };
-        mockfsConf[setupComponentPath] = {
-            'manifest.json': JSON.stringify(setupComponentManifestMock),
+        mockfsConf[setupPackagePath] = {
+            'manifest.json': JSON.stringify(setupPackageManifestMock),
         };
     }
     if (mockConfig && mockConfig.mockCache) {

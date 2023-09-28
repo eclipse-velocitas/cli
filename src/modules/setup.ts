@@ -88,7 +88,7 @@ export function installComponent(packageConfig: PackageConfig, setupComponent: S
             let ifCondition = spec.condition ? variables.substitute(spec.condition) : 'true';
 
             if (eval(ifCondition)) {
-                const sourceFileOrDir = join(packageConfig.getPackageDirectory(), packageConfig.version, src);
+                const sourceFileOrDir = join(packageConfig.getPackageDirectory(), src);
                 const destFileOrDir = join(cwd(), dst);
                 try {
                     if (existsSync(sourceFileOrDir)) {

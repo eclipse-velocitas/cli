@@ -121,7 +121,7 @@ export async function runExecSpec(
         throw new Error(`No program found for item '${execSpec.ref}' referenced in program list of '${component.id}'`);
     }
 
-    const cwd = join(packageConfig.getPackageDirectory(), packageConfig.version);
+    const cwd = packageConfig.getPackageDirectory();
 
     let programArgs = programSpec.args ? programSpec.args : [];
     if (execSpec.args && execSpec.args.length > 0) {

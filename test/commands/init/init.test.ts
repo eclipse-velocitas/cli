@@ -20,6 +20,7 @@ import * as gitModule from 'simple-git';
 import * as exec from '../../../src/modules/exec';
 import sinon from 'sinon';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
+import { getPackageFolderPath } from '../../../src/modules/package';
 
 describe('init', () => {
     test.do(() => {
@@ -39,12 +40,12 @@ describe('init', () => {
             expect(ctx.stdout).to.contain(
                 `... Downloading package: '${velocitasConfigMock.packages[1].name}:${velocitasConfigMock.packages[1].version}'`,
             );
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;
+            expect(fs.existsSync(`${getPackageFolderPath()}/${velocitasConfigMock.packages[0].name}`)).to.be.true;
+            expect(fs.existsSync(`${getPackageFolderPath()}/${velocitasConfigMock.packages[1].name}`)).to.be.true;
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, installedPackages: true });
     })
         .finally(() => {
             mockRestore();
@@ -60,12 +61,12 @@ describe('init', () => {
             expect(ctx.stdout).to.contain(
                 `... '${velocitasConfigMock.packages[1].name}:${velocitasConfigMock.packages[1].version}' already initialized.`,
             );
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;
+            expect(fs.existsSync(`${getPackageFolderPath()}/${velocitasConfigMock.packages[0].name}`)).to.be.true;
+            expect(fs.existsSync(`${getPackageFolderPath()}/${velocitasConfigMock.packages[1].name}`)).to.be.true;
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true, appManifest: false });
+        mockFolders({ velocitasConfig: true, installedPackages: true, appManifest: false });
     })
         .finally(() => {
             mockRestore();

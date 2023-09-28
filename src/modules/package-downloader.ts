@@ -13,68 +13,119 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { existsSync } from 'fs-extra';
-import { posix as pathPosix } from 'path';
-import { CheckRepoActions, SimpleGit, simpleGit } from 'simple-git';
-import { PackageConfig } from './package';
+import { CheckRepoActions, GitError, SimpleGit, simpleGit } from 'simple-git';
+import { LATEST_VERSION_LITERAL, PackageConfig } from './package';
 import { getLatestVersion } from './semver';
 import { SdkConfig } from './sdk';
+import { wait } from './helpers';
+
+export class PackageInformation {
+    versions: string[];
+
+    constructor(versions: string[]) {
+        this.versions = versions;
+    }
+}
 
 export class PackageDownloader {
-    packageConfig: PackageConfig | SdkConfig;
-    git: SimpleGit = simpleGit();
+    private _packageConfig: PackageConfig | SdkConfig;
 
     constructor(packageConfig: PackageConfig | SdkConfig) {
-        this.packageConfig = packageConfig;
+        this._packageConfig = packageConfig;
     }
 
-    async cloneRepository(packageDir: string, cloneOpts: string[]): Promise<void> {
-        await this.git.clone(this.packageConfig.getPackageRepo(), packageDir, cloneOpts);
-    }
+    private async _gitRetryWrapper(fn: any) {
+        const maxRetries = 3;
+        const backOffMilliseconds = 5000;
 
-    async updateRepository(checkRepoAction: CheckRepoActions, packageDir: string, cloneOpts: string[]): Promise<void> {
-        const localRepoExists = await this.git.checkIsRepo(checkRepoAction);
-
-        if (localRepoExists) {
-            await this.git.fetch(['--all', '--prune', '--prune-tags', '--tags']);
-        } else {
-            await this.git.clone(this.packageConfig.getPackageRepo(), packageDir, cloneOpts);
+        // start iteration at 1 in order to properly calculate an exponential back-off
+        for (var i = 1; i <= maxRetries; ++i) {
+            try {
+                await fn;
+                return;
+            } catch (e) {
+                if (i < maxRetries && e instanceof GitError) {
+                    console.error(`......> Error: '${e.message}', retrying... ${i}/${maxRetries}`);
+                    await wait(i * i * backOffMilliseconds);
+                } else {
+                    throw e;
+                }
+            }
         }
+    }
+
+    private async _tryGetInitializedRepo(basePath: string): Promise<SimpleGit | undefined> {
+        const gitRepoForPath = simpleGit(basePath);
+        if (await gitRepoForPath.checkIsRepo(CheckRepoActions.IS_REPO_ROOT)) {
+            return gitRepoForPath;
+        }
+        return undefined;
+    }
+
+    async cloneRepository(cloneOpts: string[]): Promise<void> {
+        await this._gitRetryWrapper(
+            simpleGit().clone(this._packageConfig.getPackageRepo(), this._packageConfig.getPackageDirectory(), cloneOpts),
+        );
+    }
+
+    async updateRepository(cloneOpts: string[]): Promise<void> {
+        const maybeGitRepo = await this._tryGetInitializedRepo(this._packageConfig.getPackageDirectory());
+
+        if (maybeGitRepo) {
+            await this._gitRetryWrapper(maybeGitRepo.fetch(['--all', '--prune', '--prune-tags', '--tags']));
+        } else {
+            await this.cloneRepository(cloneOpts);
+        }
+    }
+
+    private async _resolveLatestLiteral(simpleGit: SimpleGit): Promise<string> {
+        // the latest version reference forces an update!
+        await this.updateRepository([]);
+        const repositoryVersions = await simpleGit.tags();
+        return repositoryVersions.latest ? repositoryVersions.latest : getLatestVersion(repositoryVersions.all);
     }
 
     async checkoutVersion(): Promise<void> {
-        if (this.packageConfig.version === 'latest') {
-            const repositoryVersions = await this.git.tags();
-            this.packageConfig.version = repositoryVersions.latest ? repositoryVersions.latest : getLatestVersion(repositoryVersions.all);
+        const maybeGitRepo = await this._tryGetInitializedRepo(this._packageConfig.getPackageDirectory());
+
+        if (!maybeGitRepo) {
+            throw new GitError(undefined, 'Cannot check out the version of an invalid repo!');
         }
-        await this.git.checkout(this.packageConfig.version);
+
+        let checkoutVersion = this._packageConfig.version;
+        if (checkoutVersion === LATEST_VERSION_LITERAL) {
+            checkoutVersion = await this._resolveLatestLiteral(maybeGitRepo);
+        } else {
+            let allTags = (await maybeGitRepo.tags()).all;
+            let allBranches = (await maybeGitRepo.branch()).all;
+            if (!allTags.includes(checkoutVersion) && !allBranches.includes(checkoutVersion)) {
+                this.updateRepository([]);
+
+                allTags = (await maybeGitRepo.tags()).all;
+                allBranches = (await maybeGitRepo.branch()).all;
+                if (!allTags.includes(checkoutVersion) && !allBranches.includes(checkoutVersion)) {
+                    throw new Error(`${checkoutVersion} is not a valid package version!`);
+                }
+            }
+        }
+        await this._gitRetryWrapper(maybeGitRepo.checkout(this._packageConfig.version));
     }
 
-    async downloadPackage(option: { checkVersionOnly: boolean }): Promise<SimpleGit> {
-        let packageDir: string = this.packageConfig.getPackageDirectory();
-        let cloneOpts: string[] = [];
-        let checkRepoAction: CheckRepoActions;
-
-        if (option.checkVersionOnly) {
-            packageDir = pathPosix.join(packageDir, '_cache');
-            cloneOpts.push('--bare');
-            checkRepoAction = CheckRepoActions.BARE;
-        } else {
-            packageDir = pathPosix.join(packageDir, this.packageConfig.version);
-            checkRepoAction = CheckRepoActions.IS_REPO_ROOT;
-        }
+    async downloadOrUpdatePackage(forcedUpdate = false): Promise<void> {
+        const packageDir: string = this._packageConfig.getPackageDirectory();
+        const cloneOpts: string[] = [];
 
         if (!existsSync(packageDir)) {
-            await this.cloneRepository(packageDir, cloneOpts);
+            await this.cloneRepository(cloneOpts);
+        } else if (forcedUpdate) {
+            await this.updateRepository(cloneOpts);
         }
+    }
 
-        this.git = simpleGit(packageDir);
-        await this.updateRepository(checkRepoAction, packageDir, cloneOpts);
-
-        if (!option.checkVersionOnly) {
-            await this.checkoutVersion();
-        }
-
-        return this.git;
+    async getPackageInfo(): Promise<PackageInformation> {
+        await this.downloadOrUpdatePackage(true);
+        const maybeGitRepo = await this._tryGetInitializedRepo(this._packageConfig.getPackageDirectory());
+        return new PackageInformation((await maybeGitRepo!.tags()).all);
     }
 }
 

@@ -33,7 +33,10 @@ export const simpleGitInstanceMock = (mockedNewVersionTag?: string) => {
             if (mockedNewVersionTag) {
                 return { all: [mockedNewVersionTag] };
             }
-            return { all: ['v1.1.1'] };
+            return { all: ['v1.1.1', 'v1.1.2'] };
+        },
+        branch: () => {
+            return { all: ['main'] };
         },
     };
 };

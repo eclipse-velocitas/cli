@@ -65,7 +65,7 @@ class StubPty implements IPty {
 
 describe('exec', () => {
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, installedPackages: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .finally(() => {
@@ -83,7 +83,7 @@ describe('exec', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, installedPackages: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .finally(() => {
@@ -104,7 +104,7 @@ describe('exec', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, installedPackages: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .finally(() => {
@@ -122,7 +122,7 @@ describe('exec', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true, appManifest: false });
+        mockFolders({ velocitasConfig: true, installedPackages: true, appManifest: false });
     })
         .finally(() => {
             mockRestore();
@@ -139,7 +139,7 @@ describe('exec', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, installedPackages: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .finally(() => {
@@ -153,7 +153,7 @@ describe('exec', () => {
         .it('throws error when program is not found in specified runtime component');
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, installedPackages: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .finally(() => {

@@ -212,7 +212,7 @@ export default class Create extends Command {
     private _getScriptExecutionPath(sdkConfig: SdkConfig): string {
         const basePath = process.env.VELOCITAS_SDK_PATH_OVERRIDE
             ? process.env.VELOCITAS_SDK_PATH_OVERRIDE
-            : join(sdkConfig.getPackageDirectory(), 'latest');
+            : join(sdkConfig.getPackageDirectory());
 
         return join(basePath, '.project-creation', 'run.py');
     }
@@ -242,7 +242,7 @@ export default class Create extends Command {
         await ProjectConfig.create(packageIndex.getExtensions(), flags.language, this.config.version);
         await createAppManifest(flags.name, this.appManifestInterfaces);
         const sdkConfig = new SdkConfig(flags.language);
-        await sdkDownloader(sdkConfig).downloadPackage({ checkVersionOnly: false });
+        await sdkDownloader(sdkConfig).downloadOrUpdatePackage();
 
         const result = await awaitSpawn(
             `python3`,
