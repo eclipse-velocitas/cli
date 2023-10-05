@@ -13,6 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ComponentType } from '../../src/modules/component';
+import { PkgIndexEntry } from '../../src/modules/package-index';
 
 export const velocitasConfigMock = {
     packages: [
@@ -33,6 +34,57 @@ export const velocitasConfigMock = {
         githubRepoId: 'test',
     },
 };
+
+export const packageIndexMock: PkgIndexEntry[] = [
+    {
+        type: 'extension',
+        package: 'https://github.com/eclipse-velocitas/test-runtime.git',
+        exposedInterfaces: [
+            {
+                type: 'test-interface',
+                description: 'Test interface',
+                args: [
+                    {
+                        id: 'test-arg-required',
+                        description: 'Test config for required arg',
+                        default: 'test-arg-required',
+                        required: true,
+                        type: 'string',
+                    },
+                    {
+                        id: 'test',
+                        description: 'Test config for not required arg',
+                        default: '{"required":[{"path":"","access":""}]}',
+                        required: false,
+                        type: 'object',
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        type: 'core',
+        package: 'https://github.com/eclipse-velocitas/vehicle-app-test-sdk',
+        exposedInterfaces: [
+            {
+                type: 'examples',
+                description: 'Provided test examples from test SDK',
+                args: [
+                    {
+                        id: 'test-example',
+                        description: 'Test Example',
+                        type: 'string',
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        type: 'core',
+        package: 'https://github.com/eclipse-velocitas/vehicle-app-no-example-sdk',
+        exposedInterfaces: [],
+    },
+];
 
 export const appManifestMock = [
     {

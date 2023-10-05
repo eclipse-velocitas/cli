@@ -96,6 +96,7 @@ Click [here](./docs/PROJECT-CONFIG.md) for an in-depth overview of the project c
 * [`velocitas cache clear`](#velocitas-cache-clear)
 * [`velocitas cache get [KEY]`](#velocitas-cache-get-key)
 * [`velocitas cache set KEY VALUE`](#velocitas-cache-set-key-value)
+* [`velocitas create [FLAGS...]`](#velocitas-create)
 * [`velocitas exec COMPONENT REF [ARGS...]`](#velocitas-exec-component-ref-args)
 * [`velocitas help [COMMANDS]`](#velocitas-help-commands)
 * [`velocitas init`](#velocitas-init)
@@ -157,6 +158,28 @@ DESCRIPTION
 
 EXAMPLES
   $ velocitas cache set <key> <value>
+```
+
+## `velocitas create`
+
+Create a new Velocitas Vehicle App project.
+
+```
+USAGE
+  $ velocitas create -n VApp -l python ...
+
+FLAGS
+  -n --name      Name of the Vehicle App
+  -l --language  Programming language of velocitas framework to use
+  -e --example   Use an example upon which to base your Vehicle App
+  -i --interface Functional interface your Vehicle App should use
+
+DESCRIPTION
+  Create a new Velocitas Vehicle App project.
+
+EXAMPLES
+  $ velocitas create -n VApp -l python -e seat-adjuster ...
+  Creating a new Velocitas project ...
 ```
 
 ## `velocitas exec COMPONENT REF [ARGS...]`

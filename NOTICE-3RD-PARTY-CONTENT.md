@@ -21,6 +21,7 @@
 |chai|4.3.7|MIT|
 |decompress|4.2.1|MIT|
 |eslint|8.45.0|MIT|
+|inquirer|8.2.6|MIT|
 |mocha|10.2.0|ISC<br/>MIT|
 |mock-fs|5.2.0|MIT|
 |node-pty|1.0.0|MIT|

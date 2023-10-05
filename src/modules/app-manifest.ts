@@ -16,10 +16,33 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { cwd } from 'node:process';
 import { DEFAULT_BUFFER_ENCODING } from './constants';
+import { outputFileSync } from 'fs-extra';
 
-const DEFAULT_APP_MANIFEST_PATH = resolve(cwd(), './app/AppManifest.json');
+export const DEFAULT_APP_MANIFEST_PATH = './app/AppManifest.json';
+const APP_MANIFEST_PATH = resolve(cwd(), DEFAULT_APP_MANIFEST_PATH);
 
-export function readAppManifest(appManifestPath: string = DEFAULT_APP_MANIFEST_PATH): any | undefined {
+/**
+ * Interface config entry for AppManifest
+ * @interface AppManifestInterfaces
+ * @prop {string} type Type of the App interface.
+ * @prop {any} config Config object specific for interface type.
+ */
+export interface AppManifestInterfaceEntry {
+    type: string;
+    config: {
+        [key: string]: any;
+    };
+}
+/**
+ * Interface config for AppManifest
+ * @interface AppManifestInterfaces
+ * @prop {AppManifestInterfaceEntry[]} interfaces Array of AppManifest interface config.
+ */
+export interface AppManifestInterfaces {
+    interfaces: AppManifestInterfaceEntry[];
+}
+
+export function readAppManifest(appManifestPath: string = APP_MANIFEST_PATH): any | undefined {
     let manifest: any;
 
     if (existsSync(appManifestPath)) {
@@ -39,4 +62,9 @@ export function readAppManifest(appManifestPath: string = DEFAULT_APP_MANIFEST_P
     }
 
     return manifest;
+}
+
+export async function createAppManifest(name: string, interfaces: AppManifestInterfaces) {
+    const appManifest = { manifestVersion: 'v3', name: name, ...interfaces };
+    outputFileSync(DEFAULT_APP_MANIFEST_PATH, JSON.stringify(appManifest, null, 4));
 }

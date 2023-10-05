@@ -46,7 +46,7 @@ export function setSpawnImplementation(func: (command: string, args: string | st
 
 var ptySpawn = (command: string, args: string | string[], options: any): IPty => spawn(command, args, options);
 
-async function awaitSpawn(
+export async function awaitSpawn(
     command: string,
     args: string[],
     cwd: string,
