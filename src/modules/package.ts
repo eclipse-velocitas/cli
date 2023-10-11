@@ -105,8 +105,7 @@ export class PackageConfig {
     }
 
     isPackageInstalled(): boolean {
-        const packageDir = `${getPackageFolderPath()}/${this.repo}/${this.version}`;
-        if (!existsSync(packageDir)) {
+        if (!existsSync(this.getPackageDirectoryWithVersion())) {
             return false;
         }
         return true;
