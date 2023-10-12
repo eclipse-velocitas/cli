@@ -27,6 +27,7 @@ export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), './.velocitas.json');
 interface ProjectConfigOptions {
     packages: PackageConfig[];
     variables: Map<string, any>;
+    cliVersion: string | undefined;
 }
 
 export class ProjectConfig implements ProjectConfigOptions {
@@ -48,6 +49,7 @@ export class ProjectConfig implements ProjectConfigOptions {
     constructor(config?: ProjectConfigOptions) {
         this.packages = config?.packages ? ProjectConfig._parsePackageConfig(config.packages) : this.packages;
         this.variables = config?.variables ? config.variables : this.variables;
+        this.cliVersion = config?.cliVersion ? config.cliVersion : this.cliVersion;
     }
 
     static read(path: PathLike = DEFAULT_CONFIG_FILE_PATH): ProjectConfig {
@@ -97,7 +99,7 @@ export class ProjectConfig implements ProjectConfigOptions {
         projectConfig.variables.set('repoType', 'app');
         projectConfig.variables.set('appManifestPath', DEFAULT_APP_MANIFEST_PATH);
         projectConfig.variables.set('githubRepoId', '<myrepo>');
-        projectConfig.cliVersion = cliVersion;
+        projectConfig.cliVersion = `v${cliVersion}`;
         projectConfig.write();
     }
 
