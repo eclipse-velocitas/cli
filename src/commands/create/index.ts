@@ -101,6 +101,15 @@ export default class Create extends Command {
                 name: arg.id,
                 prefix: '',
                 message: `Config '${arg.id}' for interface '${interfaceEntry}': ${arg.description}`,
+                default: arg.default,
+                validate: (input: any) => {
+                    if (!input) {
+                        console.log('No empty value allowed for required argument!');
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
                 type: 'input',
             };
         },
@@ -117,27 +126,22 @@ export default class Create extends Command {
     }
 
     private async _runInteractiveMode(flags: any) {
-        let interactiveResponses: any = await inquirer.prompt([
-            Create.prompts.name,
-            Create.prompts.language,
-            Create.prompts.exampleQuestion,
-        ]);
+        const interactiveResponses: any = await inquirer.prompt([Create.prompts.language, Create.prompts.exampleQuestion]);
 
-        flags.name = interactiveResponses.name;
         flags.language = interactiveResponses.language;
         flags.example = interactiveResponses.exampleQuestion;
 
         if (flags.example) {
             availableExamples = this._filterAvailableExamplesByLanguage(flags.language);
-            interactiveResponses = await inquirer.prompt([Create.prompts.exampleUse]);
+            const exampleResponse = await inquirer.prompt([Create.prompts.exampleUse]);
+            flags.example = flags.name = exampleResponse.exampleUse;
         } else {
-            interactiveResponses = await inquirer.prompt([Create.prompts.interface]);
-        }
-        flags.example = interactiveResponses.exampleUse;
-        flags.interface = interactiveResponses.interface;
-
-        if (flags.interface && flags.interface.length > 0) {
-            await this._handleAdditionalInterfaceArgs(flags.interface);
+            const interactiveNoExampleResponses: any = await inquirer.prompt([Create.prompts.name, Create.prompts.interface]);
+            flags.name = interactiveNoExampleResponses.name;
+            flags.interface = interactiveNoExampleResponses.interface;
+            if (flags.interface && flags.interface.length > 0) {
+                await this._handleAdditionalInterfaceArgs(flags.interface);
+            }
         }
     }
 
@@ -185,27 +189,11 @@ export default class Create extends Command {
         });
     }
 
-    private async _setDefaultAppManifestInterfaceConfig(interfaces: string[]) {
-        if (this.appManifestInterfaces.interfaces.length > 0) {
+    private async _promptMissingInterfaceConfig(interfaces: string[]): Promise<void> {
+        if (this.appManifestInterfaces.interfaces.length === 0 && interfaces.length > 0) {
+            await this._handleAdditionalInterfaceArgs(interfaces);
+        } else {
             return;
-        }
-        const interfacesToUse =
-            Array.isArray(interfaces) && interfaces.length
-                ? availableInterfaces.filter((interfaceEntry) => interfaces.includes(interfaceEntry.value))
-                : availableInterfaces;
-
-        for (const interfaceEntry of interfacesToUse) {
-            const defaultAppManifestInterfaceConfig: AppManifestInterfaceEntry = {
-                type: interfaceEntry.value,
-                config: {},
-            };
-
-            for (const arg of interfaceEntry.args) {
-                defaultAppManifestInterfaceConfig.config[arg.id] =
-                    arg.type === 'object' && arg.default ? JSON.parse(arg.default) : arg.default;
-            }
-
-            this.appManifestInterfaces.interfaces.push(defaultAppManifestInterfaceConfig);
         }
     }
 
@@ -223,6 +211,10 @@ export default class Create extends Command {
         const { flags } = await this.parse(Create);
         this.log(`Creating a new Velocitas project ...`);
 
+        if (flags.name && flags.example) {
+            throw new Error("Flags 'name' and 'example' cannot be used in parallel");
+        }
+
         if (Object.keys(flags).length === 0) {
             this.log('Interactive project creation started');
             await this._runInteractiveMode(flags);
@@ -236,7 +228,9 @@ export default class Create extends Command {
         }
 
         if (!flags.example) {
-            this._setDefaultAppManifestInterfaceConfig(flags.interface!);
+            if (flags.interface) {
+                await this._promptMissingInterfaceConfig(flags.interface);
+            }
         }
 
         await ProjectConfig.create(packageIndex.getExtensions(), flags.language, this.config.version);

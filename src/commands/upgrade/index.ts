@@ -75,5 +75,9 @@ Checking for updates!
                 this.error(`Error during upgrade: '${e}'`);
             }
         }
+        if (!projectConfig.cliVersion) {
+            projectConfig.cliVersion = `v${this.config.version}`;
+            projectConfig.write();
+        }
     }
 }

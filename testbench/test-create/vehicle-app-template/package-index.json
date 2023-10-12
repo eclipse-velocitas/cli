@@ -9,7 +9,7 @@
                 "args": [
                     {
                         "id": "src",
-                        "description": "URI or path to VSS json (Leave empty for default: v3.0)",
+                        "description": "URI or path to VSS json",
                         "default": "https://github.com/COVESA/vehicle_signal_specification/releases/download/v3.0/vss_rel_3.0.json",
                         "required": true,
                         "type": "string"
@@ -78,11 +78,6 @@
                     {
                         "id": "seat-adjuster",
                         "description": "Seat Adjuster Example",
-                        "type": "string"
-                    },
-                    {
-                        "id": "dog-mode",
-                        "description": "Dog Mode Example",
                         "type": "string"
                     }
                 ]
