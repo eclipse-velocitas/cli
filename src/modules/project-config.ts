@@ -36,7 +36,7 @@ export class ProjectConfig implements ProjectConfigOptions {
 
     // project-wide variable configuration
     variables: Map<string, any> = new Map<string, any>();
-    cliVersion: string = 'v0.0.0';
+    cliVersion: string = 'v0.6.2';
 
     private static _parsePackageConfig(packages: PackageConfig[]): PackageConfig[] {
         const configArray: PackageConfig[] = [];

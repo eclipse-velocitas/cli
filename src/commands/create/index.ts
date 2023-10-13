@@ -136,9 +136,10 @@ export default class Create extends Command {
             const exampleResponse = await inquirer.prompt([Create.prompts.exampleUse]);
             flags.example = flags.name = exampleResponse.exampleUse;
         } else {
-            const interactiveNoExampleResponses: any = await inquirer.prompt([Create.prompts.name, Create.prompts.interface]);
-            flags.name = interactiveNoExampleResponses.name;
-            flags.interface = interactiveNoExampleResponses.interface;
+            const interactiveSkeletonAppResponses: any = await inquirer.prompt([Create.prompts.name, Create.prompts.interface]);
+            flags.name = interactiveSkeletonAppResponses.name;
+            flags.interface = interactiveSkeletonAppResponses.interface;
+
             if (flags.interface && flags.interface.length > 0) {
                 await this._handleAdditionalInterfaceArgs(flags.interface);
             }
@@ -189,14 +190,6 @@ export default class Create extends Command {
         });
     }
 
-    private async _promptMissingInterfaceConfig(interfaces: string[]): Promise<void> {
-        if (this.appManifestInterfaces.interfaces.length === 0 && interfaces.length > 0) {
-            await this._handleAdditionalInterfaceArgs(interfaces);
-        } else {
-            return;
-        }
-    }
-
     private _getScriptExecutionPath(sdkConfig: SdkConfig): string {
         const basePath = process.env.VELOCITAS_SDK_PATH_OVERRIDE
             ? process.env.VELOCITAS_SDK_PATH_OVERRIDE
@@ -212,7 +205,7 @@ export default class Create extends Command {
         this.log(`Creating a new Velocitas project ...`);
 
         if (flags.name && flags.example) {
-            throw new Error("Flags 'name' and 'example' cannot be used in parallel");
+            throw new Error("Flags 'name' and 'example' are mutually exclusive!");
         }
 
         if (Object.keys(flags).length === 0) {
@@ -227,9 +220,9 @@ export default class Create extends Command {
             throw new Error("Missing required flag 'language'");
         }
 
-        if (!flags.example) {
-            if (flags.interface) {
-                await this._promptMissingInterfaceConfig(flags.interface);
+        if (!flags.example && flags.interface) {
+            if (this.appManifestInterfaces.interfaces.length === 0 && flags.interface.length > 0) {
+                await this._handleAdditionalInterfaceArgs(flags.interface);
             }
         }
 

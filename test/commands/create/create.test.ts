@@ -62,7 +62,7 @@ describe('create', () => {
             return { exitCode: 0 };
         })
         .command(['create', '-n', TEST_APP_NAME, '-l', 'test'])
-        .it('creates project with provided flags and generates .velocitas.json and AppManifest', (ctx) => {
+        .it('creates a project with provided flags and generates .velocitas.json and AppManifest', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_NON_INTERACTIVE_STDOUT);
             expect(ProjectConfig.isAvailable()).to.be.true;
             expect(readAppManifest()).to.not.be.undefined;
@@ -144,7 +144,7 @@ describe('create', () => {
             };
         })
         .command(['create'])
-        .it('creates project in interactive mode without example and generates .velocitas.json and AppManifest with defaults', (ctx) => {
+        .it('creates a project in interactive mode without example and generates .velocitas.json and AppManifest with defaults', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
             expect(ProjectConfig.isAvailable()).to.be.true;
             expect(readAppManifest()).to.not.be.undefined;
@@ -185,7 +185,7 @@ describe('create', () => {
         })
         .command(['create'])
         .it(
-            'creates project in interactive mode with either example or interfaces and generates .velocitas.json and AppManifest correctly',
+            'creates a project in interactive mode with either example or interfaces and generates .velocitas.json and AppManifest correctly',
             (ctx) => {
                 expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
                 expect(ProjectConfig.isAvailable()).to.be.true;
@@ -244,7 +244,7 @@ describe('create', () => {
         })
         .stdout()
         .command(['create', '-n', 'test', '-e', 'example'])
-        .catch(`Flags 'name' and 'example' cannot be used in parallel`)
+        .catch(`Flags 'name' and 'example' are mutually exclusive!`)
         .it('throws error when name and example flags are used in parallel');
 
     test.do(() => {
@@ -269,21 +269,24 @@ describe('create', () => {
             };
         })
         .command(['create'])
-        .it('creates project in interactive mode without example and generates .velocitas.json and AppManifest without defaults', (ctx) => {
-            expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
-            expect(ProjectConfig.isAvailable()).to.be.true;
-            expect(readAppManifest()).to.not.be.undefined;
+        .it(
+            'creates a project in interactive mode without example and generates .velocitas.json and AppManifest without defaults',
+            (ctx) => {
+                expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
+                expect(ProjectConfig.isAvailable()).to.be.true;
+                expect(readAppManifest()).to.not.be.undefined;
 
-            const velocitasConfig = ProjectConfig.read();
-            expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
-            expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
-            expect(velocitasConfig.variables.get('language')).to.be.equal('test');
+                const velocitasConfig = ProjectConfig.read();
+                expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
+                expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
+                expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
-            const appManifest = readAppManifest();
-            expect(appManifest.name).to.be.equal(TEST_APP_NAME);
-            expect(appManifest.interfaces[0].type).to.be.equal(TEST_EXPOSED_INTERFACE_TYPE);
-            expect(appManifest.interfaces[0].config[TEST_EXPOSED_INTERFACE_ARG_NAME_1]).to.be.equal('testNotDefault');
-        });
+                const appManifest = readAppManifest();
+                expect(appManifest.name).to.be.equal(TEST_APP_NAME);
+                expect(appManifest.interfaces[0].type).to.be.equal(TEST_EXPOSED_INTERFACE_TYPE);
+                expect(appManifest.interfaces[0].config[TEST_EXPOSED_INTERFACE_ARG_NAME_1]).to.be.equal('testNotDefault');
+            },
+        );
 
     test.do(() => {
         mockFolders({ packageIndex: true });
@@ -305,7 +308,7 @@ describe('create', () => {
             };
         })
         .command(['create'])
-        .it('creates project in interactive mode with example and generates .velocitas.json and AppManifest', (ctx) => {
+        .it('creates a project in interactive mode with example and generates .velocitas.json and AppManifest', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
             expect(ProjectConfig.isAvailable()).to.be.true;
             expect(readAppManifest()).to.not.be.undefined;
