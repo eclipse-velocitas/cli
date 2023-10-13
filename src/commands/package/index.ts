@@ -49,7 +49,7 @@ $ velocitas component --get-path devenv-runtime-local
     async run(): Promise<void> {
         const { args, flags } = await this.parse(Package);
 
-        const projectConfig = ProjectConfig.read();
+        const projectConfig = ProjectConfig.read(`v${this.config.version}`);
 
         let packagesToPrint: Array<PackageConfig>;
 

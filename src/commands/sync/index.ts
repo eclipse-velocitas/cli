@@ -30,7 +30,7 @@ Syncing Velocitas components!
 
     async run(): Promise<void> {
         this.log(`Syncing Velocitas components!`);
-        const projectConfig = ProjectConfig.read();
+        const projectConfig = ProjectConfig.read(`v${this.config.version}`);
         const setupComponents = findComponentsByType(projectConfig, ComponentType.setup);
         for (const setupComponent of setupComponents) {
             this.log(`... syncing '${setupComponent[0].getPackageName()}'`);

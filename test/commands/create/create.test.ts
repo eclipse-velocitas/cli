@@ -58,22 +58,23 @@ describe('create', () => {
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})
-        .stub(exec, 'awaitSpawn', () => {})
+        .stub(exec, 'awaitSpawn', () => {
+            return { exitCode: 0 };
+        })
         .command(['create', '-n', TEST_APP_NAME, '-l', 'test'])
-        .it('creates project with provided flags and generates .velocitas.json and AppManifest', (ctx) => {
+        .it('creates a project with provided flags and generates .velocitas.json and AppManifest', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_NON_INTERACTIVE_STDOUT);
             expect(ProjectConfig.isAvailable()).to.be.true;
             expect(readAppManifest()).to.not.be.undefined;
 
-            const velocitasConfig = ProjectConfig.read();
+            const velocitasConfig = ProjectConfig.read('v0.0.0');
             expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
             expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
             const appManifest = readAppManifest();
             expect(appManifest.name).to.be.equal(TEST_APP_NAME);
-            expect(appManifest.interfaces[0].type).to.be.equal(TEST_EXPOSED_INTERFACE_TYPE);
-            expect(appManifest.interfaces[0].config[TEST_EXPOSED_INTERFACE_ARG_NAME_1]).to.be.equal(TEST_EXPOSED_INTERFACE_ARG_DEFAULT_1);
+            expect(appManifest.interfaces).to.be.empty;
         });
 
     test.do(() => {
@@ -87,7 +88,6 @@ describe('create', () => {
         .stub(exec, 'runExecSpec', () => {})
         .command(['create', '-n', TEST_APP_NAME, '-l', 'test'])
         .catch('Unable to execute create script!')
-        .only()
         .it('throws error when project-creation script cannot be executed');
 
     test.do(() => {
@@ -132,7 +132,9 @@ describe('create', () => {
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})
-        .stub(exec, 'awaitSpawn', () => {})
+        .stub(exec, 'awaitSpawn', () => {
+            return { exitCode: 0 };
+        })
         .stub(inquirer, 'prompt', () => {
             return {
                 name: TEST_APP_NAME,
@@ -142,12 +144,12 @@ describe('create', () => {
             };
         })
         .command(['create'])
-        .it('creates project in interactive mode without example and generates .velocitas.json and AppManifest with defaults', (ctx) => {
+        .it('creates a project in interactive mode without example and generates .velocitas.json and AppManifest with defaults', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
             expect(ProjectConfig.isAvailable()).to.be.true;
             expect(readAppManifest()).to.not.be.undefined;
 
-            const velocitasConfig = ProjectConfig.read();
+            const velocitasConfig = ProjectConfig.read('v0.0.0');
             expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
             expect(velocitasConfig.variables.get('language')).to.be.equal('test');
@@ -160,6 +162,45 @@ describe('create', () => {
                 JSON.parse(TEST_EXPOSED_INTERFACE_ARG_DEFAULT_2),
             );
         });
+
+    test.do(() => {
+        mockFolders({ packageIndex: true });
+    })
+        .finally(() => {
+            mockRestore();
+        })
+        .stdout()
+        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', () => {})
+        .stub(exec, 'awaitSpawn', () => {
+            return { exitCode: 0 };
+        })
+        .stub(inquirer, 'prompt', () => {
+            return {
+                name: TEST_APP_NAME,
+                language: 'test',
+                exampleQuestion: false,
+                interface: [],
+            };
+        })
+        .command(['create'])
+        .it(
+            'creates a project in interactive mode with either example or interfaces and generates .velocitas.json and AppManifest correctly',
+            (ctx) => {
+                expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
+                expect(ProjectConfig.isAvailable()).to.be.true;
+                expect(readAppManifest()).to.not.be.undefined;
+
+                const velocitasConfig = ProjectConfig.read('v0.0.0');
+                expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
+                expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
+                expect(velocitasConfig.variables.get('language')).to.be.equal('test');
+
+                const appManifest = readAppManifest();
+                expect(appManifest.name).to.be.equal(TEST_APP_NAME);
+                expect(appManifest.interfaces).to.be.empty;
+            },
+        );
 
     test.do(() => {
         mockFolders({ packageIndex: true });
@@ -181,7 +222,9 @@ describe('create', () => {
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})
-        .stub(exec, 'awaitSpawn', () => {})
+        .stub(exec, 'awaitSpawn', () => {
+            return { exitCode: 0 };
+        })
         .stub(inquirer, 'prompt', () => {
             return {
                 name: TEST_APP_NAME,
@@ -200,34 +243,9 @@ describe('create', () => {
             mockRestore();
         })
         .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
-        .stub(exec, 'runExecSpec', () => {})
-        .stub(exec, 'awaitSpawn', () => {})
-        .stub(inquirer, 'prompt', () => {
-            return {
-                name: TEST_APP_NAME,
-                language: 'test',
-                exampleQuestion: false,
-                interface: [TEST_EXPOSED_INTERFACE_TYPE],
-                [TEST_EXPOSED_INTERFACE_ARG_NAME_1]: 'testNotDefault',
-            };
-        })
-        .command(['create'])
-        .it('creates project in interactive mode without example and generates .velocitas.json and AppManifest without defaults', (ctx) => {
-            expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
-            expect(ProjectConfig.isAvailable()).to.be.true;
-            expect(readAppManifest()).to.not.be.undefined;
-
-            const velocitasConfig = ProjectConfig.read();
-            expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
-            expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
-            expect(velocitasConfig.variables.get('language')).to.be.equal('test');
-
-            const appManifest = readAppManifest();
-            expect(appManifest.name).to.be.equal(TEST_APP_NAME);
-            expect(appManifest.interfaces[0].type).to.be.equal(TEST_EXPOSED_INTERFACE_TYPE);
-            expect(appManifest.interfaces[0].config[TEST_EXPOSED_INTERFACE_ARG_NAME_1]).to.be.equal('testNotDefault');
-        });
+        .command(['create', '-n', 'test', '-e', 'example'])
+        .catch(`Flags 'name' and 'example' are mutually exclusive!`)
+        .it('throws error when name and example flags are used in parallel');
 
     test.do(() => {
         mockFolders({ packageIndex: true });
@@ -238,22 +256,64 @@ describe('create', () => {
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})
-        .stub(exec, 'awaitSpawn', () => {})
+        .stub(exec, 'awaitSpawn', () => {
+            return { exitCode: 0 };
+        })
         .stub(inquirer, 'prompt', () => {
             return {
                 name: TEST_APP_NAME,
                 language: 'test',
-                exampleQuestion: true,
-                exampleUse: true,
+                exampleQuestion: false,
+                interface: [TEST_EXPOSED_INTERFACE_TYPE],
+                [TEST_EXPOSED_INTERFACE_ARG_NAME_1]: 'testNotDefault',
             };
         })
         .command(['create'])
-        .it('creates project in interactive mode with example and generates .velocitas.json and AppManifest', (ctx) => {
+        .it(
+            'creates a project in interactive mode without example and generates .velocitas.json and AppManifest without defaults',
+            (ctx) => {
+                expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
+                expect(ProjectConfig.isAvailable()).to.be.true;
+                expect(readAppManifest()).to.not.be.undefined;
+
+                const velocitasConfig = ProjectConfig.read('v0.0.0');
+                expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
+                expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
+                expect(velocitasConfig.variables.get('language')).to.be.equal('test');
+
+                const appManifest = readAppManifest();
+                expect(appManifest.name).to.be.equal(TEST_APP_NAME);
+                expect(appManifest.interfaces[0].type).to.be.equal(TEST_EXPOSED_INTERFACE_TYPE);
+                expect(appManifest.interfaces[0].config[TEST_EXPOSED_INTERFACE_ARG_NAME_1]).to.be.equal('testNotDefault');
+            },
+        );
+
+    test.do(() => {
+        mockFolders({ packageIndex: true });
+    })
+        .finally(() => {
+            mockRestore();
+        })
+        .stdout()
+        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', () => {})
+        .stub(exec, 'awaitSpawn', () => {
+            return { exitCode: 0 };
+        })
+        .stub(inquirer, 'prompt', () => {
+            return {
+                language: 'test',
+                exampleQuestion: true,
+                exampleUse: TEST_APP_NAME,
+            };
+        })
+        .command(['create'])
+        .it('creates a project in interactive mode with example and generates .velocitas.json and AppManifest', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
             expect(ProjectConfig.isAvailable()).to.be.true;
             expect(readAppManifest()).to.not.be.undefined;
 
-            const velocitasConfig = ProjectConfig.read();
+            const velocitasConfig = ProjectConfig.read('v0.0.0');
             expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
             expect(velocitasConfig.variables.get('language')).to.be.equal('test');

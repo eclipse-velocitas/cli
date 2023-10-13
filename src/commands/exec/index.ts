@@ -76,7 +76,7 @@ Executing script...
         const programArgsAndFlags = this._extractProgramArgsAndFlags();
         const { args, flags } = await this.parse(Exec);
 
-        const projectConfig = ProjectConfig.read();
+        const projectConfig = ProjectConfig.read(`v${this.config.version}`);
 
         const execSpec: ExecSpec = {
             ref: args.ref,

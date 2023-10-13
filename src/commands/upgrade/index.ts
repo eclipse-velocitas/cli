@@ -37,7 +37,7 @@ Checking for updates!
         const { flags } = await this.parse(Upgrade);
 
         this.log(`Checking for updates!`);
-        const projectConfig = ProjectConfig.read();
+        const projectConfig = ProjectConfig.read(`v${this.config.version}`);
         for (const packageConfig of projectConfig.packages) {
             const availableVersions = await packageConfig.getPackageVersions();
             try {
@@ -74,6 +74,10 @@ Checking for updates!
             } catch (e) {
                 this.error(`Error during upgrade: '${e}'`);
             }
+        }
+        if (!projectConfig.cliVersion) {
+            projectConfig.cliVersion = `v${this.config.version}`;
+            projectConfig.write();
         }
     }
 }

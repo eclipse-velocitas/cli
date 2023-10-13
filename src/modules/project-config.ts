@@ -27,6 +27,7 @@ export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), './.velocitas.json');
 interface ProjectConfigOptions {
     packages: PackageConfig[];
     variables: Map<string, any>;
+    cliVersion?: string;
 }
 
 export class ProjectConfig implements ProjectConfigOptions {
@@ -35,7 +36,7 @@ export class ProjectConfig implements ProjectConfigOptions {
 
     // project-wide variable configuration
     variables: Map<string, any> = new Map<string, any>();
-    cliVersion: string | undefined;
+    cliVersion: string;
 
     private static _parsePackageConfig(packages: PackageConfig[]): PackageConfig[] {
         const configArray: PackageConfig[] = [];
@@ -45,16 +46,17 @@ export class ProjectConfig implements ProjectConfigOptions {
         return configArray;
     }
 
-    constructor(config?: ProjectConfigOptions) {
+    constructor(cliVersion: string, config?: ProjectConfigOptions) {
         this.packages = config?.packages ? ProjectConfig._parsePackageConfig(config.packages) : this.packages;
         this.variables = config?.variables ? config.variables : this.variables;
+        this.cliVersion = config?.cliVersion ? config.cliVersion : cliVersion;
     }
 
-    static read(path: PathLike = DEFAULT_CONFIG_FILE_PATH): ProjectConfig {
+    static read(cliVersion: string, path: PathLike = DEFAULT_CONFIG_FILE_PATH): ProjectConfig {
         let config: ProjectConfig;
 
         try {
-            config = new ProjectConfig(JSON.parse(readFileSync(path, DEFAULT_BUFFER_ENCODING)));
+            config = new ProjectConfig(cliVersion, JSON.parse(readFileSync(path, DEFAULT_BUFFER_ENCODING)));
         } catch (error) {
             throw new Error(`Error in parsing .velocitas.json: ${(error as Error).message}`);
         }
@@ -83,7 +85,7 @@ export class ProjectConfig implements ProjectConfigOptions {
     static isAvailable = (path: PathLike = DEFAULT_CONFIG_FILE_PATH) => existsSync(path);
 
     static async create(usedExtensions: PkgIndexEntry[], language: string, cliVersion: string) {
-        const projectConfig = new ProjectConfig();
+        const projectConfig = new ProjectConfig(`v${cliVersion}`);
         for (const extension of usedExtensions) {
             const packageConfig = new PackageConfig({ name: extension.package });
             const versions = await packageConfig.getPackageVersions();
@@ -97,7 +99,6 @@ export class ProjectConfig implements ProjectConfigOptions {
         projectConfig.variables.set('repoType', 'app');
         projectConfig.variables.set('appManifestPath', DEFAULT_APP_MANIFEST_PATH);
         projectConfig.variables.set('githubRepoId', '<myrepo>');
-        projectConfig.cliVersion = cliVersion;
         projectConfig.write();
     }
 

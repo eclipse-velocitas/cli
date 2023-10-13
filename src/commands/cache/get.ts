@@ -36,7 +36,7 @@ bar`,
 
         // although we are not reading the project config, we want to
         // ensure the command is run in a project directory only.
-        ProjectConfig.read();
+        ProjectConfig.read(`v${this.config.version}`);
 
         const cache = ProjectCache.read();
 
