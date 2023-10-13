@@ -208,6 +208,10 @@ export default class Create extends Command {
             throw new Error("Flags 'name' and 'example' are mutually exclusive!");
         }
 
+        if (flags.example) {
+            flags.name = flags.example;
+        }
+
         if (Object.keys(flags).length === 0) {
             this.log('Interactive project creation started');
             await this._runInteractiveMode(flags);
