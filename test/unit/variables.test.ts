@@ -31,7 +31,7 @@ describe('variables - module', () => {
         variablesObject = { testString: 'test', testNumber: 1 };
         variablesMap = new Map(Object.entries(variablesObject));
         packageConfig = new PackageConfig({ name: 'test-package', version: 'v1.1.1', variables: variablesMap, components: [] });
-        projectConfig = new ProjectConfig({ packages: [packageConfig], variables: variablesMap, cliVersion: 'v0.0.0' });
+        projectConfig = new ProjectConfig({ packages: [packageConfig], variables: variablesMap });
 
         componentConfig = { id: 'test-component', variables: variablesMap };
         componentManifest = {

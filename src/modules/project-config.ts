@@ -27,7 +27,7 @@ export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), './.velocitas.json');
 interface ProjectConfigOptions {
     packages: PackageConfig[];
     variables: Map<string, any>;
-    cliVersion: string;
+    cliVersion?: string | undefined;
 }
 
 export class ProjectConfig implements ProjectConfigOptions {
@@ -36,7 +36,7 @@ export class ProjectConfig implements ProjectConfigOptions {
 
     // project-wide variable configuration
     variables: Map<string, any> = new Map<string, any>();
-    cliVersion: string = 'v0.6.2';
+    cliVersion: string | undefined;
 
     private static _parsePackageConfig(packages: PackageConfig[]): PackageConfig[] {
         const configArray: PackageConfig[] = [];
