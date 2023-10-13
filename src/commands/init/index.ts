@@ -113,11 +113,10 @@ Velocitas project found!
 
         if (!ProjectConfig.isAvailable()) {
             this.log('... Directory is no velocitas project. Creating .velocitas.json at the root of your repository.');
-            projectConfig = new ProjectConfig();
-            projectConfig.cliVersion = `v${this.config.version}`;
+            projectConfig = new ProjectConfig(`v${this.config.version}`);
             projectConfig.write();
         }
-        projectConfig = ProjectConfig.read();
+        projectConfig = ProjectConfig.read(`v${this.config.version}`);
 
         for (const packageConfig of projectConfig.packages) {
             if (!flags.force && packageConfig.isPackageInstalled()) {

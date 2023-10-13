@@ -67,7 +67,7 @@ describe('create', () => {
             expect(ProjectConfig.isAvailable()).to.be.true;
             expect(readAppManifest()).to.not.be.undefined;
 
-            const velocitasConfig = ProjectConfig.read();
+            const velocitasConfig = ProjectConfig.read('v0.0.0');
             expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
             expect(velocitasConfig.variables.get('language')).to.be.equal('test');
@@ -149,7 +149,7 @@ describe('create', () => {
             expect(ProjectConfig.isAvailable()).to.be.true;
             expect(readAppManifest()).to.not.be.undefined;
 
-            const velocitasConfig = ProjectConfig.read();
+            const velocitasConfig = ProjectConfig.read('v0.0.0');
             expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
             expect(velocitasConfig.variables.get('language')).to.be.equal('test');
@@ -191,7 +191,7 @@ describe('create', () => {
                 expect(ProjectConfig.isAvailable()).to.be.true;
                 expect(readAppManifest()).to.not.be.undefined;
 
-                const velocitasConfig = ProjectConfig.read();
+                const velocitasConfig = ProjectConfig.read('v0.0.0');
                 expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
                 expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
                 expect(velocitasConfig.variables.get('language')).to.be.equal('test');
@@ -276,7 +276,7 @@ describe('create', () => {
                 expect(ProjectConfig.isAvailable()).to.be.true;
                 expect(readAppManifest()).to.not.be.undefined;
 
-                const velocitasConfig = ProjectConfig.read();
+                const velocitasConfig = ProjectConfig.read('v0.0.0');
                 expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
                 expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
                 expect(velocitasConfig.variables.get('language')).to.be.equal('test');
@@ -313,7 +313,7 @@ describe('create', () => {
             expect(ProjectConfig.isAvailable()).to.be.true;
             expect(readAppManifest()).to.not.be.undefined;
 
-            const velocitasConfig = ProjectConfig.read();
+            const velocitasConfig = ProjectConfig.read('v0.0.0');
             expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
             expect(velocitasConfig.variables.get('language')).to.be.equal('test');
