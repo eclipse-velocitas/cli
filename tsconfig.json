@@ -10,6 +10,7 @@
         "target": "es2021",
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames" :true,
         "experimentalDecorators": true,
         "moduleResolution": "NodeNext"
     },
