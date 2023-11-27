@@ -19,7 +19,7 @@ import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { mapReplacer } from './helpers';
 import { PackageConfig } from './package';
 import { getLatestVersion } from './semver';
-import { PkgIndexEntry } from './package-index';
+import { PackageInterface } from './package-index';
 import { DEFAULT_APP_MANIFEST_PATH } from './app-manifest';
 
 export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), './.velocitas.json');
@@ -82,14 +82,14 @@ export class ProjectConfig implements ProjectConfigOptions {
 
     static isAvailable = (path: PathLike = DEFAULT_CONFIG_FILE_PATH) => existsSync(path);
 
-    static async create(usedExtensions: PkgIndexEntry[], language: string, cliVersion: string) {
+    static async create(usedPackages: PackageInterface[], language: string, cliVersion: string) {
         const projectConfig = new ProjectConfig();
-        for (const extension of usedExtensions) {
-            const packageConfig = new PackageConfig({ name: extension.package });
+        for (const usedPackage of usedPackages) {
+            const packageConfig = new PackageConfig({ name: usedPackage.package });
             const versions = await packageConfig.getPackageVersions();
             const latestVersion = getLatestVersion(versions);
 
-            packageConfig.repo = extension.package;
+            packageConfig.repo = usedPackage.package;
             packageConfig.version = latestVersion;
             projectConfig.packages.push(packageConfig);
         }

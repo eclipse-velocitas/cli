@@ -1,12 +1,110 @@
 [
     {
-        "type": "extension",
+        "package": "https://github.com/eclipse-velocitas/vehicle-app-python-sdk",
+        "exposedInterfaces": [
+            {
+                "id": "vehicle-app-python-core",
+                "type": "core",
+                "name": "Velocitas Vehicle App (Python)",
+                "description": "Creates a Vehicle App written in Python",
+                "parameterSets": [
+                    {
+                        "id": "from-example",
+                        "name": "Create an application from an example",
+                        "parameters": [
+                            {
+                                "id": "example",
+                                "description": "Provided Examples from SDK",
+                                "type": "single-choice",
+                                "required": true,
+                                "values": [
+                                    {
+                                        "id": "seat-adjuster",
+                                        "description": "Seat Adjuster Example"
+                                    },
+                                    {
+                                        "id": "dog-mode",
+                                        "description": "Dog Mode Example"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "id": "from-skeleton",
+                        "name": "Create an application from scratch",
+                        "parameters": [
+                            {
+                                "id": "name",
+                                "required": true,
+                                "description": "Name of your application",
+                                "type": "string"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "package": "https://github.com/eclipse-velocitas/uprotocol-java-core",
+        "exposedInterfaces": [
+            {
+                "id": "uprotocol-java-core",
+                "type": "core",
+                "name": "uProtocol App/Service (Java)",
+                "description": "Creates a uProtocol Application or Service written in Java",
+                "parameterSets": [
+                    {
+                        "id": "from-example",
+                        "name": "Create an application from an example",
+                        "parameters": [
+                            {
+                                "id": "example",
+                                "description": "Provided Examples from SDK",
+                                "type": "single-choice",
+                                "required": true,
+                                "values": [
+                                    {
+                                        "id": "seat-adjuster",
+                                        "description": "Seat Adjuster Example"
+                                    },
+                                    {
+                                        "id": "dog-mode",
+                                        "description": "Dog Mode Example"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "id": "from-skeleton",
+                        "name": "Create an application from scratch",
+                        "parameters": [
+                            {
+                                "id": "name",
+                                "required": true,
+                                "description": "Name of your application",
+                                "type": "string"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
         "package": "https://github.com/eclipse-velocitas/devenv-devcontainer-setup.git",
         "exposedInterfaces": [
             {
-                "type": "vehicle-signal-interface",
+                "id": "vehicle-signal-interface",
+                "type": "extension",
+                "name": "Vehicle Signal Interface",
                 "description": "Vehicle Signal Interface based on VSS and KUKSA Databroker",
-                "args": [
+                "compatibleCores": [
+                    "vehicle-app-python-core"
+                ],
+                "parameters": [
                     {
                         "id": "src",
                         "description": "URI or path to VSS json (Leave empty for default: v3.0)",
@@ -24,9 +122,14 @@
                 ]
             },
             {
-                "type": "grpc-interface",
+                "id": "grpc-interface",
+                "type": "extension",
+                "name": "gRPC Service Contract",
                 "description": "gRPC service contract based on a proto interface description",
-                "args": [
+                "compatibleCores": [
+                    "vehicle-app-python-core"
+                ],
+                "parameters": [
                     {
                         "id": "src",
                         "description": "URI to the proto file which acts as the service interface",
@@ -49,57 +152,21 @@
                         "type": "object"
                     }
                 ]
-            }
-        ]
-    },
-    {
-        "type": "extension",
-        "package": "https://github.com/eclipse-velocitas/devenv-runtimes.git",
-        "exposedInterfaces": []
-    },
-    {
-        "type": "extension",
-        "package": "https://github.com/eclipse-velocitas/devenv-github-templates.git",
-        "exposedInterfaces": []
-    },
-    {
-        "type": "extension",
-        "package": "https://github.com/eclipse-velocitas/devenv-github-workflows.git",
-        "exposedInterfaces": []
-    },
-    {
-        "type": "core",
-        "package": "https://github.com/eclipse-velocitas/vehicle-app-python-sdk",
-        "exposedInterfaces": [
+            },
             {
-                "type": "examples",
-                "description": "Provided Examples from SDK",
-                "args": [
+                "id": "uservice-interface",
+                "type": "extension",
+                "name": "uService Catalogue",
+                "description": "",
+                "compatibleCores": [
+                    "uprotocol-java-core"
+                ],
+                "parameters": [
                     {
-                        "id": "seat-adjuster",
-                        "description": "Seat Adjuster Example",
-                        "type": "string"
-                    },
-                    {
-                        "id": "dog-mode",
-                        "description": "Dog Mode Example",
-                        "type": "string"
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "type": "core",
-        "package": "https://github.com/eclipse-velocitas/vehicle-app-cpp-sdk",
-        "exposedInterfaces": [
-            {
-                "type": "examples",
-                "description": "Provided Examples from SDK",
-                "args": [
-                    {
-                        "id": "seat-adjuster",
-                        "description": "Seat Adjuster Example",
+                        "id": "repo",
+                        "description": "uServices repository",
+                        "default": "https://github.com/COVESA/uservices.git",
+                        "required": true,
                         "type": "string"
                     }
                 ]

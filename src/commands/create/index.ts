@@ -20,7 +20,7 @@ import { awaitSpawn } from '../../modules/exec';
 import { join } from 'path';
 import Init from '../init';
 import Sync from '../sync';
-import { Argument, ExampleDescription, FunctionalInterfaceDescription, PackageIndex } from '../../modules/package-index';
+import { Parameter, ExampleDescription, FunctionalInterfaceDescription, PackageIndex, ExposedInterface } from '../../modules/package-index';
 import { AppManifestInterfaceEntry, AppManifestInterfaces, createAppManifest } from '../../modules/app-manifest';
 
 // inquirer >= v9 is an ESM package.
@@ -29,10 +29,6 @@ import { AppManifestInterfaceEntry, AppManifestInterfaces, createAppManifest } f
 // and import inquirer using "await import"
 // @ts-ignore: declaration file not found
 const inquirer = require('inquirer');
-
-let availableLanguages: string[] = [];
-let availableExamples: ExampleDescription[] = [];
-let availableInterfaces: FunctionalInterfaceDescription[] = [];
 
 export default class Create extends Command {
     static description = 'Create a new Velocitas Vehicle App project.';
@@ -44,9 +40,9 @@ export default class Create extends Command {
 
     static flags = {
         name: Flags.string({ char: 'n', description: 'Name of the Vehicle App.', required: false }),
-        language: Flags.string({
-            char: 'l',
-            description: 'Programming language used for the Vehicle App (python, cpp).',
+        core: Flags.string({
+            char: 'c',
+            description: 'Which core to use for the project.',
             required: false,
         }),
         example: Flags.string({
@@ -61,7 +57,7 @@ export default class Create extends Command {
             multiple: true,
         }),
     };
-
+    /*
     static prompts = {
         name: {
             name: 'name',
@@ -96,7 +92,7 @@ export default class Create extends Command {
             type: 'checkbox',
             choices: () => availableInterfaces,
         },
-        additionalArg: (arg: Argument, interfaceEntry: string) => {
+        additionalArg: (arg: Parameter, interfaceEntry: string) => {
             return {
                 name: arg.id,
                 prefix: '',
@@ -105,43 +101,81 @@ export default class Create extends Command {
             };
         },
     };
+    */
 
     appManifestInterfaces: AppManifestInterfaces = { interfaces: [] };
 
-    private _filterAvailableExamplesByLanguage(language: string) {
-        const filteredExamples = availableExamples.filter((example) => example.language === language);
-        if (!filteredExamples.length) {
-            throw new Error(`No example for your chosen language '${language}' available`);
+    private async _runInteractiveMode(packageIndex: PackageIndex, flags: any) {
+        const availableCores = packageIndex.getCores();
+        let promptResult = await inquirer.prompt({
+            name: 'core',
+            prefix: '>',
+            message: 'What kind of project would you like to create?',
+            type: 'list',
+            choices: () => availableCores.map((x) => ({ name: x.name, value: x })),
+        });
+
+        const chosenCore = promptResult.core as ExposedInterface;
+
+        const sets = chosenCore.parameterSets;
+        if (sets !== undefined) {
+            let chosenParamSetId = 0;
+            if (sets.length > 0) {
+                promptResult = await inquirer.prompt({
+                    name: 'set',
+                    prefix: '>',
+                    message: 'Which flavor?',
+                    type: 'list',
+                    choices: () => sets.map((x) => ({ name: x.name, value: sets.indexOf(x) })),
+                });
+
+                chosenParamSetId = promptResult.set;
+            }
+
+            for (const parameter of sets[chosenParamSetId].parameters) {
+                promptResult = await inquirer.prompt({
+                    name: 'parameter',
+                    prefix: '>',
+                    message: parameter.description,
+                    default: parameter.default,
+                    type: parameter.type,
+                });
+            }
         }
-        return filteredExamples;
+
+        const availableExtensions = packageIndex.getExtensions().filter((ext) => ext.compatibleCores.find((x) => x === chosenCore.id));
+
+        if (availableExtensions.length === 0) {
+            return;
+        }
+
+        promptResult = await inquirer.prompt({
+            name: 'extensions',
+            prefix: '>',
+            message: 'Which extensions do you want to use?',
+            type: 'checkbox',
+            choices: () => availableExtensions.map((ext) => ({ name: ext.name, value: ext })),
+        });
+
+        for (const selectedExtension of promptResult.extensions) {
+            const typedExtension = selectedExtension as ExposedInterface;
+
+            this.log(`Configure extension '${typedExtension.name}'`);
+
+            for (const parameter of typedExtension.parameters!) {
+                promptResult = await inquirer.prompt({
+                    name: 'parameter',
+                    prefix: '>',
+                    message: parameter.description,
+                    default: parameter.default,
+                    type: parameter.type,
+                });
+            }
+        }
     }
 
-    private async _runInteractiveMode(flags: any) {
-        let interactiveResponses: any = await inquirer.prompt([
-            Create.prompts.name,
-            Create.prompts.language,
-            Create.prompts.exampleQuestion,
-        ]);
-
-        flags.name = interactiveResponses.name;
-        flags.language = interactiveResponses.language;
-        flags.example = interactiveResponses.exampleQuestion;
-
-        if (flags.example) {
-            availableExamples = this._filterAvailableExamplesByLanguage(flags.language);
-            interactiveResponses = await inquirer.prompt([Create.prompts.exampleUse]);
-        } else {
-            interactiveResponses = await inquirer.prompt([Create.prompts.interface]);
-        }
-        flags.example = interactiveResponses.exampleUse;
-        flags.interface = interactiveResponses.interface;
-
-        if (flags.interface && flags.interface.length > 0) {
-            await this._handleAdditionalInterfaceArgs(flags.interface);
-        }
-    }
-
-    private async _queryArgsForInterface(arg: Argument, interfaceEntry: string): Promise<any> {
+    /*
+    private async _queryArgsForInterface(arg: Parameter, interfaceEntry: string): Promise<any> {
         let interfaceArgResponse: any = {};
         let config: any = {};
         if (arg.required) {
@@ -158,7 +192,9 @@ export default class Create extends Command {
         }
         return config;
     }
+    */
 
+    /*
     private async _handleAdditionalInterfaceArgs(interfaces: string[]) {
         for (const interfaceEntry of interfaces) {
             const appManifestInterfaceEntry: AppManifestInterfaceEntry = { type: interfaceEntry, config: {} };
@@ -172,19 +208,18 @@ export default class Create extends Command {
             this.appManifestInterfaces.interfaces.push(appManifestInterfaceEntry);
         }
     }
+    */
 
     private _loadDataFromPackageIndex(packageIndex: PackageIndex) {
-        availableLanguages = packageIndex.getAvailableLanguages();
-        availableExamples = packageIndex.getAvailableExamples();
-        availableInterfaces = packageIndex.getAvailableInterfaces();
-        Create.flags.language.options = availableLanguages.map((languageEntry: string) => {
-            return languageEntry;
+        Create.flags.core.options = packageIndex.getCores().map((core: ExposedInterface) => {
+            return core.id;
         });
-        Create.flags.interface.options = availableInterfaces.map((interfaceEntry: FunctionalInterfaceDescription) => {
-            return interfaceEntry.value;
+        Create.flags.interface.options = packageIndex.getExtensions().map((ext: ExposedInterface) => {
+            return ext.id;
         });
     }
 
+    /*
     private async _setDefaultAppManifestInterfaceConfig(interfaces: string[]) {
         if (this.appManifestInterfaces.interfaces.length > 0) {
             return;
@@ -208,6 +243,7 @@ export default class Create extends Command {
             this.appManifestInterfaces.interfaces.push(defaultAppManifestInterfaceConfig);
         }
     }
+    */
 
     private _getScriptExecutionPath(sdkConfig: SdkConfig): string {
         const basePath = process.env.VELOCITAS_SDK_PATH_OVERRIDE
@@ -220,12 +256,13 @@ export default class Create extends Command {
     async run(): Promise<void> {
         const packageIndex = PackageIndex.read();
         this._loadDataFromPackageIndex(packageIndex);
+
         const { flags } = await this.parse(Create);
         this.log(`Creating a new Velocitas project ...`);
 
         if (Object.keys(flags).length === 0) {
             this.log('Interactive project creation started');
-            await this._runInteractiveMode(flags);
+            await this._runInteractiveMode(packageIndex, flags);
         }
 
         if (!flags.name) {
@@ -236,10 +273,10 @@ export default class Create extends Command {
         }
 
         if (!flags.example) {
-            this._setDefaultAppManifestInterfaceConfig(flags.interface!);
+            //this._setDefaultAppManifestInterfaceConfig(flags.interface!);
         }
 
-        await ProjectConfig.create(packageIndex.getExtensions(), flags.language, this.config.version);
+        await ProjectConfig.create([], flags.language, this.config.version);
         await createAppManifest(flags.name, this.appManifestInterfaces);
         const sdkConfig = new SdkConfig(flags.language);
         await sdkDownloader(sdkConfig).downloadPackage({ checkVersionOnly: false });
