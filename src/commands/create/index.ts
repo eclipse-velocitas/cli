@@ -18,7 +18,9 @@ import { sdkDownloader } from '../../modules/package-downloader';
 import { SdkConfig } from '../../modules/sdk';
 import { awaitSpawn } from '../../modules/exec';
 import { join } from 'path';
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import Init from '../init';
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import Sync from '../sync';
 import { Argument, ExampleDescription, FunctionalInterfaceDescription, PackageIndex } from '../../modules/package-index';
 import { AppManifestInterfaceEntry, AppManifestInterfaces, createAppManifest } from '../../modules/app-manifest';
