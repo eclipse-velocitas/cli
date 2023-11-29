@@ -18,6 +18,7 @@ import { copySync } from 'fs-extra';
 import { homedir } from 'node:os';
 import { join } from 'path';
 import { cwd } from 'process';
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import YAML from 'yaml';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
 import { readFileSync } from 'fs';
