@@ -33,13 +33,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Clone License Check Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: eclipse-velocitas/license-check
-          ref: v1.2.2
+          ref: v1.2
           path: .github/actions/license-check
 
       - name: Run License Checker
