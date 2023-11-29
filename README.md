@@ -340,7 +340,7 @@ _See code: [src/commands/upgrade/index.ts](src/commands/upgrade/index.ts)_
 # Installation
 
 **Prerequisites**
-* NodeJS >= 18
+* NodeJS >= 20
 * NPM
 * Linux environment (others may work, but are untested)
 
