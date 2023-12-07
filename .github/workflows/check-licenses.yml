@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Robert Bosch GmbH
+# Copyright (c) 2022-2023 Contributors to the Eclipse Foundation
 #
 # This program and the accompanying materials are made available under the
 # terms of the Apache License, Version 2.0 which is available at
@@ -33,13 +33,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Clone License Check Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: eclipse-velocitas/license-check
-          ref: v1.2.2
+          ref: v1.2
           path: .github/actions/license-check
 
       - name: Run License Checker

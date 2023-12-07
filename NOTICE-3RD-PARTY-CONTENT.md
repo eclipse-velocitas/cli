@@ -38,17 +38,18 @@
 |ts-node|10.9.1|MIT|
 |tslib|2.6.2|BSD Zero Clause License|
 |typescript|5.3.2|Apache 2.0|
-|velocitas-cli|0.0.0|Apache 2.0|
+|velocitas-cli|0.6.3|Apache 2.0|
 |yaml|2.3.4|ISC|
 ## Workflows
 | Dependency | Version | License |
 |:-----------|:-------:|--------:|
-|5monkeys/cobertura-action|master|MIT License|
-|actions/checkout|v3|MIT License|
+|5monkeys/cobertura-action|v13|MIT License|
+|actions/checkout|v4|MIT License|
 |actions/download-artifact|v3|MIT License|
-|actions/setup-node|v3|MIT License|
+|actions/setup-node|v4|MIT License|
 |actions/upload-artifact|v3|MIT License|
-|docker/setup-qemu-action|v2|Apache License 2.0|
+|docker/setup-qemu-action|v3|Apache License 2.0|
 |ncipollo/release-action|v1|MIT License|
+|pre-commit/action|v3.0.0|MIT License|
 |TriPSs/conventional-changelog-action|v3|MIT License|
 |uraimo/run-on-arch-action|v2|BSD 3-Clause "New" or "Revised" License|
