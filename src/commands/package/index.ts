@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Robert Bosch GmbH
+// Copyright (c) 2022-2023 Contributors to the Eclipse Foundation
 //
 // This program and the accompanying materials are made available under the
 // terms of the Apache License, Version 2.0 which is available at
@@ -49,7 +49,7 @@ $ velocitas component --get-path devenv-runtime-local
     async run(): Promise<void> {
         const { args, flags } = await this.parse(Package);
 
-        const projectConfig = ProjectConfig.read();
+        const projectConfig = ProjectConfig.read(`v${this.config.version}`);
 
         let packagesToPrint: Array<PackageConfig>;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Robert Bosch GmbH
+// Copyright (c) 2023 Contributors to the Eclipse Foundation
 //
 // This program and the accompanying materials are made available under the
 // terms of the Apache License, Version 2.0 which is available at
@@ -18,6 +18,7 @@ import { copySync } from 'fs-extra';
 import { homedir } from 'node:os';
 import { join } from 'path';
 import { cwd } from 'process';
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import YAML from 'yaml';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
 import { readFileSync } from 'fs';

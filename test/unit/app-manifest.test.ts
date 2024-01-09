@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Robert Bosch GmbH
+// Copyright (c) 2023 Contributors to the Eclipse Foundation
 //
 // This program and the accompanying materials are made available under the
 // terms of the Apache License, Version 2.0 which is available at
@@ -22,7 +22,7 @@ describe('app-manifest - module', () => {
         const mockfsConf: any = {
             '/AppManifestInvalid.json': 'foo',
             '/AppManifestValid.json': '{ "name": "AppName", "manifestVersion": "v3" }',
-            '/AppManifestArray.json': '[ { "name": "AppName", "manifestVersion": "v3" } ]'
+            '/AppManifestArray.json': '[ { "name": "AppName", "manifestVersion": "v3" } ]',
         };
         mockfs(mockfsConf, { createCwd: false });
     });

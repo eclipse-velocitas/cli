@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Robert Bosch GmbH
+// Copyright (c) 2022-2023 Contributors to the Eclipse Foundation
 //
 // This program and the accompanying materials are made available under the
 // terms of the Apache License, Version 2.0 which is available at
@@ -31,7 +31,7 @@ describe('variables - module', () => {
         variablesObject = { testString: 'test', testNumber: 1 };
         variablesMap = new Map(Object.entries(variablesObject));
         packageConfig = new PackageConfig({ name: 'test-package', version: 'v1.1.1', variables: variablesMap, components: [] });
-        projectConfig = new ProjectConfig({ packages: [packageConfig], variables: variablesMap });
+        projectConfig = new ProjectConfig('v0.0.0', { packages: [packageConfig], variables: variablesMap });
 
         componentConfig = { id: 'test-component', variables: variablesMap };
         componentManifest = {

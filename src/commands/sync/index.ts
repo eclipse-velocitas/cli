@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Robert Bosch GmbH
+// Copyright (c) 2022-2023 Contributors to the Eclipse Foundation
 //
 // This program and the accompanying materials are made available under the
 // terms of the Apache License, Version 2.0 which is available at
@@ -30,7 +30,7 @@ Syncing Velocitas components!
 
     async run(): Promise<void> {
         this.log(`Syncing Velocitas components!`);
-        const projectConfig = ProjectConfig.read();
+        const projectConfig = ProjectConfig.read(`v${this.config.version}`);
         const setupComponents = findComponentsByType(projectConfig, ComponentType.setup);
         for (const setupComponent of setupComponents) {
             this.log(`... syncing '${setupComponent[0].getPackageName()}'`);

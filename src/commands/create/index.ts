@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Robert Bosch GmbH
+// Copyright (c) 2023 Contributors to the Eclipse Foundation
 //
 // This program and the accompanying materials are made available under the
 // terms of the Apache License, Version 2.0 which is available at
@@ -18,7 +18,9 @@ import { sdkDownloader } from '../../modules/package-downloader';
 import { SdkConfig } from '../../modules/sdk';
 import { awaitSpawn } from '../../modules/exec';
 import { join } from 'path';
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import Init from '../init';
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import Sync from '../sync';
 import { Parameter, ExampleDescription, FunctionalInterfaceDescription, PackageIndex, ExposedInterface } from '../../modules/package-index';
 import { AppManifestInterfaceEntry, AppManifestInterfaces, createAppManifest } from '../../modules/app-manifest';
@@ -97,6 +99,15 @@ export default class Create extends Command {
                 name: arg.id,
                 prefix: '',
                 message: `Config '${arg.id}' for interface '${interfaceEntry}': ${arg.description}`,
+                default: arg.default,
+                validate: (input: any) => {
+                    if (!input) {
+                        console.log('No empty value allowed for required argument!');
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
                 type: 'input',
             };
         },
@@ -219,32 +230,6 @@ export default class Create extends Command {
         });
     }
 
-    /*
-    private async _setDefaultAppManifestInterfaceConfig(interfaces: string[]) {
-        if (this.appManifestInterfaces.interfaces.length > 0) {
-            return;
-        }
-        const interfacesToUse =
-            Array.isArray(interfaces) && interfaces.length
-                ? availableInterfaces.filter((interfaceEntry) => interfaces.includes(interfaceEntry.value))
-                : availableInterfaces;
-
-        for (const interfaceEntry of interfacesToUse) {
-            const defaultAppManifestInterfaceConfig: AppManifestInterfaceEntry = {
-                type: interfaceEntry.value,
-                config: {},
-            };
-
-            for (const arg of interfaceEntry.args) {
-                defaultAppManifestInterfaceConfig.config[arg.id] =
-                    arg.type === 'object' && arg.default ? JSON.parse(arg.default) : arg.default;
-            }
-
-            this.appManifestInterfaces.interfaces.push(defaultAppManifestInterfaceConfig);
-        }
-    }
-    */
-
     private _getScriptExecutionPath(sdkConfig: SdkConfig): string {
         const basePath = process.env.VELOCITAS_SDK_PATH_OVERRIDE
             ? process.env.VELOCITAS_SDK_PATH_OVERRIDE
@@ -260,6 +245,14 @@ export default class Create extends Command {
         const { flags } = await this.parse(Create);
         this.log(`Creating a new Velocitas project ...`);
 
+        if (flags.name && flags.example) {
+            throw new Error("Flags 'name' and 'example' are mutually exclusive!");
+        }
+
+        if (flags.example) {
+            flags.name = flags.example;
+        }
+
         if (Object.keys(flags).length === 0) {
             this.log('Interactive project creation started');
             await this._runInteractiveMode(packageIndex, flags);
@@ -272,8 +265,10 @@ export default class Create extends Command {
             throw new Error("Missing required flag 'language'");
         }
 
-        if (!flags.example) {
-            //this._setDefaultAppManifestInterfaceConfig(flags.interface!);
+        if (!flags.example && flags.interface) {
+            // if (this.appManifestInterfaces.interfaces.length === 0 && flags.interface.length > 0) {
+            //     await this._handleAdditionalInterfaceArgs(flags.interface);
+            // }
         }
 
         await ProjectConfig.create([], flags.language, this.config.version);

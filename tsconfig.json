@@ -3,7 +3,7 @@
         "composite": true,
         "declaration": true,
         "importHelpers": true,
-        "module": "Node16",
+        "module": "NodeNext",
         "outDir": "dist",
         "rootDir": "src",
         "strict": true,
@@ -11,7 +11,7 @@
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
         "experimentalDecorators": true,
-        "moduleResolution": "Node16"
+        "moduleResolution": "NodeNext"
     },
     "include": ["src/**/*"]
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Robert Bosch GmbH
+// Copyright (c) 2022-2023 Contributors to the Eclipse Foundation
 //
 // This program and the accompanying materials are made available under the
 // terms of the Apache License, Version 2.0 which is available at
@@ -40,7 +40,7 @@ describe('package', () => {
         .command(['package', '-p', `${velocitasConfigMock.packages[0].name}`])
         .it('prints the path of specified package', (ctx) => {
             expect(ctx.stdout).to.contain(
-                `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}/${velocitasConfigMock.packages[0].version}`
+                `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}/${velocitasConfigMock.packages[0].version}`,
             );
         });
 

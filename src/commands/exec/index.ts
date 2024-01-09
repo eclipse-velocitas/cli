@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Robert Bosch GmbH
+// Copyright (c) 2022-2023 Contributors to the Eclipse Foundation
 //
 // This program and the accompanying materials are made available under the
 // terms of the Apache License, Version 2.0 which is available at
@@ -76,7 +76,7 @@ Executing script...
         const programArgsAndFlags = this._extractProgramArgsAndFlags();
         const { args, flags } = await this.parse(Exec);
 
-        const projectConfig = ProjectConfig.read();
+        const projectConfig = ProjectConfig.read(`v${this.config.version}`);
 
         const execSpec: ExecSpec = {
             ref: args.ref,
