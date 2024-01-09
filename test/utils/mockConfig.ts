@@ -12,22 +12,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Copyright (c) 2022 Contributors to the Eclipse Foundationhe Eclipse Foundationhe Eclipse Foundation
-//
-// This program and the accompanying materials are made available under the
-// terms of the Apache License, Version 2.0 which is available at
-// https://www.apache.org/licenses/LICENSE-2.0.
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-// License for the specific language governing permissions and limitations
-// under the License.
-//
-// SPDX-License-Identifier: Apache-2.0
-
 import { ComponentType } from '../../src/modules/component';
-import { PkgIndexEntry } from '../../src/modules/package-index';
+import { PackageInterface } from '../../src/modules/package-index';
 
 export const velocitasConfigMock = {
     packages: [
@@ -49,15 +35,16 @@ export const velocitasConfigMock = {
     },
 };
 
-export const packageIndexMock: PkgIndexEntry[] = [
+export const packageIndexMock: PackageInterface[] = [
     {
-        type: 'extension',
         package: 'https://github.com/eclipse-velocitas/test-runtime.git',
         exposedInterfaces: [
             {
-                type: 'test-interface',
-                description: 'Test interface',
-                args: [
+                id: 'test-extension',
+                type: 'extension',
+                name: 'Test Extension',
+                description: 'Test Extension',
+                parameters: [
                     {
                         id: 'test-arg-required',
                         description: 'Test config for required arg',
@@ -77,26 +64,46 @@ export const packageIndexMock: PkgIndexEntry[] = [
         ],
     },
     {
-        type: 'core',
         package: 'https://github.com/eclipse-velocitas/vehicle-app-test-sdk',
         exposedInterfaces: [
             {
-                type: 'examples',
-                description: 'Provided test examples from test SDK',
-                args: [
+                id: 'test-core',
+                type: 'core',
+                name: 'Test Core Package',
+                description: 'Test Core Package',
+                parameterSets: [
                     {
-                        id: 'test-example',
-                        description: 'Test Example',
-                        type: 'string',
+                        id: 'from-example',
+                        name: 'Create an application from an example',
+                        parameters: [
+                            {
+                                id: 'test-example',
+                                description: 'Test Example',
+                                type: 'string',
+                                required: true,
+                                values: [
+                                    {
+                                        id: 'test-example',
+                                        description: 'Test Example',
+                                    },
+                                ],
+                            },
+                        ],
                     },
                 ],
             },
         ],
     },
     {
-        type: 'core',
         package: 'https://github.com/eclipse-velocitas/vehicle-app-no-example-sdk',
-        exposedInterfaces: [],
+        exposedInterfaces: [
+            {
+                id: 'test-core-no-examples',
+                type: 'core',
+                name: 'Test Core Package with no examples',
+                description: 'Test Core Package no examples',
+            },
+        ],
     },
 ];
 

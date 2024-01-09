@@ -15,7 +15,7 @@
                             {
                                 "id": "example",
                                 "description": "Provided Examples from SDK",
-                                "type": "single-choice",
+                                "type": "list",
                                 "required": true,
                                 "values": [
                                     {
@@ -62,7 +62,7 @@
                             {
                                 "id": "example",
                                 "description": "Provided Examples from SDK",
-                                "type": "single-choice",
+                                "type": "list",
                                 "required": true,
                                 "values": [
                                     {
@@ -172,5 +172,17 @@
                 ]
             }
         ]
+    },
+    {
+        "package": "https://github.com/eclipse-velocitas/devenv-runtimes.git",
+        "exposedInterfaces": []
+    },
+    {
+        "package": "https://github.com/eclipse-velocitas/devenv-github-templates.git",
+        "exposedInterfaces": []
+    },
+    {
+        "package": "https://github.com/eclipse-velocitas/devenv-github-workflows.git",
+        "exposedInterfaces": []
     }
 ]

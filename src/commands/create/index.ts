@@ -22,7 +22,7 @@ import { join } from 'path';
 import Init from '../init';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import Sync from '../sync';
-import { Parameter, ExampleDescription, FunctionalInterfaceDescription, PackageIndex, ExposedInterface } from '../../modules/package-index';
+import { PackageIndex, Core, Extension, ParameterSet, Value } from '../../modules/package-index';
 import { AppManifestInterfaceEntry, AppManifestInterfaces, createAppManifest } from '../../modules/app-manifest';
 
 // inquirer >= v9 is an ESM package.
@@ -59,60 +59,6 @@ export default class Create extends Command {
             multiple: true,
         }),
     };
-    /*
-    static prompts = {
-        name: {
-            name: 'name',
-            prefix: '',
-            message: '> What is the name of your project?',
-            type: 'input',
-        },
-        language: {
-            name: 'language',
-            prefix: '',
-            message: '> Which programming language would you like to use for your project?',
-            type: 'list',
-            choices: () => availableLanguages,
-        },
-        exampleQuestion: {
-            name: 'exampleQuestion',
-            prefix: '',
-            message: '> Would you like to use a provided example?',
-            type: 'confirm',
-        },
-        exampleUse: {
-            name: 'exampleUse',
-            prefix: '',
-            message: '> Which provided example would you like to use?',
-            type: 'list',
-            choices: () => availableExamples,
-        },
-        interface: {
-            name: 'interface',
-            prefix: '',
-            message: '> Which functional interfaces does your application have?',
-            type: 'checkbox',
-            choices: () => availableInterfaces,
-        },
-        additionalArg: (arg: Parameter, interfaceEntry: string) => {
-            return {
-                name: arg.id,
-                prefix: '',
-                message: `Config '${arg.id}' for interface '${interfaceEntry}': ${arg.description}`,
-                default: arg.default,
-                validate: (input: any) => {
-                    if (!input) {
-                        console.log('No empty value allowed for required argument!');
-                        return false;
-                    } else {
-                        return true;
-                    }
-                },
-                type: 'input',
-            };
-        },
-    };
-    */
 
     appManifestInterfaces: AppManifestInterfaces = { interfaces: [] };
 
@@ -126,7 +72,9 @@ export default class Create extends Command {
             choices: () => availableCores.map((x) => ({ name: x.name, value: x })),
         });
 
-        const chosenCore = promptResult.core as ExposedInterface;
+        const chosenCore = promptResult.core as Core;
+        const chosenCoreIdSplittedArray = chosenCore.id.split('-');
+        flags.language = chosenCoreIdSplittedArray[chosenCoreIdSplittedArray.length - 2];
 
         const sets = chosenCore.parameterSets;
         if (sets !== undefined) {
@@ -137,7 +85,8 @@ export default class Create extends Command {
                     prefix: '>',
                     message: 'Which flavor?',
                     type: 'list',
-                    choices: () => sets.map((x) => ({ name: x.name, value: sets.indexOf(x) })),
+                    choices: () =>
+                        sets.map((parameterSet: ParameterSet) => ({ name: parameterSet.name, value: sets.indexOf(parameterSet) })),
                 });
 
                 chosenParamSetId = promptResult.set;
@@ -150,11 +99,20 @@ export default class Create extends Command {
                     message: parameter.description,
                     default: parameter.default,
                     type: parameter.type,
+                    choices: () => (parameter.values || []).map((value: Value) => ({ name: value.description, value: value.id })),
                 });
+                if (parameter.id === 'example') {
+                    flags.example = flags.name = promptResult.parameter;
+                }
+                if (parameter.id === 'name') {
+                    flags.name = promptResult.parameter;
+                }
             }
         }
 
-        const availableExtensions = packageIndex.getExtensions().filter((ext) => ext.compatibleCores.find((x) => x === chosenCore.id));
+        const availableExtensions = packageIndex
+            .getExtensions()
+            .filter((ext: Extension) => ext.compatibleCores.find((compatibleCore: string) => compatibleCore === chosenCore.id));
 
         if (availableExtensions.length === 0) {
             return;
@@ -169,11 +127,15 @@ export default class Create extends Command {
         });
 
         for (const selectedExtension of promptResult.extensions) {
-            const typedExtension = selectedExtension as ExposedInterface;
+            const typedExtension = selectedExtension as Extension;
 
             this.log(`Configure extension '${typedExtension.name}'`);
+            const entryToCreate: AppManifestInterfaceEntry = { type: typedExtension.id, config: {} };
+            this.appManifestInterfaces.interfaces.push(entryToCreate);
+            const entryIndex = this.appManifestInterfaces.interfaces.indexOf(entryToCreate);
 
             for (const parameter of typedExtension.parameters!) {
+                console.log('test');
                 promptResult = await inquirer.prompt({
                     name: 'parameter',
                     prefix: '>',
@@ -181,51 +143,19 @@ export default class Create extends Command {
                     default: parameter.default,
                     type: parameter.type,
                 });
+                this.appManifestInterfaces.interfaces[entryIndex].config = {
+                    ...this.appManifestInterfaces.interfaces[entryIndex].config,
+                    ...{ [parameter.id]: parameter.type === 'object' ? JSON.parse(promptResult.parameter) : promptResult.parameter },
+                };
             }
         }
     }
-
-    /*
-    private async _queryArgsForInterface(arg: Parameter, interfaceEntry: string): Promise<any> {
-        let interfaceArgResponse: any = {};
-        let config: any = {};
-        if (arg.required) {
-            interfaceArgResponse = await inquirer.prompt([Create.prompts.additionalArg(arg, interfaceEntry)]);
-            config[arg.id] = interfaceArgResponse[arg.id];
-        } else {
-            interfaceArgResponse[arg.id] = '';
-        }
-        if (!interfaceArgResponse[arg.id] && arg.default) {
-            config[arg.id] = arg.default;
-            if (arg.type === 'object') {
-                config[arg.id] = JSON.parse(arg.default);
-            }
-        }
-        return config;
-    }
-    */
-
-    /*
-    private async _handleAdditionalInterfaceArgs(interfaces: string[]) {
-        for (const interfaceEntry of interfaces) {
-            const appManifestInterfaceEntry: AppManifestInterfaceEntry = { type: interfaceEntry, config: {} };
-            const interfaceObject = availableInterfaces.find(
-                (availableInterface: FunctionalInterfaceDescription) => availableInterface.value === interfaceEntry,
-            );
-            for (const arg of interfaceObject!.args) {
-                const interfaceConfig = await this._queryArgsForInterface(arg, interfaceEntry);
-                appManifestInterfaceEntry.config = { ...appManifestInterfaceEntry.config, ...interfaceConfig };
-            }
-            this.appManifestInterfaces.interfaces.push(appManifestInterfaceEntry);
-        }
-    }
-    */
 
     private _loadDataFromPackageIndex(packageIndex: PackageIndex) {
-        Create.flags.core.options = packageIndex.getCores().map((core: ExposedInterface) => {
+        Create.flags.core.options = packageIndex.getCores().map((core: Core) => {
             return core.id;
         });
-        Create.flags.interface.options = packageIndex.getExtensions().map((ext: ExposedInterface) => {
+        Create.flags.interface.options = packageIndex.getExtensions().map((ext: Extension) => {
             return ext.id;
         });
     }
@@ -265,13 +195,7 @@ export default class Create extends Command {
             throw new Error("Missing required flag 'language'");
         }
 
-        if (!flags.example && flags.interface) {
-            // if (this.appManifestInterfaces.interfaces.length === 0 && flags.interface.length > 0) {
-            //     await this._handleAdditionalInterfaceArgs(flags.interface);
-            // }
-        }
-
-        await ProjectConfig.create([], flags.language, this.config.version);
+        await ProjectConfig.create(packageIndex.getPackages(), flags.language, this.config.version);
         await createAppManifest(flags.name, this.appManifestInterfaces);
         const sdkConfig = new SdkConfig(flags.language);
         await sdkDownloader(sdkConfig).downloadPackage({ checkVersionOnly: false });
