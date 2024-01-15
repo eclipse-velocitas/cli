@@ -33,14 +33,6 @@ export interface AppManifestInterfaceEntry {
         [key: string]: any;
     };
 }
-/**
- * Interface config for AppManifest
- * @interface AppManifestInterfaces
- * @prop {AppManifestInterfaceEntry[]} interfaces Array of AppManifest interface config.
- */
-export interface AppManifestInterfaces {
-    interfaces: AppManifestInterfaceEntry[];
-}
 
 export function readAppManifest(appManifestPath: string = APP_MANIFEST_PATH): any | undefined {
     let manifest: any;
@@ -64,7 +56,7 @@ export function readAppManifest(appManifestPath: string = APP_MANIFEST_PATH): an
     return manifest;
 }
 
-export async function createAppManifest(name: string, interfaces: AppManifestInterfaces) {
-    const appManifest = { manifestVersion: 'v3', name: name, ...interfaces };
+export async function createAppManifest(name: string, interfaceEntries: AppManifestInterfaceEntry[]) {
+    const appManifest = { manifestVersion: 'v3', name: name, interfaces: interfaceEntries };
     outputFileSync(DEFAULT_APP_MANIFEST_PATH, JSON.stringify(appManifest, null, 4));
 }
