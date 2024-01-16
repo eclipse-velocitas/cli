@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ux, Command, Flags } from '@oclif/core';
-import { readAppManifest } from '../../modules/app-manifest';
+import { AppManifest } from '../../modules/app-manifest';
 import { Component } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { PackageConfig, PackageManifest } from '../../modules/package';
@@ -109,7 +109,7 @@ Velocitas project found!
         this.log(`Initializing Velocitas packages ...`);
         let projectConfig: ProjectConfig;
 
-        const appManifestData = readAppManifest();
+        const appManifestData = AppManifest.read();
 
         if (!ProjectConfig.isAvailable()) {
             this.log('... Directory is no velocitas project. Creating .velocitas.json at the root of your repository.');

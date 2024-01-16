@@ -20,7 +20,7 @@ import * as exec from '../../../src/modules/exec';
 import sinon from 'sinon';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
 import { ProjectConfig } from '../../../src/modules/project-config';
-import { readAppManifest } from '../../../src/modules/app-manifest';
+import { AppManifest } from '../../../src/modules/app-manifest';
 import { Core, Extension } from '../../../src/modules/package-index';
 const inquirer = require('inquirer');
 
@@ -42,6 +42,11 @@ const TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_2 = TEST_EXPOSED_EXTENSION.parame
 const TEST_PACKAGE_URI = packageIndexMock[0].package;
 const TEST_PACKAGE_NAME = velocitasConfigMock.packages[0].name;
 const TEST_PACKAGE_VERSION = velocitasConfigMock.packages[0].version;
+
+enum ParameterSet {
+    fromExample = 0,
+    fromScratch = 1,
+}
 
 const EXPECTED_NON_INTERACTIVE_STDOUT = `Creating a new Velocitas project ...
 ... Project for Vehicle Application '${TEST_APP_NAME}' created!
@@ -75,16 +80,16 @@ describe('create', () => {
         .it('creates a project with provided flags and generates .velocitas.json and AppManifest', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_NON_INTERACTIVE_STDOUT);
             expect(ProjectConfig.isAvailable()).to.be.true;
-            expect(readAppManifest()).to.not.be.undefined;
+            expect(AppManifest.read()).to.not.be.undefined;
 
             const velocitasConfig = ProjectConfig.read('v0.0.0');
             expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
             expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
-            const appManifest = readAppManifest();
-            expect(appManifest.name).to.be.equal(TEST_APP_NAME);
-            expect(appManifest.interfaces).to.be.empty;
+            const appManifest = AppManifest.read();
+            expect(appManifest!.name).to.be.equal(TEST_APP_NAME);
+            expect(appManifest!.interfaces).to.be.empty;
         });
 
     test.do(() => {
@@ -149,7 +154,7 @@ describe('create', () => {
             return {
                 name: TEST_APP_NAME,
                 core: TEST_EXPOSED_CORE,
-                parameterSet: 0,
+                parameterSet: ParameterSet.fromScratch,
                 coreParameter: TEST_APP_NAME,
                 extensions: [TEST_EXPOSED_EXTENSION],
                 extensionParameter: TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_2,
@@ -161,20 +166,22 @@ describe('create', () => {
             (ctx) => {
                 expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT(TEST_APP_NAME, TEST_EXPOSED_INTERFACE_ID));
                 expect(ProjectConfig.isAvailable()).to.be.true;
-                expect(readAppManifest()).to.not.be.undefined;
+                expect(AppManifest.read()).to.not.be.undefined;
 
                 const velocitasConfig = ProjectConfig.read('v0.0.0');
                 expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
                 expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
                 expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
-                const appManifest = readAppManifest();
-                expect(appManifest.name).to.be.equal(TEST_APP_NAME);
-                expect(appManifest.interfaces[0].type).to.be.equal(TEST_EXPOSED_INTERFACE_ID);
-                expect(appManifest.interfaces[0].config[TEST_EXPOSED_INTERFACE_PARAMETER_NAME_1]).to.be.equal(
-                    TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_2,
+                const appManifest = AppManifest.read();
+                expect(appManifest!.name).to.be.equal(TEST_APP_NAME);
+                expect(appManifest!.interfaces[0].type).to.be.equal(TEST_EXPOSED_INTERFACE_ID);
+                console.log(JSON.stringify(appManifest!.interfaces[0].config[TEST_EXPOSED_INTERFACE_PARAMETER_NAME_1]));
+                console.log(TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_2);
+                expect(appManifest!.interfaces[0].config[TEST_EXPOSED_INTERFACE_PARAMETER_NAME_1]).to.be.deep.equal(
+                    JSON.parse(TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_2),
                 );
-                expect(appManifest.interfaces[0].config[TEST_EXPOSED_INTERFACE_PARAMETER_NAME_2]).to.be.deep.equal(
+                expect(appManifest!.interfaces[0].config[TEST_EXPOSED_INTERFACE_PARAMETER_NAME_2]).to.be.deep.equal(
                     JSON.parse(TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_2),
                 );
             },
@@ -196,29 +203,26 @@ describe('create', () => {
             return {
                 name: TEST_APP_NAME,
                 core: TEST_EXPOSED_CORE,
-                parameterSet: 0,
+                parameterSet: ParameterSet.fromExample,
                 coreParameter: TEST_APP_NAME,
                 extensions: [],
             };
         })
         .command(['create'])
-        .it(
-            'creates a project in interactive mode with either example or interfaces and generates .velocitas.json and AppManifest correctly',
-            (ctx) => {
-                expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT(TEST_APP_NAME));
-                expect(ProjectConfig.isAvailable()).to.be.true;
-                expect(readAppManifest()).to.not.be.undefined;
+        .it('creates a project in interactive mode with example and generates .velocitas.json and AppManifest correctly', (ctx) => {
+            expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT(TEST_APP_NAME));
+            expect(ProjectConfig.isAvailable()).to.be.true;
+            expect(AppManifest.read()).to.not.be.undefined;
 
-                const velocitasConfig = ProjectConfig.read('v0.0.0');
-                expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
-                expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
-                expect(velocitasConfig.variables.get('language')).to.be.equal('test');
+            const velocitasConfig = ProjectConfig.read('v0.0.0');
+            expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
+            expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
+            expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
-                const appManifest = readAppManifest();
-                expect(appManifest.name).to.be.equal(TEST_APP_NAME);
-                expect(appManifest.interfaces).to.be.empty;
-            },
-        );
+            const appManifest = AppManifest.read();
+            expect(appManifest!.name).to.be.equal(TEST_APP_NAME);
+            expect(appManifest!.interfaces).to.be.empty;
+        });
 
     test.do(() => {
         mockFolders({ packageIndex: true });
@@ -246,7 +250,7 @@ describe('create', () => {
         .stub(inquirer, 'prompt', () => {
             return {
                 core: TEST_EXPOSED_CORE,
-                parameterSet: 1,
+                parameterSet: ParameterSet.fromExample,
                 coreParameter: TEST_EXPOSED_CORE_EXAMPLE,
                 extensions: [],
             };
@@ -255,14 +259,14 @@ describe('create', () => {
         .it('creates a project in interactive mode with example and generates .velocitas.json and AppManifest', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT(TEST_EXPOSED_CORE_EXAMPLE));
             expect(ProjectConfig.isAvailable()).to.be.true;
-            expect(readAppManifest()).to.not.be.undefined;
+            expect(AppManifest.read()).to.not.be.undefined;
 
             const velocitasConfig = ProjectConfig.read('v0.0.0');
             expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
             expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
-            const appManifest = readAppManifest();
-            expect(appManifest.name).to.be.equal(TEST_EXPOSED_CORE_EXAMPLE);
+            const appManifest = AppManifest.read();
+            expect(appManifest!.name).to.be.equal(TEST_EXPOSED_CORE_EXAMPLE);
         });
 });

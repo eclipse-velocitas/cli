@@ -23,7 +23,7 @@ import Init from '../init';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import Sync from '../sync';
 import { PackageIndex, Core, Extension, ParameterSet, Value, Parameter } from '../../modules/package-index';
-import { AppManifestInterfaceEntry, createAppManifest } from '../../modules/app-manifest';
+import { AppManifest, AppManifestInterfaceEntry } from '../../modules/app-manifest';
 
 // inquirer >= v9 is an ESM package.
 // We are not using ESM in our CLI,
@@ -32,28 +32,34 @@ import { AppManifestInterfaceEntry, createAppManifest } from '../../modules/app-
 // @ts-ignore: declaration file not found
 const inquirer = require('inquirer');
 
+interface CorePromptResult {
+    chosenCore?: Core;
+    example?: boolean;
+    appName?: string;
+}
+
 interface CreateDataConfig {
     name: string;
     language: string;
-    interfaceEntries: AppManifestInterfaceEntry[];
+    appManifest: AppManifest;
     example: boolean;
 }
 
 class CreateData implements CreateDataConfig {
     name: string;
     language: string;
-    interfaceEntries: AppManifestInterfaceEntry[];
+    appManifest: AppManifest;
     example: boolean;
 
     constructor(coreId: string, appName: string, example: boolean, interfaceEntries: AppManifestInterfaceEntry[]) {
         this.name = appName;
         this.language = this._parseLanguage(coreId);
         this.example = example;
-        this.interfaceEntries = interfaceEntries;
+        this.appManifest = new AppManifest(appName, interfaceEntries);
     }
 
     private _parseLanguage(coreId: string): string {
-        const coreIdSplittedArray = coreId.split('-');
+        const coreIdSplittedArray: string[] = coreId.split('-');
         return coreIdSplittedArray[coreIdSplittedArray.length - 2];
     }
 }
@@ -126,7 +132,7 @@ export default class Create extends Command {
         },
         extensionParameters: (parameter: Parameter) => {
             return {
-                name: 'parameter',
+                name: 'extensionParameter',
                 prefix: '>',
                 message: parameter.description,
                 default: parameter.default,
@@ -135,17 +141,17 @@ export default class Create extends Command {
         },
     };
 
-    private async _configureCore(availableCores: Core[]): Promise<{ chosenCore?: Core; example?: boolean; appName?: string }> {
-        let coreResult: { chosenCore?: Core; example?: boolean; appName?: string } = {
+    private async _configureCore(availableCores: Core[]): Promise<CorePromptResult> {
+        let corePromptResult: CorePromptResult = {
             chosenCore: undefined,
             example: undefined,
             appName: undefined,
         };
-        let corePromptResult = await inquirer.prompt(Create.prompts.core(availableCores));
+        let promptResult = await inquirer.prompt(Create.prompts.core(availableCores));
 
-        const chosenCore = corePromptResult.core as Core;
+        corePromptResult.chosenCore = promptResult.core as Core;
 
-        const sets = chosenCore.parameterSets;
+        const sets = corePromptResult.chosenCore.parameterSets;
         if (sets !== undefined) {
             let chosenParamSetId = 0;
             if (sets.length > 0) {
@@ -156,25 +162,31 @@ export default class Create extends Command {
             for (const parameter of sets[chosenParamSetId].parameters) {
                 const coreParametersPromptResult = await inquirer.prompt(Create.prompts.coreParameters(parameter));
                 if (parameter.id === 'example') {
-                    coreResult.example = true;
-                    coreResult.appName = coreParametersPromptResult.coreParameter;
+                    corePromptResult.example = true;
+                    corePromptResult.appName = coreParametersPromptResult.coreParameter;
                 }
                 if (parameter.id === 'name') {
-                    coreResult.example = false;
-                    coreResult.appName = coreParametersPromptResult.coreParameter;
+                    corePromptResult.example = false;
+                    corePromptResult.appName = coreParametersPromptResult.coreParameter;
                 }
             }
         }
-        coreResult.chosenCore = chosenCore;
-        return coreResult;
+        return corePromptResult;
     }
 
-    private async _configureExtension(packageIndex: PackageIndex, chosenCore: Core): Promise<AppManifestInterfaceEntry[]> {
+    private async _configureExtension(
+        packageIndex: PackageIndex,
+        corePromptResult: CorePromptResult,
+    ): Promise<AppManifestInterfaceEntry[]> {
         const appManifestInterfaceEntries: AppManifestInterfaceEntry[] = [];
-
+        if (corePromptResult.example) {
+            return appManifestInterfaceEntries;
+        }
         const availableExtensions = packageIndex
             .getExtensions()
-            .filter((ext: Extension) => ext.compatibleCores.find((compatibleCore: string) => compatibleCore === chosenCore.id));
+            .filter((ext: Extension) =>
+                ext.compatibleCores.find((compatibleCore: string) => compatibleCore === corePromptResult.chosenCore!.id),
+            );
 
         if (availableExtensions.length === 0) {
             return appManifestInterfaceEntries;
@@ -194,15 +206,7 @@ export default class Create extends Command {
         const appManifestInterfaceEntry: AppManifestInterfaceEntry = { type: extensionId, config: {} };
         for (const parameter of parameters) {
             const extensionPromptResult = await inquirer.prompt(Create.prompts.extensionParameters(parameter));
-            appManifestInterfaceEntry.config = {
-                ...appManifestInterfaceEntry.config,
-                ...{
-                    [parameter.id]:
-                        parameter.type === 'object'
-                            ? JSON.parse(extensionPromptResult.extensionParameter)
-                            : extensionPromptResult.extensionParameter,
-                },
-            };
+            appManifestInterfaceEntry.config[parameter.id] = extensionPromptResult.extensionParameter;
         }
         return appManifestInterfaceEntry;
     }
@@ -230,15 +234,20 @@ export default class Create extends Command {
                 }
             }
         }
-        const createData = new CreateData(flags.core, flags.name, flags.example ? true : false, appManifestInterfaceEntries);
+        const createData: CreateData = new CreateData(flags.core, flags.name, flags.example ? true : false, appManifestInterfaceEntries);
         return createData;
     }
 
     private async _runInteractiveMode(packageIndex: PackageIndex): Promise<CreateData> {
         const availableCores = packageIndex.getCores();
-        const coreResult = await this._configureCore(availableCores);
-        const appManifestInterfaceEntries = await this._configureExtension(packageIndex, coreResult.chosenCore!);
-        const createData = new CreateData(coreResult.chosenCore!.id, coreResult.appName!, coreResult.example!, appManifestInterfaceEntries);
+        const corePromptResult = await this._configureCore(availableCores);
+        const appManifestInterfaceEntries = await this._configureExtension(packageIndex, corePromptResult);
+        const createData: CreateData = new CreateData(
+            corePromptResult.chosenCore!.id,
+            corePromptResult.appName!,
+            corePromptResult.example!,
+            appManifestInterfaceEntries,
+        );
         return createData;
     }
 
@@ -275,7 +284,7 @@ export default class Create extends Command {
         }
 
         await ProjectConfig.create(packageIndex.getPackages(), createData.language, this.config.version);
-        await createAppManifest(createData.name, createData.interfaceEntries);
+        createData.appManifest.write();
         const sdkConfig = new SdkConfig(createData.language);
         await sdkDownloader(sdkConfig).downloadPackage({ checkVersionOnly: false });
 

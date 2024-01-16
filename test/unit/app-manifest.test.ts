@@ -14,7 +14,7 @@
 
 import 'mocha';
 import mockfs from 'mock-fs';
-import { readAppManifest } from '../../src/modules/app-manifest';
+import { AppManifest } from '../../src/modules/app-manifest';
 import { expect } from 'chai';
 
 describe('app-manifest - module', () => {
@@ -28,25 +28,25 @@ describe('app-manifest - module', () => {
     });
     describe('AppManifest reading', () => {
         it('should silently continue if the file does not exist.', () => {
-            expect(readAppManifest.bind(readAppManifest, '/AppManifest2.json')).to.not.throw();
+            expect(AppManifest.read.bind(AppManifest.read, '/AppManifest2.json')).to.not.throw();
         });
 
         it('should throw an error if file is present, but cannot be read.', () => {
-            expect(readAppManifest.bind(readAppManifest, '/AppManifestInvalid.json')).to.throw();
+            expect(AppManifest.read.bind(AppManifest.read, '/AppManifestInvalid.json')).to.throw();
         });
 
         it('should read the file and return proper content', () => {
-            const appManifest = readAppManifest('/AppManifestValid.json');
+            const appManifest = AppManifest.read('/AppManifestValid.json');
 
-            expect(appManifest['name']).to.be.eq('AppName');
-            expect(appManifest['manifestVersion']).to.be.eq('v3');
+            expect(appManifest!['name']).to.be.eq('AppName');
+            expect(appManifest!['manifestVersion']).to.be.eq('v3');
         });
 
         it('should omit the root array, if it exists and return proper content', () => {
-            const appManifest = readAppManifest('/AppManifestArray.json');
+            const appManifest = AppManifest.read('/AppManifestArray.json');
 
-            expect(appManifest['name']).to.be.eq('AppName');
-            expect(appManifest['manifestVersion']).to.be.eq('v3');
+            expect(appManifest!['name']).to.be.eq('AppName');
+            expect(appManifest!['manifestVersion']).to.be.eq('v3');
         });
     });
     after(() => {

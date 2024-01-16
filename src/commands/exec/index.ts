@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Command, Flags, Args } from '@oclif/core';
-import { readAppManifest } from '../../modules/app-manifest';
+import { AppManifest } from '../../modules/app-manifest';
 import { ExecSpec, findComponentByName } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { ProjectConfig } from '../../modules/project-config';
@@ -83,7 +83,7 @@ Executing script...
             args: programArgsAndFlags,
         };
 
-        const appManifestData = readAppManifest();
+        const appManifestData = AppManifest.read();
 
         const [packageConfig, componentConfig, component] = findComponentByName(projectConfig, args.component);
 
