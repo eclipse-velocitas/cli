@@ -44,6 +44,7 @@ export const packageIndexMock: PackageInterface[] = [
                 type: 'extension',
                 name: 'Test Extension',
                 description: 'Test Extension',
+                compatibleCores: ['test-core'],
                 parameters: [
                     {
                         id: 'test-arg-required',
@@ -77,7 +78,7 @@ export const packageIndexMock: PackageInterface[] = [
                         name: 'Create an application from an example',
                         parameters: [
                             {
-                                id: 'test-example',
+                                id: 'example',
                                 description: 'Test Example',
                                 type: 'string',
                                 required: true,
@@ -87,6 +88,18 @@ export const packageIndexMock: PackageInterface[] = [
                                         description: 'Test Example',
                                     },
                                 ],
+                            },
+                        ],
+                    },
+                    {
+                        id: 'from-skeleton',
+                        name: 'Create an application from scratch',
+                        parameters: [
+                            {
+                                id: 'name',
+                                required: true,
+                                description: 'Name of your application',
+                                type: 'string',
                             },
                         ],
                     },

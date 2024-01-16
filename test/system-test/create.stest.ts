@@ -47,7 +47,7 @@ describe('CLI command', () => {
             });
         });
         it('should be able to create a project', async () => {
-            spawnSync(VELOCITAS_PROCESS, ['create', '-n', 'MyApp', '-l', 'python'], {
+            spawnSync(VELOCITAS_PROCESS, ['create', '-n', 'MyApp', '-c', 'vehicle-app-python-core'], {
                 encoding: DEFAULT_BUFFER_ENCODING,
             });
 

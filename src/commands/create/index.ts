@@ -98,7 +98,7 @@ export default class Create extends Command {
         },
         parameterSets: (sets: ParameterSet[]) => {
             return {
-                name: 'set',
+                name: 'parameterSet',
                 prefix: '>',
                 message: 'Which flavor?',
                 type: 'list',
@@ -107,7 +107,7 @@ export default class Create extends Command {
         },
         coreParameters: (parameter: Parameter) => {
             return {
-                name: 'parameter',
+                name: 'coreParameter',
                 prefix: '>',
                 message: parameter.description,
                 default: parameter.default,
@@ -150,18 +150,18 @@ export default class Create extends Command {
             let chosenParamSetId = 0;
             if (sets.length > 0) {
                 const parameterSetPromptResult = await inquirer.prompt(Create.prompts.parameterSets(sets));
-                chosenParamSetId = parameterSetPromptResult.set;
+                chosenParamSetId = parameterSetPromptResult.parameterSet;
             }
 
             for (const parameter of sets[chosenParamSetId].parameters) {
                 const coreParametersPromptResult = await inquirer.prompt(Create.prompts.coreParameters(parameter));
                 if (parameter.id === 'example') {
                     coreResult.example = true;
-                    coreResult.appName = coreParametersPromptResult.parameter;
+                    coreResult.appName = coreParametersPromptResult.coreParameter;
                 }
                 if (parameter.id === 'name') {
                     coreResult.example = false;
-                    coreResult.appName = coreParametersPromptResult.parameter;
+                    coreResult.appName = coreParametersPromptResult.coreParameter;
                 }
             }
         }
@@ -192,14 +192,15 @@ export default class Create extends Command {
     private async _createAppManifestInterfaceEntry(extensionId: string, parameters: Parameter[]): Promise<AppManifestInterfaceEntry> {
         this.log(`Configure extension '${extensionId}'`);
         const appManifestInterfaceEntry: AppManifestInterfaceEntry = { type: extensionId, config: {} };
-
         for (const parameter of parameters) {
             const extensionPromptResult = await inquirer.prompt(Create.prompts.extensionParameters(parameter));
             appManifestInterfaceEntry.config = {
                 ...appManifestInterfaceEntry.config,
                 ...{
                     [parameter.id]:
-                        parameter.type === 'object' ? JSON.parse(extensionPromptResult.parameter) : extensionPromptResult.parameter,
+                        parameter.type === 'object'
+                            ? JSON.parse(extensionPromptResult.extensionParameter)
+                            : extensionPromptResult.extensionParameter,
                 },
             };
         }
@@ -223,7 +224,7 @@ export default class Create extends Command {
         }
         if (flags.interface) {
             for (const interfaceEntry of flags.interface) {
-                const interfaceParameters = packageIndex.getExtensionParameters(interfaceEntry);
+                const interfaceParameters = packageIndex.getExtensionParametersByParameterId(interfaceEntry);
                 if (interfaceParameters) {
                     appManifestInterfaceEntries.push(await this._createAppManifestInterfaceEntry(interfaceEntry, interfaceParameters!));
                 }
@@ -290,7 +291,7 @@ export default class Create extends Command {
             this.error('Unable to execute create script!');
         }
 
-        this.log(`... Project for Vehicle Application '${flags.name}' created!`);
+        this.log(`... Project for Vehicle Application '${createData.name}' created!`);
         await Init.run(['--no-hooks']);
         await Sync.run([]);
     }

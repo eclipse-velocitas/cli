@@ -120,10 +120,14 @@ export class PackageIndex {
 
     getPackages(): PackageInterface[] {
         const keywordsToCheck = ['core', 'sdk'];
-        return this._packages.filter((pkg: PackageInterface) => !keywordsToCheck.some((keyword) => pkg.package.includes(keyword)));
+        try {
+            return this._packages.filter((pkg: PackageInterface) => !keywordsToCheck.some((keyword) => pkg.package.includes(keyword)));
+        } catch (error) {
+            return [];
+        }
     }
 
-    getExtensionParameters(parameterId: string): Parameter[] | undefined {
+    getExtensionParametersByParameterId(parameterId: string): Parameter[] | undefined {
         const foundPackage = this._packages.find((pkg: PackageInterface) =>
             pkg.exposedInterfaces.some((eif: ExposedInterface): eif is Extension => eif.id === parameterId),
         );

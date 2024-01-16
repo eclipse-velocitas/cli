@@ -14,19 +14,20 @@
 
 import 'mocha';
 import mockfs from 'mock-fs';
-import { PackageIndex } from '../../src/modules/package-index';
+import { Core, Extension, PackageIndex, PackageInterface, Parameter } from '../../src/modules/package-index';
 import { expect } from 'chai';
 
-const validPackageIndexMock = [
+const validPackageIndexMock: PackageInterface[] = [
     {
-        type: 'extension',
         package: 'velocitas/test.git',
         exposedInterfaces: [
             {
-                type: 'test-interface',
-                description: 'Test interface',
-                default: true,
-                args: [
+                id: 'test-extension',
+                type: 'extension',
+                name: 'Test Extension',
+                description: 'Test Extension',
+                compatibleCores: ['test-core'],
+                parameters: [
                     {
                         id: 'test-arg-required',
                         description: 'Test config for required arg',
@@ -46,19 +47,47 @@ const validPackageIndexMock = [
         ],
     },
     {
-        type: 'core',
         package: 'vehicle-app-test-sdk',
         exposedInterfaces: [
             {
-                type: 'examples',
-                description: 'Provided test examples from test SDK',
-                args: [
+                id: 'test-core',
+                type: 'core',
+                name: 'Velocitas Vehicle App (Python)',
+                description: 'Creates a Vehicle App written in Python',
+                parameterSets: [
                     {
-                        id: 'test-example',
-                        description: 'Test Example',
-                        type: 'string',
-                        default: '',
-                        required: false,
+                        id: 'from-example',
+                        name: 'Create an application from an example',
+                        parameters: [
+                            {
+                                id: 'example',
+                                description: 'Provided Examples from SDK',
+                                type: 'list',
+                                required: true,
+                                values: [
+                                    {
+                                        id: 'seat-adjuster',
+                                        description: 'Seat Adjuster Example',
+                                    },
+                                    {
+                                        id: 'dog-mode',
+                                        description: 'Dog Mode Example',
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        id: 'from-skeleton',
+                        name: 'Create an application from scratch',
+                        parameters: [
+                            {
+                                id: 'name',
+                                required: true,
+                                description: 'Name of your application',
+                                type: 'string',
+                            },
+                        ],
                     },
                 ],
             },
@@ -68,14 +97,15 @@ const validPackageIndexMock = [
 
 const invalidPackageIndexMock = [
     {
-        type: 'extension',
-        package: 'invalidPackageURI',
+        packageInvalid: 'invalidPackageURI',
         exposedInterfaces: [
             {
-                type: 'test-interface',
-                description: 'Test interface',
-                default: true,
-                args: [
+                id: 'test-extension',
+                type: 'invalid',
+                name: 'Test Extension',
+                description: 'Test Extension',
+                compatibleCores: ['test-core'],
+                parameters: [
                     {
                         id: 'test-arg-required',
                         description: 'Test config for required arg',
@@ -95,49 +125,57 @@ const invalidPackageIndexMock = [
         ],
     },
     {
-        type: 'core',
         package: 'invalidSdk',
         exposedInterfaces: [
             {
-                type: 'examples',
-                description: 'Provided test examples from test SDK',
-                args: [
+                id: 'vehicle-app-python-invalid',
+                type: 'invalid',
+                name: 'Velocitas Vehicle App (Python)',
+                description: 'Creates a Vehicle App written in Python',
+                parameterSets: [
                     {
-                        id: 'test-example',
-                        description: 'Test Example',
-                        type: 'string',
-                        default: '',
-                        required: false,
+                        id: 'from-example',
+                        name: 'Create an application from an example',
+                        parameters: [
+                            {
+                                id: 'example',
+                                description: 'Provided Examples from SDK',
+                                type: 'list',
+                                required: true,
+                                values: [
+                                    {
+                                        id: 'seat-adjuster',
+                                        description: 'Seat Adjuster Example',
+                                    },
+                                    {
+                                        id: 'dog-mode',
+                                        description: 'Dog Mode Example',
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        id: 'from-skeleton',
+                        name: 'Create an application from scratch',
+                        parameters: [
+                            {
+                                id: 'name',
+                                required: true,
+                                description: 'Name of your application',
+                                type: 'string',
+                            },
+                        ],
                     },
                 ],
             },
         ],
     },
 ];
-const EXPECTED_AVAILABLE_LANGUAGES = ['test'];
-const EXPECTED_AVAILABLE_EXAMPLES = [{ name: 'Test Example', value: 'test-example', language: 'test' }];
-const EXPECTED_AVAILABLE_INTERFACES = [
-    {
-        name: 'Test interface',
-        value: 'test-interface',
-        args: [
-            {
-                id: 'test-arg-required',
-                description: 'Test config for required arg',
-                default: 'test-arg-required',
-                required: true,
-                type: 'string',
-            },
-            {
-                id: 'test',
-                description: 'Test config for not required arg',
-                default: '{"required":[{"path":"","access":""}]}',
-                required: false,
-                type: 'object',
-            },
-        ],
-    },
-];
+const EXPECTED_AVAILABLE_CORES: Core[] = validPackageIndexMock[1].exposedInterfaces as Core[];
+const EXPECTED_AVAILABLE_EXTENSIONS: Extension[] = validPackageIndexMock[0].exposedInterfaces as Extension[];
+const EXPECTED_AVAILABLE_EXTENSION_PARAMETER: Parameter[] = EXPECTED_AVAILABLE_EXTENSIONS[0].parameters!;
+const EXPECTED_AVAILABLE_PACKAGES = [validPackageIndexMock[0]];
 
 describe('package-index - module', () => {
     before(() => {
@@ -154,35 +192,40 @@ describe('package-index - module', () => {
         it('should throw an error if package-index.json is not found.', () => {
             expect(() => PackageIndex.read('no-package-index.json')).to.throw();
         });
-        it('should parse availableLanguages correctly from valid package-index.json.', () => {
+        it('should parse available cores correctly from valid package-index.json.', () => {
             const packageIndex = PackageIndex.read();
-            const availableLanguages = packageIndex.getAvailableLanguages();
-            expect(availableLanguages).to.be.deep.equal(EXPECTED_AVAILABLE_LANGUAGES);
+            const availableCores = packageIndex.getCores();
+            expect(availableCores).to.be.deep.equal(EXPECTED_AVAILABLE_CORES);
         });
-        it('should parse availableExamples correctly from valid package-index.json.', () => {
+        it('should parse available extensions correctly from valid package-index.json.', () => {
             const packageIndex = PackageIndex.read();
-            const availableExamples = packageIndex.getAvailableExamples();
-            expect(availableExamples).to.be.deep.equal(EXPECTED_AVAILABLE_EXAMPLES);
+            const availableExtensions = packageIndex.getExtensions();
+            expect(availableExtensions).to.be.deep.equal(EXPECTED_AVAILABLE_EXTENSIONS);
         });
-        it('should parse availableInterfaces correctly from valid package-index.json.', () => {
+        it('should parse available packages correctly from valid package-index.json.', () => {
             const packageIndex = PackageIndex.read();
-            const availableInterfaces = packageIndex.getAvailableInterfaces();
-            expect(availableInterfaces).to.be.deep.equal(EXPECTED_AVAILABLE_INTERFACES);
+            const availablePackages = packageIndex.getPackages();
+            expect(availablePackages).to.be.deep.equal(EXPECTED_AVAILABLE_PACKAGES);
         });
-        it('should parse availableLanguages correctly from valid invalidPackage-index.json.', () => {
-            const packageIndex = PackageIndex.read('./invalidPackage-index.json');
-            const availableLanguages = packageIndex.getAvailableLanguages();
-            expect(availableLanguages).to.be.empty;
+        it('should get correct extension parameters by parameterId.', () => {
+            const packageIndex = PackageIndex.read();
+            const extensionParameters = packageIndex.getExtensionParametersByParameterId('test-extension');
+            expect(extensionParameters).to.be.deep.equal(EXPECTED_AVAILABLE_EXTENSION_PARAMETER);
         });
-        it('should parse availableExamples correctly from valid invalidPackage-index.json.', () => {
+        it('should parse available cores correctly from valid invalidPackage-index.json.', () => {
             const packageIndex = PackageIndex.read('./invalidPackage-index.json');
-            const availableExamples = packageIndex.getAvailableExamples();
-            expect(availableExamples).to.be.empty;
+            const availableCores = packageIndex.getCores();
+            expect(availableCores).to.be.empty;
         });
-        it('should parse availableInterfaces correctly from valid invalidPackage-index.json.', () => {
+        it('should parse available extensions correctly from valid invalidPackage-index.json.', () => {
             const packageIndex = PackageIndex.read('./invalidPackage-index.json');
-            const availableInterfaces = packageIndex.getAvailableInterfaces();
-            expect(availableInterfaces).to.be.empty;
+            const availableExtensions = packageIndex.getExtensions();
+            expect(availableExtensions).to.be.empty;
+        });
+        it('should parse available packages correctly from valid invalidPackage-index.json.', () => {
+            const packageIndex = PackageIndex.read('./invalidPackage-index.json');
+            const availablePackages = packageIndex.getPackages();
+            expect(availablePackages).to.be.empty;
         });
     });
     after(() => {
