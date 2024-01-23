@@ -32,7 +32,7 @@ export interface Parameter {
     type: string;
     default?: string;
     required?: boolean;
-    values?: Value[];
+    values?: DescribedValue[];
     [key: string]: any;
 }
 
@@ -42,65 +42,54 @@ export interface Parameter {
  * @prop {string} id - Unique ID of the value.
  * @prop {string} description - Description of the value.
  */
-export interface Value {
+export interface DescribedValue {
     id: string;
     description: string;
 }
 
 /**
- * Represents a set of parameters with an ID, name, and an array of parameters.
- * @interface ParameterSet
- * @prop {string} id - Unique ID of the parameter set.
- * @prop {string} name - Name of the parameter set.
- * @prop {Parameter[]} parameters - Array of parameters in the set.
+ * Represents options  of a core package with an ID, name and an array of parameters.
+ * @interface CoreOptions
+ * @prop {string} id - Unique ID of the core option.
+ * @prop {string} name - Name of the core option.
+ * @prop {Parameter[]} parameters - Array of parameters of the option.
  */
-export interface ParameterSet {
+export interface CoreOptions {
     id: string;
     name: string;
     parameters: Parameter[];
 }
 
 /**
- * Exposed interface of a package, which can be either a Core or an Extension.
- * @interface ExposedInterface
- * @prop {string} type - Type (Name/ID) of the exposed interface.
+ * Base interface for an exposed interface of a package.
+ * @interface ExposedInterfaceBase
+ * @prop {string} id - Unique ID of the exposed interface.
+ * @prop {string} type - Type of the exposed interface.
+ * @prop {string} name - Name of the exposed interface.
  * @prop {string} description - Description of the exposed interface.
- * @prop {Core | Extension} args - Additional arguments an exposed interface needs.
  */
-type ExposedInterface = Core | Extension;
-
-/**
- * Represents the core part of an exposed interface with an ID, type, name, description, and optional parameter sets.
- * @interface Core
- * @prop {string} id - Unique ID of the core.
- * @prop {string} type - Type of the core.
- * @prop {string} name - Name of the core.
- * @prop {string} description - Description of the core.
- * @prop {ParameterSet[]} [parameterSets] - Array of parameter sets.
- */
-export interface Core {
+interface ExposedInterfaceBase {
     id: string;
     type: string;
     name: string;
     description: string;
-    parameterSets?: ParameterSet[];
+}
+/**
+ * Represents a core package with an ID, type, name, description and optional options.
+ * @interface Core
+ * @prop {CoreOptions[]} [options] - Array of options of a core package.
+ */
+export interface Core extends ExposedInterfaceBase {
+    options?: CoreOptions[];
 }
 
 /**
- * Represents the extension part of an exposed interface with an ID, type, name, description, compatible cores, and optional parameters.
+ * Represents an extension package with an ID, type, name, description, compatible cores, and optional parameters.
  * @interface Extension
- * @prop {string} id - Unique ID of the extension.
- * @prop {string} type - Type of the extension.
- * @prop {string} name - Name of the extension.
- * @prop {string} description - Description of the extension.
  * @prop {string[]} compatibleCores - Array of compatible core types.
  * @prop {Parameter[]} [parameters] - Array of parameters.
  */
-export interface Extension {
-    id: string;
-    type: string;
-    name: string;
-    description: string;
+export interface Extension extends ExposedInterfaceBase {
     compatibleCores: string[];
     parameters?: Parameter[];
 }
@@ -113,7 +102,7 @@ export interface Extension {
  */
 export interface PackageInterface {
     package: string;
-    exposedInterfaces: ExposedInterface[];
+    exposedInterfaces: Core[] | Extension[];
 }
 
 /**
@@ -153,14 +142,21 @@ export class PackageIndex {
     }
 
     /**
+     * Gets an array of exposed interfaces (Cores or Extensions) from the package index.
+     * @returns {(Core | Extension)[]} - Array of Core or Extension instances.
+     * @private
+     */
+    private _getExposedInterfaces(): (Core | Extension)[] {
+        return this._packages.flatMap((pkg: PackageInterface) => pkg.exposedInterfaces);
+    }
+
+    /**
      * Gets an array of Core instances from the package index.
      * @returns {Core[]} - Array of Core instances.
      * @public
      */
     getCores(): Core[] {
-        return this._packages
-            .flatMap((pkg: PackageInterface) => pkg.exposedInterfaces)
-            .filter((eif: ExposedInterface): eif is Core => eif.type === 'core');
+        return this._getExposedInterfaces().filter((eif): eif is Core => eif.type === 'core');
     }
 
     /**
@@ -169,13 +165,11 @@ export class PackageIndex {
      * @public
      */
     getExtensions(): Extension[] {
-        return this._packages
-            .flatMap((pkg: PackageInterface) => pkg.exposedInterfaces)
-            .filter((eif: ExposedInterface): eif is Extension => eif.type === 'extension');
+        return this._getExposedInterfaces().filter((eif): eif is Extension => eif.type === 'extension');
     }
 
     /**
-     * Gets an array of PackageInterface instances excluding those with specified keywords in their URIs.
+     * Gets an array of all PackageInterface instances excluding 'core' and 'sdk' packages.
      * @returns {PackageInterface[]} - Array of PackageInterface instances.
      * @public
      */
@@ -196,15 +190,14 @@ export class PackageIndex {
      */
     getExtensionParametersByParameterId(parameterId: string): Parameter[] | undefined {
         const foundPackage = this._packages.find((pkg: PackageInterface) =>
-            pkg.exposedInterfaces.some((eif: ExposedInterface): eif is Extension => eif.id === parameterId),
+            pkg.exposedInterfaces.some((eif: Core | Extension): eif is Extension => eif.id === parameterId),
         );
 
         let foundExposedInterface: Extension | undefined;
 
         if (foundPackage) {
-            foundExposedInterface = foundPackage.exposedInterfaces.find(
-                (eif: ExposedInterface): eif is Extension => eif.id === parameterId,
-            );
+            const exposedInterfaces = foundPackage.exposedInterfaces as (Core | Extension)[];
+            foundExposedInterface = exposedInterfaces.find((eif: Core | Extension): eif is Extension => eif.id === parameterId);
         }
         return foundExposedInterface?.parameters;
     }

@@ -72,7 +72,7 @@ export const packageIndexMock: PackageInterface[] = [
                 type: 'core',
                 name: 'Test Core Package',
                 description: 'Test Core Package',
-                parameterSets: [
+                options: [
                     {
                         id: 'from-example',
                         name: 'Create an application from an example',

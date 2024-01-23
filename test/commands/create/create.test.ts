@@ -33,7 +33,7 @@ const TEST_EXPOSED_CORE_ID = packageIndexMock[1].exposedInterfaces[0].id;
 
 const TEST_EXPOSED_EXTENSION = packageIndexMock[0].exposedInterfaces[0] as Extension;
 const TEST_EXPOSED_CORE = packageIndexMock[1].exposedInterfaces[0] as Core;
-const TEST_EXPOSED_CORE_EXAMPLE = TEST_EXPOSED_CORE.parameterSets![0].parameters[0].values![0].id;
+const TEST_EXPOSED_CORE_EXAMPLE = TEST_EXPOSED_CORE.options![0].parameters[0].values![0].id;
 
 const TEST_EXPOSED_INTERFACE_PARAMETER_NAME_1 = TEST_EXPOSED_EXTENSION.parameters![0].id;
 const TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_1 = TEST_EXPOSED_EXTENSION.parameters![0].default;
@@ -43,7 +43,7 @@ const TEST_PACKAGE_URI = packageIndexMock[0].package;
 const TEST_PACKAGE_NAME = velocitasConfigMock.packages[0].name;
 const TEST_PACKAGE_VERSION = velocitasConfigMock.packages[0].version;
 
-enum ParameterSet {
+enum CoreOption {
     fromExample = 0,
     fromScratch = 1,
 }
@@ -154,7 +154,7 @@ describe('create', () => {
             return {
                 name: TEST_APP_NAME,
                 core: TEST_EXPOSED_CORE,
-                parameterSet: ParameterSet.fromScratch,
+                coreOptions: CoreOption.fromScratch,
                 coreParameter: TEST_APP_NAME,
                 extensions: [TEST_EXPOSED_EXTENSION],
                 extensionParameter: TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_2,
@@ -203,7 +203,7 @@ describe('create', () => {
             return {
                 name: TEST_APP_NAME,
                 core: TEST_EXPOSED_CORE,
-                parameterSet: ParameterSet.fromExample,
+                coreOptions: CoreOption.fromExample,
                 coreParameter: TEST_APP_NAME,
                 extensions: [],
             };
@@ -250,7 +250,7 @@ describe('create', () => {
         .stub(inquirer, 'prompt', () => {
             return {
                 core: TEST_EXPOSED_CORE,
-                parameterSet: ParameterSet.fromExample,
+                coreOptions: CoreOption.fromExample,
                 coreParameter: TEST_EXPOSED_CORE_EXAMPLE,
                 extensions: [],
             };

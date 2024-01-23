@@ -54,7 +54,7 @@ const validPackageIndexMock: PackageInterface[] = [
                 type: 'core',
                 name: 'Velocitas Vehicle App (Python)',
                 description: 'Creates a Vehicle App written in Python',
-                parameterSets: [
+                options: [
                     {
                         id: 'from-example',
                         name: 'Create an application from an example',
@@ -132,7 +132,7 @@ const invalidPackageIndexMock = [
                 type: 'invalid',
                 name: 'Velocitas Vehicle App (Python)',
                 description: 'Creates a Vehicle App written in Python',
-                parameterSets: [
+                options: [
                     {
                         id: 'from-example',
                         name: 'Create an application from an example',

@@ -23,26 +23,26 @@ const APP_MANIFEST_PATH = resolve(cwd(), DEFAULT_APP_MANIFEST_PATH);
 
 /**
  * Interface config entry for AppManifest
- * @interface AppManifestInterfaceEntry
+ * @interface AppManifestInterfaceAttributes
  * @prop {string} type - Type of the App interface.
  * @prop {Record<string, any>} config - Config object specific for the interface type.
  */
-export interface AppManifestInterfaceEntry {
+export interface AppManifestInterfaceAttributes {
     type: string;
     config: Record<string, any>;
 }
 
 /**
  * Represents an AppManifest for a Vehicle App.
- * @interface AppManifest
+ * @interface AppManifestAttributes
  * @prop {string} manifestVersion - Version of the AppManifest format.
  * @prop {string} name - Name of the Vehicle App.
- * @prop {AppManifestInterfaceEntry[]} interfaces - List of interface entries in the AppManifest.
+ * @prop {AppManifestInterfaceAttributes[]} interfaces - List of interface entries in the AppManifest.
  */
-export interface AppManifest {
+export interface AppManifestAttributes {
     manifestVersion: string;
     name: string;
-    interfaces: AppManifestInterfaceEntry[];
+    interfaces: AppManifestInterfaceAttributes[];
 }
 
 /**
@@ -50,17 +50,17 @@ export interface AppManifest {
  * @class
  * @implements {AppManifest}
  */
-export class AppManifest implements AppManifest {
+export class AppManifest implements AppManifestAttributes {
     manifestVersion: string = 'v3';
-    name: string = '';
-    interfaces: AppManifestInterfaceEntry[] = [];
+    name: string;
+    interfaces: AppManifestInterfaceAttributes[] = [];
 
     /**
      * Creates an instance of AppManifest.
-     * @param {string} [name=''] - Name of the Vehicle App.
-     * @param {AppManifestInterfaceEntry[]} [interfaces=[]] - List of interface entries in the AppManifest.
+     * @param {string} name - Name of the Vehicle App.
+     * @param {AppManifestInterfaceAttributes[]} [interfaces=[]] - List of interface entries in the AppManifest.
      */
-    constructor(name: string = '', interfaces: AppManifestInterfaceEntry[] = []) {
+    constructor(name: string, interfaces: AppManifestInterfaceAttributes[] = []) {
         this.name = name;
         this.interfaces = this._createInterfaceEntries(interfaces);
     }
@@ -68,11 +68,11 @@ export class AppManifest implements AppManifest {
     /**
      * Creates interface entries for the AppManifest.
      * @private
-     * @param {AppManifestInterfaceEntry[]} interfaces - List of interface entries to process.
-     * @returns {AppManifestInterfaceEntry[]} Processed interface entries with parsed JSON values.
+     * @param {AppManifestInterfaceAttributes[]} interfaces - List of interface entries to process.
+     * @returns {AppManifestInterfaceAttributes[]} Processed interface entries with parsed JSON values.
      */
-    private _createInterfaceEntries(interfaces: AppManifestInterfaceEntry[]): AppManifestInterfaceEntry[] {
-        return interfaces.map((entry: AppManifestInterfaceEntry) => ({
+    private _createInterfaceEntries(interfaces: AppManifestInterfaceAttributes[]): AppManifestInterfaceAttributes[] {
+        return interfaces.map((entry: AppManifestInterfaceAttributes) => ({
             type: entry.type,
             config: Object.fromEntries(
                 Object.entries(entry.config).map(([key, value]) => {
