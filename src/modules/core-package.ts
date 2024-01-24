@@ -14,23 +14,26 @@
 
 import { homedir } from 'os';
 
-export class SdkConfig {
-    // name of the package to the package repository
-    repo: string = '';
-
+export class CorePackageConfig {
+    // ID of the Core package
+    coreId: string = '';
+    // Uri to the package repository
+    corePackageUri: string = '';
     // version of the package to use
     version: string = '';
 
-    constructor(language: string) {
-        this.repo = language;
+    constructor(coreId: string, corePackageUri: string) {
+        this.coreId = coreId;
+        this.corePackageUri = corePackageUri;
         this.version = 'latest';
     }
 
     getPackageRepo(): string {
-        return `https://github.com/eclipse-velocitas/vehicle-app-${this.repo}-sdk`;
+        return this.corePackageUri;
     }
 
     getPackageDirectory(): string {
-        return `${homedir()}/.velocitas/sdk/${this.repo}`;
+        // The SDK in path should stay for now because of the long rat tail
+        return `${homedir()}/.velocitas/sdk/${this.coreId}`;
     }
 }

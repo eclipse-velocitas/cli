@@ -25,14 +25,14 @@ import { Core, Extension } from '../../../src/modules/package-index';
 const inquirer = require('inquirer');
 
 const TEST_APP_NAME = 'TestApp';
-const TEST_EXPOSED_INTERFACE_TYPE = packageIndexMock[0].exposedInterfaces[0].type;
-const TEST_EXPOSED_INTERFACE_ID = packageIndexMock[0].exposedInterfaces[0].id;
+const TEST_EXPOSED_INTERFACE_TYPE = packageIndexMock[0].components[0].type;
+const TEST_EXPOSED_INTERFACE_ID = packageIndexMock[0].components[0].id;
 
-const TEST_EXPOSED_CORE_TYPE = packageIndexMock[1].exposedInterfaces[0].type;
-const TEST_EXPOSED_CORE_ID = packageIndexMock[1].exposedInterfaces[0].id;
+const TEST_EXPOSED_CORE_TYPE = packageIndexMock[1].components[0].type;
+const TEST_EXPOSED_CORE_ID = packageIndexMock[1].components[0].id;
 
-const TEST_EXPOSED_EXTENSION = packageIndexMock[0].exposedInterfaces[0] as Extension;
-const TEST_EXPOSED_CORE = packageIndexMock[1].exposedInterfaces[0] as Core;
+const TEST_EXPOSED_EXTENSION = packageIndexMock[0].components[0] as Extension;
+const TEST_EXPOSED_CORE = packageIndexMock[1].components[0] as Core;
 const TEST_EXPOSED_CORE_EXAMPLE = TEST_EXPOSED_CORE.options![0].parameters[0].values![0].id;
 
 const TEST_EXPOSED_INTERFACE_PARAMETER_NAME_1 = TEST_EXPOSED_EXTENSION.parameters![0].id;
@@ -85,7 +85,6 @@ describe('create', () => {
             const velocitasConfig = ProjectConfig.read('v0.0.0');
             expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
-            expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
             const appManifest = AppManifest.read();
             expect(appManifest!.name).to.be.equal(TEST_APP_NAME);
@@ -171,7 +170,6 @@ describe('create', () => {
                 const velocitasConfig = ProjectConfig.read('v0.0.0');
                 expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
                 expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
-                expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
                 const appManifest = AppManifest.read();
                 expect(appManifest!.name).to.be.equal(TEST_APP_NAME);
@@ -217,7 +215,6 @@ describe('create', () => {
             const velocitasConfig = ProjectConfig.read('v0.0.0');
             expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
-            expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
             const appManifest = AppManifest.read();
             expect(appManifest!.name).to.be.equal(TEST_APP_NAME);
@@ -264,7 +261,6 @@ describe('create', () => {
             const velocitasConfig = ProjectConfig.read('v0.0.0');
             expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
-            expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
             const appManifest = AppManifest.read();
             expect(appManifest!.name).to.be.equal(TEST_EXPOSED_CORE_EXAMPLE);

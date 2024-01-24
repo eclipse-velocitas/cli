@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ComponentType } from '../../src/modules/component';
-import { PackageInterface } from '../../src/modules/package-index';
+import { PackageAttributes } from '../../src/modules/package-index';
 
 export const velocitasConfigMock = {
     packages: [
@@ -35,15 +35,16 @@ export const velocitasConfigMock = {
     },
 };
 
-export const packageIndexMock: PackageInterface[] = [
+export const packageIndexMock: PackageAttributes[] = [
     {
         package: 'https://github.com/eclipse-velocitas/test-runtime.git',
-        exposedInterfaces: [
+        components: [
             {
                 id: 'test-extension',
                 type: 'extension',
                 name: 'Test Extension',
                 description: 'Test Extension',
+                mandatory: true,
                 compatibleCores: ['test-core'],
                 parameters: [
                     {
@@ -66,12 +67,13 @@ export const packageIndexMock: PackageInterface[] = [
     },
     {
         package: 'https://github.com/eclipse-velocitas/vehicle-app-test-sdk',
-        exposedInterfaces: [
+        components: [
             {
                 id: 'test-core',
                 type: 'core',
                 name: 'Test Core Package',
                 description: 'Test Core Package',
+                mandatory: false,
                 options: [
                     {
                         id: 'from-example',
@@ -109,12 +111,13 @@ export const packageIndexMock: PackageInterface[] = [
     },
     {
         package: 'https://github.com/eclipse-velocitas/vehicle-app-no-example-sdk',
-        exposedInterfaces: [
+        components: [
             {
                 id: 'test-core-no-examples',
                 type: 'core',
                 name: 'Test Core Package with no examples',
                 description: 'Test Core Package no examples',
+                mandatory: false,
             },
         ],
     },

@@ -14,18 +14,19 @@
 
 import 'mocha';
 import mockfs from 'mock-fs';
-import { Core, Extension, PackageIndex, PackageInterface, Parameter } from '../../src/modules/package-index';
+import { Core, Extension, PackageIndex, PackageAttributes, Parameter } from '../../src/modules/package-index';
 import { expect } from 'chai';
 
-const validPackageIndexMock: PackageInterface[] = [
+const validPackageIndexMock: PackageAttributes[] = [
     {
         package: 'velocitas/test.git',
-        exposedInterfaces: [
+        components: [
             {
                 id: 'test-extension',
                 type: 'extension',
                 name: 'Test Extension',
                 description: 'Test Extension',
+                mandatory: true,
                 compatibleCores: ['test-core'],
                 parameters: [
                     {
@@ -48,12 +49,13 @@ const validPackageIndexMock: PackageInterface[] = [
     },
     {
         package: 'vehicle-app-test-sdk',
-        exposedInterfaces: [
+        components: [
             {
                 id: 'test-core',
                 type: 'core',
                 name: 'Velocitas Vehicle App (Python)',
                 description: 'Creates a Vehicle App written in Python',
+                mandatory: false,
                 options: [
                     {
                         id: 'from-example',
@@ -98,7 +100,7 @@ const validPackageIndexMock: PackageInterface[] = [
 const invalidPackageIndexMock = [
     {
         packageInvalid: 'invalidPackageURI',
-        exposedInterfaces: [
+        components: [
             {
                 id: 'test-extension',
                 type: 'invalid',
@@ -126,7 +128,7 @@ const invalidPackageIndexMock = [
     },
     {
         package: 'invalidSdk',
-        exposedInterfaces: [
+        components: [
             {
                 id: 'vehicle-app-python-invalid',
                 type: 'invalid',
@@ -172,8 +174,8 @@ const invalidPackageIndexMock = [
         ],
     },
 ];
-const EXPECTED_AVAILABLE_CORES: Core[] = validPackageIndexMock[1].exposedInterfaces as Core[];
-const EXPECTED_AVAILABLE_EXTENSIONS: Extension[] = validPackageIndexMock[0].exposedInterfaces as Extension[];
+const EXPECTED_AVAILABLE_CORES: Core[] = validPackageIndexMock[1].components as Core[];
+const EXPECTED_AVAILABLE_EXTENSIONS: Extension[] = validPackageIndexMock[0].components as Extension[];
 const EXPECTED_AVAILABLE_EXTENSION_PARAMETER: Parameter[] = EXPECTED_AVAILABLE_EXTENSIONS[0].parameters!;
 const EXPECTED_AVAILABLE_PACKAGES = [validPackageIndexMock[0]];
 
@@ -204,7 +206,7 @@ describe('package-index - module', () => {
         });
         it('should parse available packages correctly from valid package-index.json.', () => {
             const packageIndex = PackageIndex.read();
-            const availablePackages = packageIndex.getPackages();
+            const availablePackages = packageIndex.getMandatoryPackages();
             expect(availablePackages).to.be.deep.equal(EXPECTED_AVAILABLE_PACKAGES);
         });
         it('should get correct extension parameters by parameterId.', () => {
@@ -224,7 +226,7 @@ describe('package-index - module', () => {
         });
         it('should parse available packages correctly from valid invalidPackage-index.json.', () => {
             const packageIndex = PackageIndex.read('./invalidPackage-index.json');
-            const availablePackages = packageIndex.getPackages();
+            const availablePackages = packageIndex.getMandatoryPackages();
             expect(availablePackages).to.be.empty;
         });
     });

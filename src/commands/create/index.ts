@@ -14,8 +14,8 @@
 
 import { Command, Flags } from '@oclif/core';
 import { ProjectConfig } from '../../modules/project-config';
-import { sdkDownloader } from '../../modules/package-downloader';
-import { SdkConfig } from '../../modules/sdk';
+import { coreDownloader } from '../../modules/package-downloader';
+import { CorePackageConfig } from '../../modules/core-package';
 import { awaitSpawn } from '../../modules/exec';
 import { join } from 'path';
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -37,13 +37,13 @@ const inquirer = require('inquirer');
  * Configuration data for creating a new Velocitas Vehicle App project.
  * @interface CreateDataConfig
  * @prop {string} name - Name of the Vehicle App.
- * @prop {string} language - Language of the project.
+ * @prop {string} coreId - The ID of the selected core.
  * @prop {AppManifest} appManifest - App manifest for the project.
  * @prop {boolean} example - Indicates whether to use an example.
  */
 interface CreateDataConfig {
     name: string;
-    language: string;
+    coreId: string;
     appManifest: AppManifest;
     example: boolean;
 }
@@ -55,7 +55,7 @@ interface CreateDataConfig {
  */
 class CreateData implements CreateDataConfig {
     name: string;
-    language: string;
+    coreId: string;
     appManifest: AppManifest;
     example: boolean = false;
 
@@ -69,14 +69,9 @@ class CreateData implements CreateDataConfig {
      */
     constructor(coreId: string, appName: string, example: boolean, interfaceEntries: AppManifestInterfaceAttributes[]) {
         this.name = appName;
-        this.language = this._parseLanguage(coreId);
+        this.coreId = coreId;
         this.example = example;
         this.appManifest = new AppManifest(appName, interfaceEntries);
-    }
-
-    private _parseLanguage(coreId: string): string {
-        const coreIdSplittedArray: string[] = coreId.split('-');
-        return coreIdSplittedArray[coreIdSplittedArray.length - 2];
     }
 }
 
@@ -216,10 +211,10 @@ export default class Create extends Command {
         });
     }
 
-    private _getScriptExecutionPath(sdkConfig: SdkConfig): string {
+    private _getScriptExecutionPath(coreConfig: CorePackageConfig): string {
         const basePath = process.env.VELOCITAS_SDK_PATH_OVERRIDE
             ? process.env.VELOCITAS_SDK_PATH_OVERRIDE
-            : join(sdkConfig.getPackageDirectory(), 'latest');
+            : join(coreConfig.getPackageDirectory(), 'latest');
 
         return join(basePath, '.project-creation', 'run.py');
     }
@@ -238,15 +233,14 @@ export default class Create extends Command {
         } else {
             createData = await this._parseFlags(packageIndex, flags);
         }
-
-        await ProjectConfig.create(packageIndex.getPackages(), createData.language, this.config.version);
+        await ProjectConfig.create(packageIndex.getMandatoryPackages(), this.config.version);
         createData.appManifest.write();
-        const sdkConfig = new SdkConfig(createData.language);
-        await sdkDownloader(sdkConfig).downloadPackage({ checkVersionOnly: false });
+        const coreConfig = new CorePackageConfig(createData.coreId, packageIndex.getPackageByComponentId(createData.coreId).package);
+        await coreDownloader(coreConfig).downloadPackage({ checkVersionOnly: false });
 
         const result = await awaitSpawn(
             `python3`,
-            [this._getScriptExecutionPath(sdkConfig), '-d', process.cwd(), '-e', createData.example ? createData.name : ''],
+            [this._getScriptExecutionPath(coreConfig), '-d', process.cwd(), '-e', createData.example ? createData.name : ''],
             process.cwd(),
             process.env,
             true,

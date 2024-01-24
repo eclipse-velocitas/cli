@@ -1,12 +1,13 @@
 [
     {
         "package": "https://github.com/eclipse-velocitas/vehicle-app-python-sdk",
-        "exposedInterfaces": [
+        "components": [
             {
                 "id": "vehicle-app-python-core",
                 "type": "core",
                 "name": "Velocitas Vehicle App (Python)",
                 "description": "Creates a Vehicle App written in Python",
+                "mandatory": false,
                 "options": [
                     {
                         "id": "from-example",
@@ -48,12 +49,13 @@
     },
     {
         "package": "https://github.com/eclipse-velocitas/uprotocol-java-core",
-        "exposedInterfaces": [
+        "components": [
             {
                 "id": "uprotocol-java-core",
                 "type": "core",
                 "name": "uProtocol App/Service (Java)",
                 "description": "Creates a uProtocol Application or Service written in Java",
+                "mandatory": false,
                 "options": [
                     {
                         "id": "from-example",
@@ -95,12 +97,24 @@
     },
     {
         "package": "https://github.com/eclipse-velocitas/devenv-devcontainer-setup.git",
-        "exposedInterfaces": [
+        "components": [
+            {
+                "id": "devcontainer-setup",
+                "type": "extension",
+                "name": "Devcontainer Setup",
+                "description": "Mandatory component for devcontainer setup",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vehicle-app-python-core"
+                ],
+                "parameters": []
+            },
             {
                 "id": "vehicle-signal-interface",
                 "type": "extension",
                 "name": "Vehicle Signal Interface",
                 "description": "Vehicle Signal Interface based on VSS and KUKSA Databroker",
+                "mandatory": false,
                 "compatibleCores": [
                     "vehicle-app-python-core"
                 ],
@@ -126,6 +140,7 @@
                 "type": "extension",
                 "name": "gRPC Service Contract",
                 "description": "gRPC service contract based on a proto interface description",
+                "mandatory": false,
                 "compatibleCores": [
                     "vehicle-app-python-core"
                 ],
@@ -158,6 +173,7 @@
                 "type": "extension",
                 "name": "uService Catalogue",
                 "description": "",
+                "mandatory": false,
                 "compatibleCores": [
                     "uprotocol-java-core"
                 ],
@@ -175,14 +191,50 @@
     },
     {
         "package": "https://github.com/eclipse-velocitas/devenv-runtimes.git",
-        "exposedInterfaces": []
+        "components": [
+            {
+                "id": "devcontainer-setup",
+                "type": "extension",
+                "name": "Devcontainer Setup",
+                "description": "Mandatory component for devcontainer setup",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vehicle-app-python-core"
+                ],
+                "parameters": []
+            }
+        ]
     },
     {
         "package": "https://github.com/eclipse-velocitas/devenv-github-templates.git",
-        "exposedInterfaces": []
+        "components": [
+            {
+                "id": "github-templates",
+                "type": "extension",
+                "name": "GitHub Templates",
+                "description": "Mandatory component for including all relevant GitHub template files for the project",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vehicle-app-python-core"
+                ],
+                "parameters": []
+            }
+        ]
     },
     {
         "package": "https://github.com/eclipse-velocitas/devenv-github-workflows.git",
-        "exposedInterfaces": []
+        "components": [
+            {
+                "id": "github-workflows",
+                "type": "extension",
+                "name": "GitHub Workflows",
+                "description": "Mandatory component for including all relevant GitHub Action workflow files",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vehicle-app-python-core"
+                ],
+                "parameters": []
+            }
+        ]
     }
 ]
