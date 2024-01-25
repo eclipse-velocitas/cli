@@ -26,6 +26,10 @@ export const velocitasConfigMock = {
             name: 'test-setup',
             version: 'v1.1.1',
         },
+        {
+            name: 'test-package-main',
+            version: 'v1.1.1',
+        },
     ],
     variables: {
         language: 'python',
@@ -40,12 +44,36 @@ export const packageIndexMock: PackageAttributes[] = [
         package: 'https://github.com/eclipse-velocitas/test-runtime.git',
         components: [
             {
-                id: 'test-extension',
+                id: 'test-extension-mandatory',
                 type: 'extension',
                 name: 'Test Extension',
                 description: 'Test Extension',
                 mandatory: true,
-                compatibleCores: ['test-core'],
+                compatibleCores: ['core-test'],
+                parameters: [
+                    {
+                        id: 'test-arg-required',
+                        description: 'Test config for required arg',
+                        default: 'test-arg-required',
+                        required: true,
+                        type: 'string',
+                    },
+                    {
+                        id: 'test',
+                        description: 'Test config for not required arg',
+                        default: '{"required":[{"path":"","access":""}]}',
+                        required: false,
+                        type: 'object',
+                    },
+                ],
+            },
+            {
+                id: 'test-extension',
+                type: 'extension',
+                name: 'Test Extension',
+                description: 'Test Extension',
+                mandatory: false,
+                compatibleCores: ['core-test'],
                 parameters: [
                     {
                         id: 'test-arg-required',
@@ -66,10 +94,10 @@ export const packageIndexMock: PackageAttributes[] = [
         ],
     },
     {
-        package: 'https://github.com/eclipse-velocitas/vehicle-app-test-sdk',
+        package: 'https://github.com/eclipse-velocitas/test-package-main.git',
         components: [
             {
-                id: 'test-core',
+                id: 'core-test',
                 type: 'core',
                 name: 'Test Core Package',
                 description: 'Test Core Package',
@@ -113,7 +141,7 @@ export const packageIndexMock: PackageAttributes[] = [
         package: 'https://github.com/eclipse-velocitas/vehicle-app-no-example-sdk',
         components: [
             {
-                id: 'test-core-no-examples',
+                id: 'no-examples-test-core',
                 type: 'core',
                 name: 'Test Core Package with no examples',
                 description: 'Test Core Package no examples',
@@ -211,6 +239,33 @@ export const runtimeComponentManifestMock = {
                 {
                     id: 'test-script-2',
                     executable: './src/test.sh',
+                },
+            ],
+        },
+    ],
+};
+
+export const corePackageManifestMock = {
+    components: [
+        {
+            id: 'core-test',
+            name: 'VApp (Python)',
+            description: 'Velocitas VApp written in Python',
+            type: 'core',
+            programs: [
+                {
+                    id: 'create-project',
+                    description: 'Creates a new uProtocol project',
+                    executable: 'python',
+                    args: ['core/vapp-python/.project-creation/run.py'],
+                },
+            ],
+            variables: [
+                {
+                    name: 'language',
+                    description: 'Programming language of the project.',
+                    type: 'string',
+                    default: 'python',
                 },
             ],
         },

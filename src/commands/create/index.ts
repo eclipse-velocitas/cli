@@ -14,17 +14,17 @@
 
 import { Command, Flags } from '@oclif/core';
 import { ProjectConfig } from '../../modules/project-config';
-import { coreDownloader } from '../../modules/package-downloader';
-import { CorePackageConfig } from '../../modules/core-package';
-import { awaitSpawn } from '../../modules/exec';
-import { join } from 'path';
+import { packageDownloader } from '../../modules/package-downloader';
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import Exec from '../exec';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import Init from '../init';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import Sync from '../sync';
-import { PackageIndex, Core, Extension, CoreOptions, DescribedValue, Parameter } from '../../modules/package-index';
+import { PackageIndex, Core, Extension, CoreOptions, DescribedValue, Parameter, PackageAttributes } from '../../modules/package-index';
 import { AppManifest, AppManifestInterfaceAttributes } from '../../modules/app-manifest';
 import { InteractiveMode } from '../../modules/create-interactive';
+import { PackageConfig } from '../../modules/package';
 
 // inquirer >= v9 is an ESM package.
 // We are not using ESM in our CLI,
@@ -45,6 +45,7 @@ interface CreateDataConfig {
     name: string;
     coreId: string;
     appManifest: AppManifest;
+    packages: PackageAttributes[];
     example: boolean;
 }
 
@@ -57,6 +58,7 @@ class CreateData implements CreateDataConfig {
     name: string;
     coreId: string;
     appManifest: AppManifest;
+    packages: PackageAttributes[];
     example: boolean = false;
 
     /**
@@ -65,13 +67,33 @@ class CreateData implements CreateDataConfig {
      * @param {string} coreId - The ID of the selected core.
      * @param {string} appName - The name of the application.
      * @param {boolean} example - Indicates if an example should be used.
-     * @param {AppManifestInterfaceAttributes[]} interfaceEntries - Interface entries for the app manifest.
+     * @param {AppManifestInterfaceAttributes[]} interfaceAttributes - Interface attributes for the app manifest.
      */
-    constructor(coreId: string, appName: string, example: boolean, interfaceEntries: AppManifestInterfaceAttributes[]) {
+    constructor(coreId: string, appName: string, example: boolean, interfaceAttributes: AppManifestInterfaceAttributes[]) {
         this.name = appName;
         this.coreId = coreId;
+        this.appManifest = new AppManifest(appName, interfaceAttributes);
+        this.packages = this._parsePackages(coreId, interfaceAttributes);
         this.example = example;
-        this.appManifest = new AppManifest(appName, interfaceEntries);
+    }
+
+    private _parsePackages(coreId: string, interfaceAttributes: AppManifestInterfaceAttributes[]): PackageAttributes[] {
+        const packageIndex = PackageIndex.read();
+        const selectedPackagesSet = new Set<PackageAttributes>();
+
+        interfaceAttributes.forEach((interfaceAttribute: AppManifestInterfaceAttributes) => {
+            const packageAttribute = packageIndex.getPackageByComponentId(interfaceAttribute.type);
+            selectedPackagesSet.add(packageAttribute);
+        });
+        const corePackage = packageIndex.getPackageByComponentId(coreId);
+        selectedPackagesSet.add(corePackage);
+
+        packageIndex.getMandatoryPackages().forEach((packageAttribute: PackageAttributes) => {
+            selectedPackagesSet.add(packageAttribute);
+        });
+        const selectedPackages = Array.from(selectedPackagesSet);
+
+        return selectedPackages;
     }
 }
 
@@ -79,7 +101,7 @@ export default class Create extends Command {
     static description = 'Create a new Velocitas Vehicle App project.';
 
     static examples = [
-        `$ velocitas create -n VApp -l python ...
+        `$ velocitas create -n VApp -c vehicle-app-python-core ...
         Creating a new Velocitas project ...`,
     ];
 
@@ -153,7 +175,10 @@ export default class Create extends Command {
         },
     };
 
-    static async createAppManifestInterfaceEntry(extensionId: string, parameters: Parameter[]): Promise<AppManifestInterfaceAttributes> {
+    static async createAppManifestInterfaceAttributes(
+        extensionId: string,
+        parameters: Parameter[],
+    ): Promise<AppManifestInterfaceAttributes> {
         console.log(`Configure extension '${extensionId}'`);
         const appManifestInterfaceEntry: AppManifestInterfaceAttributes = { type: extensionId, config: {} };
         for (const parameter of parameters) {
@@ -164,7 +189,7 @@ export default class Create extends Command {
     }
 
     private async _parseFlags(packageIndex: PackageIndex, flags: any): Promise<CreateData> {
-        let appManifestInterfaceEntries: AppManifestInterfaceAttributes[] = [];
+        let appManifestInterfaceAttributes: AppManifestInterfaceAttributes[] = [];
 
         if (flags.name && flags.example) {
             throw new Error("Flags 'name' and 'example' are mutually exclusive!");
@@ -182,22 +207,24 @@ export default class Create extends Command {
             for (const interfaceEntry of flags.interface) {
                 const interfaceParameters = packageIndex.getExtensionParametersByParameterId(interfaceEntry);
                 if (interfaceParameters) {
-                    appManifestInterfaceEntries.push(await Create.createAppManifestInterfaceEntry(interfaceEntry, interfaceParameters!));
+                    appManifestInterfaceAttributes.push(
+                        await Create.createAppManifestInterfaceAttributes(interfaceEntry, interfaceParameters!),
+                    );
                 }
             }
         }
-        const createData: CreateData = new CreateData(flags.core, flags.name, flags.example, appManifestInterfaceEntries);
+        const createData: CreateData = new CreateData(flags.core, flags.name, flags.example, appManifestInterfaceAttributes);
         return createData;
     }
 
     private async _runInteractiveMode(packageIndex: PackageIndex): Promise<CreateData> {
         const corePromptResult = await InteractiveMode.configureCore(packageIndex.getCores());
-        const appManifestInterfaceEntries = await InteractiveMode.configureExtension(packageIndex, corePromptResult);
+        const appManifestInterfaceAttributes = await InteractiveMode.configureExtension(packageIndex, corePromptResult);
         const createData: CreateData = new CreateData(
             corePromptResult.chosenCore.id,
             corePromptResult.appName,
             corePromptResult.example,
-            appManifestInterfaceEntries,
+            appManifestInterfaceAttributes,
         );
         return createData;
     }
@@ -209,14 +236,6 @@ export default class Create extends Command {
         Create.flags.interface.options = packageIndex.getExtensions().map((ext: Extension) => {
             return ext.id;
         });
-    }
-
-    private _getScriptExecutionPath(coreConfig: CorePackageConfig): string {
-        const basePath = process.env.VELOCITAS_SDK_PATH_OVERRIDE
-            ? process.env.VELOCITAS_SDK_PATH_OVERRIDE
-            : join(coreConfig.getPackageDirectory(), 'latest');
-
-        return join(basePath, '.project-creation', 'run.py');
     }
 
     async run(): Promise<void> {
@@ -233,20 +252,16 @@ export default class Create extends Command {
         } else {
             createData = await this._parseFlags(packageIndex, flags);
         }
-        await ProjectConfig.create(packageIndex.getMandatoryPackages(), this.config.version);
+        await ProjectConfig.create(createData.packages, createData.coreId.split('-').at(-1)!, this.config.version);
         createData.appManifest.write();
-        const coreConfig = new CorePackageConfig(createData.coreId, packageIndex.getPackageByComponentId(createData.coreId).package);
-        await coreDownloader(coreConfig).downloadPackage({ checkVersionOnly: false });
-
-        const result = await awaitSpawn(
-            `python3`,
-            [this._getScriptExecutionPath(coreConfig), '-d', process.cwd(), '-e', createData.example ? createData.name : ''],
-            process.cwd(),
-            process.env,
-            true,
+        const projectConfig = ProjectConfig.read(this.config.version);
+        const coreConfig = projectConfig.packages.find(
+            (packageConfig: PackageConfig) => packageConfig.repo === packageIndex.getPackageByComponentId(createData.coreId).package,
         );
-
-        if (result === null || result.exitCode !== 0) {
+        await packageDownloader(coreConfig!).downloadPackage({ checkVersionOnly: false });
+        try {
+            await Exec.run([createData.coreId, 'create-project', '-d', process.cwd(), '-e', createData.example ? createData.name : '']);
+        } catch (error) {
             this.error('Unable to execute create script!');
         }
 

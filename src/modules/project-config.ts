@@ -84,7 +84,7 @@ export class ProjectConfig implements ProjectConfigOptions {
 
     static isAvailable = (path: PathLike = DEFAULT_CONFIG_FILE_PATH) => existsSync(path);
 
-    static async create(usedPackages: PackageAttributes[], cliVersion: string) {
+    static async create(usedPackages: PackageAttributes[], language: string, cliVersion: string) {
         const projectConfig = new ProjectConfig(`v${cliVersion}`);
         for (const usedPackage of usedPackages) {
             const packageConfig = new PackageConfig({ name: usedPackage.package });
@@ -95,6 +95,7 @@ export class ProjectConfig implements ProjectConfigOptions {
             packageConfig.version = latestVersion;
             projectConfig.packages.push(packageConfig);
         }
+        projectConfig.variables.set('language', language);
         projectConfig.variables.set('repoType', 'app');
         projectConfig.variables.set('appManifestPath', DEFAULT_APP_MANIFEST_PATH);
         projectConfig.variables.set('githubRepoId', '<myrepo>');

@@ -19,8 +19,6 @@ import { homedir } from 'node:os';
 import path, { join } from 'path';
 import { cwd } from 'process';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
-import { CorePackageConfig } from '../../src/modules/core-package';
-import { coreDownloader } from '../../src/modules/package-downloader';
 
 const VELOCITAS_PROCESS = join('..', '..', '..', process.env['VELOCITAS_PROCESS'] ? process.env['VELOCITAS_PROCESS'] : 'velocitas');
 const TEST_ROOT = cwd();

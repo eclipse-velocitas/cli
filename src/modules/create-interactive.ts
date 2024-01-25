@@ -74,7 +74,7 @@ export class InteractiveMode {
         const availableExtensions = packageIndex
             .getExtensions()
             .filter((ext: Extension) =>
-                ext.compatibleCores.find((compatibleCore: string) => compatibleCore === corePromptResult.chosenCore.id),
+                ext.compatibleCores.find((compatibleCore: string) => !ext.mandatory && compatibleCore === corePromptResult.chosenCore.id),
             );
 
         if (availableExtensions.length === 0) {
@@ -85,7 +85,9 @@ export class InteractiveMode {
 
         for (const selectedExtension of extensionPromptResult.extensions) {
             const typedExtension = selectedExtension as Extension;
-            appManifestInterfaceEntries.push(await Create.createAppManifestInterfaceEntry(typedExtension.id, typedExtension.parameters!));
+            appManifestInterfaceEntries.push(
+                await Create.createAppManifestInterfaceAttributes(typedExtension.id, typedExtension.parameters!),
+            );
         }
         return appManifestInterfaceEntries;
     }

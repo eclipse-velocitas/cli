@@ -1,9 +1,9 @@
 [
     {
-        "package": "https://github.com/eclipse-velocitas/vehicle-app-python-sdk",
+        "package": "https://github.com/doosuu/pkg-velocitas-main.git",
         "components": [
             {
-                "id": "vehicle-app-python-core",
+                "id": "vapp-core-python",
                 "type": "core",
                 "name": "Velocitas Vehicle App (Python)",
                 "description": "Creates a Vehicle App written in Python",
@@ -105,7 +105,7 @@
                 "description": "Mandatory component for devcontainer setup",
                 "mandatory": true,
                 "compatibleCores": [
-                    "vehicle-app-python-core"
+                    "vapp-core-python"
                 ],
                 "parameters": []
             },
@@ -116,7 +116,7 @@
                 "description": "Vehicle Signal Interface based on VSS and KUKSA Databroker",
                 "mandatory": false,
                 "compatibleCores": [
-                    "vehicle-app-python-core"
+                    "vapp-core-python"
                 ],
                 "parameters": [
                     {
@@ -142,7 +142,7 @@
                 "description": "gRPC service contract based on a proto interface description",
                 "mandatory": false,
                 "compatibleCores": [
-                    "vehicle-app-python-core"
+                    "vapp-core-python"
                 ],
                 "parameters": [
                     {
@@ -199,7 +199,7 @@
                 "description": "Mandatory component for devcontainer setup",
                 "mandatory": true,
                 "compatibleCores": [
-                    "vehicle-app-python-core"
+                    "vapp-core-python"
                 ],
                 "parameters": []
             }
@@ -215,7 +215,7 @@
                 "description": "Mandatory component for including all relevant GitHub template files for the project",
                 "mandatory": true,
                 "compatibleCores": [
-                    "vehicle-app-python-core"
+                    "vapp-core-python"
                 ],
                 "parameters": []
             }
@@ -231,7 +231,7 @@
                 "description": "Mandatory component for including all relevant GitHub Action workflow files",
                 "mandatory": true,
                 "compatibleCores": [
-                    "vehicle-app-python-core"
+                    "vapp-core-python"
                 ],
                 "parameters": []
             }

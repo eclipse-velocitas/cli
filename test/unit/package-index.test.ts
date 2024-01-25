@@ -27,7 +27,7 @@ const validPackageIndexMock: PackageAttributes[] = [
                 name: 'Test Extension',
                 description: 'Test Extension',
                 mandatory: true,
-                compatibleCores: ['test-core'],
+                compatibleCores: ['core-test'],
                 parameters: [
                     {
                         id: 'test-arg-required',
@@ -48,10 +48,10 @@ const validPackageIndexMock: PackageAttributes[] = [
         ],
     },
     {
-        package: 'vehicle-app-test-sdk',
+        package: 'velocitas/test-package-main',
         components: [
             {
-                id: 'test-core',
+                id: 'core-test',
                 type: 'core',
                 name: 'Velocitas Vehicle App (Python)',
                 description: 'Creates a Vehicle App written in Python',
@@ -106,7 +106,7 @@ const invalidPackageIndexMock = [
                 type: 'invalid',
                 name: 'Test Extension',
                 description: 'Test Extension',
-                compatibleCores: ['test-core'],
+                compatibleCores: ['core-test'],
                 parameters: [
                     {
                         id: 'test-arg-required',
