@@ -90,7 +90,7 @@
     "compile-exe": "npm run build && pkg --target=$TARGET --compress=Brotli --output=velocitas-$OS-$ARCH ."
   },
   "engines": {
-    "node": "^18.19.0"
+    "node": ">=18.0.0"
   },
   "bugs": "https://github.com/eclipse-velocitas/cli/issues",
   "keywords": [
