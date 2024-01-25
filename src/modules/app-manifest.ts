@@ -94,24 +94,22 @@ export class AppManifest implements AppManifestAttributes {
      * @throws {Error} Throws an error if there is an issue reading the AppManifest file.
      */
     static read(appManifestPath: string = APP_MANIFEST_PATH): AppManifest | undefined {
-        if (existsSync(appManifestPath)) {
-            try {
-                const file = readFileSync(appManifestPath, DEFAULT_BUFFER_ENCODING);
-                const manifest = JSON.parse(file);
-                if (Array.isArray(manifest)) {
-                    // for backwards compatibility, use the first entry from the array
-                    return manifest[0];
-                }
-                return manifest;
-            } catch (error) {
-                console.error(`Unable to read App Manifest: '${error}'`);
-                throw error;
-            }
-        } else {
+        if (!existsSync(appManifestPath)) {
             console.info('*** Info ***: No AppManifest found');
+            return undefined;
         }
-
-        return undefined;
+        try {
+            const file = readFileSync(appManifestPath, DEFAULT_BUFFER_ENCODING);
+            const manifest = JSON.parse(file);
+            if (Array.isArray(manifest)) {
+                // for backwards compatibility, use the first entry from the array
+                return manifest[0];
+            }
+            return manifest;
+        } catch (error) {
+            console.error(`Unable to read App Manifest: '${error}'`);
+            throw error;
+        }
     }
 
     write() {

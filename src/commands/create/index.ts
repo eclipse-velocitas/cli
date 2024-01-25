@@ -21,7 +21,7 @@ import Exec from '../exec';
 import Init from '../init';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import Sync from '../sync';
-import { PackageIndex, Core, Extension, CoreOptions, DescribedValue, Parameter, PackageAttributes } from '../../modules/package-index';
+import { PackageIndex, Core, Extension, CoreOptions, DescribedId, Parameter, PackageAttributes } from '../../modules/package-index';
 import { AppManifest, AppManifestInterfaceAttributes } from '../../modules/app-manifest';
 import { InteractiveMode } from '../../modules/create-interactive';
 import { PackageConfig } from '../../modules/package';
@@ -152,7 +152,7 @@ export default class Create extends Command {
                 message: parameter.description,
                 default: parameter.default,
                 type: parameter.type,
-                choices: () => (parameter.values || []).map((value: DescribedValue) => ({ name: value.description, value: value.id })),
+                choices: () => (parameter.values || []).map((value: DescribedId) => ({ name: value.description, value: value.id })),
             };
         },
         extensions: (availableExtensions: Extension[]) => {

@@ -32,17 +32,17 @@ export interface Parameter {
     type: string;
     default?: string;
     required?: boolean;
-    values?: DescribedValue[];
+    values?: DescribedId[];
     [key: string]: any;
 }
 
 /**
  * Represents a value with an ID and a description.
- * @interface Value
+ * @interface DescribedId
  * @prop {string} id - Unique ID of the value.
  * @prop {string} description - Description of the value.
  */
-export interface DescribedValue {
+export interface DescribedId {
     id: string;
     description: string;
 }
@@ -67,6 +67,7 @@ export interface CoreOptions {
  * @prop {string} type - Type of the exposed interface.
  * @prop {string} name - Name of the exposed interface.
  * @prop {string} description - Description of the exposed interface.
+ * @prop {boolean} mandatory - Indicates if this component is indispensable for the creation process.
  */
 interface ComponentBase {
     id: string;
@@ -76,7 +77,7 @@ interface ComponentBase {
     mandatory: boolean;
 }
 /**
- * Represents a core package with an ID, type, name, description and optional options.
+ * Represents a core package with optional options.
  * @interface Core
  * @prop {CoreOptions[]} [options] - Array of options of a core package.
  */
@@ -85,7 +86,7 @@ export interface Core extends ComponentBase {
 }
 
 /**
- * Represents an extension package with an ID, type, name, description, compatible cores, and optional parameters.
+ * Represents an extension package with compatible cores, and optional parameters.
  * @interface Extension
  * @prop {string[]} compatibleCores - Array of compatible core types.
  * @prop {Parameter[]} [parameters] - Array of parameters.
@@ -97,7 +98,7 @@ export interface Extension extends ComponentBase {
 
 /**
  * Package index entry. Typing of the package-index.json.
- * @interface PackageInterface
+ * @interface PackageAttributes
  * @prop {string} package - URI of the package.
  * @prop {ExposedInterface[]} exposedInterfaces - Exposed interfaces of a package.
  */
@@ -171,7 +172,7 @@ export class PackageIndex {
 
     /**
      * Gets an array of all mandatory Packages.
-     * @returns {PackageAttributes[]} - Array of PackageInterface instances.
+     * @returns {PackageAttributes[]} - Array of PackageAttributes.
      * @public
      */
     getMandatoryPackages(): PackageAttributes[] {
