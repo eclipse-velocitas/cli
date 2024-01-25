@@ -14,7 +14,7 @@
 |@types/fs-extra|11.0.4|MIT|
 |@types/mocha|10.0.6|MIT|
 |@types/mock-fs|4.13.4|MIT|
-|@types/node|20.11.6|MIT|
+|@types/node|18.18.13|MIT|
 |@typescript-eslint/eslint-plugin|6.13.1|MIT|
 |@typescript-eslint/parser|6.13.1|unknown|
 |archiver|5.3.2|MIT|
@@ -34,7 +34,7 @@
 |semver|7.5.4|ISC|
 |shx|0.3.4|MIT|
 |simple-git|3.21.0|unknown|
-|sinon|17.0.1|MIT|
+|sinon|15.2.0|MIT|
 |ts-node|10.9.1|MIT|
 |tslib|2.6.2|BSD Zero Clause License|
 |typescript|5.3.2|Apache 2.0|
