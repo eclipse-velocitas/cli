@@ -26,8 +26,8 @@ const inquirer = require('inquirer');
  * Result of the core prompt in the interactive mode.
  * @interface CorePromptResult
  * @prop {Core} chosenCore - The selected core.
- * @prop {boolean} [example] - Indicates whether an example should be used.
  * @prop {string} [appName] - The name of the application.
+ * @prop {boolean} [example] - Indicates whether an example should be used.
  */
 export interface CorePromptResult {
     chosenCore: Core;
@@ -36,6 +36,11 @@ export interface CorePromptResult {
 }
 
 export class InteractiveMode {
+    /**
+     * Configures the core settings interactively.
+     * @param availableCores - Available cores to choose from.
+     * @returns {Promise<CorePromptResult>} - Object containing all data received by prompts for the core.
+     */
     static async configureCore(availableCores: Core[]): Promise<CorePromptResult> {
         let promptResult = await inquirer.prompt(Create.prompts.core(availableCores));
         let corePromptResult: CorePromptResult = {
@@ -63,6 +68,12 @@ export class InteractiveMode {
         return corePromptResult;
     }
 
+    /**
+     * Configures the extensions interactively.
+     * @param packageIndex - The package index containing available extensions.
+     * @param corePromptResult - The result of core configuration.
+     * @returns {Promise<AppManifestInterfaceAttributes[]>} - Array of app manifest interface attributes.
+     */
     static async configureExtension(
         packageIndex: PackageIndex,
         corePromptResult: CorePromptResult,

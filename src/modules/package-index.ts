@@ -48,7 +48,7 @@ export interface DescribedId {
 }
 
 /**
- * Represents options  of a core package with an ID, name and an array of parameters.
+ * Represents options of a core component with an ID, name and an array of parameters.
  * @interface CoreOptions
  * @prop {string} id - Unique ID of the core option.
  * @prop {string} name - Name of the core option.
@@ -61,7 +61,7 @@ export interface CoreOptions {
 }
 
 /**
- * Base interface for an exposed interface of a package.
+ * Base interface of a component.
  * @interface ComponentBase
  * @prop {string} id - Unique ID of the exposed interface.
  * @prop {string} type - Type of the exposed interface.
@@ -77,9 +77,9 @@ interface ComponentBase {
     mandatory: boolean;
 }
 /**
- * Represents a core package with optional options.
+ * Represents a core component with optional options.
  * @interface Core
- * @prop {CoreOptions[]} [options] - Array of options of a core package.
+ * @prop {CoreOptions[]} [options] - Array of options of a core component.
  */
 export interface Core extends ComponentBase {
     options?: CoreOptions[];
@@ -100,11 +100,11 @@ export interface Extension extends ComponentBase {
  * Package index entry. Typing of the package-index.json.
  * @interface PackageAttributes
  * @prop {string} package - URI of the package.
- * @prop {ExposedInterface[]} exposedInterfaces - Exposed interfaces of a package.
+ * @prop {ComponentBase[]} components - Components (Cores or Extensions) of a package.
  */
 export interface PackageAttributes {
     package: string;
-    components: Core[] | Extension[];
+    components: ComponentBase[];
 }
 
 /**
@@ -144,11 +144,11 @@ export class PackageIndex {
     }
 
     /**
-     * Gets an array of exposed interfaces (Cores or Extensions) from the package index.
-     * @returns {(Core | Extension)[]} - Array of Core or Extension instances.
+     * Gets an array of components (Cores or Extensions) from the package index.
+     * @returns {ComponentBase[]} - Array of Core or Extension instances.
      * @private
      */
-    private _getComponents(): (Core | Extension)[] {
+    private _getComponents(): ComponentBase[] {
         return this._packages.flatMap((pkg: PackageAttributes) => pkg.components);
     }
 
@@ -158,7 +158,7 @@ export class PackageIndex {
      * @public
      */
     getCores(): Core[] {
-        return this._getComponents().filter((component: Core | Extension): component is Core => component.type === 'core');
+        return this._getComponents().filter((component: ComponentBase): component is Core => component.type === 'core');
     }
 
     /**
@@ -167,7 +167,7 @@ export class PackageIndex {
      * @public
      */
     getExtensions(): Extension[] {
-        return this._getComponents().filter((component: Core | Extension): component is Extension => component.type === 'extension');
+        return this._getComponents().filter((component: ComponentBase): component is Extension => component.type === 'extension');
     }
 
     /**
@@ -176,7 +176,7 @@ export class PackageIndex {
      * @public
      */
     getMandatoryPackages(): PackageAttributes[] {
-        return this._packages.filter((pkg: PackageAttributes) => pkg.components.some((component: Core | Extension) => component.mandatory));
+        return this._packages.filter((pkg: PackageAttributes) => pkg.components.some((component: ComponentBase) => component.mandatory));
     }
 
     /**
@@ -187,7 +187,7 @@ export class PackageIndex {
      */
     getPackageByComponentId(componentId: string): PackageAttributes {
         return this._packages.find((pkg: PackageAttributes) =>
-            pkg.components.some((component: Core | Extension) => component.id === componentId),
+            pkg.components.some((component: ComponentBase) => component.id === componentId),
         )!;
     }
 
@@ -199,14 +199,14 @@ export class PackageIndex {
      */
     getExtensionParametersByParameterId(parameterId: string): Parameter[] | undefined {
         const foundPackage = this._packages.find((pkg: PackageAttributes) =>
-            pkg.components.some((component: Core | Extension): component is Extension => component.id === parameterId),
+            pkg.components.some((component: ComponentBase): component is Extension => component.id === parameterId),
         );
 
         let foundExposedInterface: Extension | undefined;
 
         if (foundPackage) {
-            const components = foundPackage.components as (Core | Extension)[];
-            foundExposedInterface = components.find((component: Core | Extension): component is Extension => component.id === parameterId);
+            const components = foundPackage.components as ComponentBase[];
+            foundExposedInterface = components.find((component: ComponentBase): component is Extension => component.id === parameterId);
         }
         return foundExposedInterface?.parameters;
     }

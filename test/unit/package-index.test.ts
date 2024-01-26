@@ -44,7 +44,7 @@ const validPackageIndexMock: PackageAttributes[] = [
                         type: 'object',
                     },
                 ],
-            },
+            } as Extension,
         ],
     },
     {
@@ -92,7 +92,7 @@ const validPackageIndexMock: PackageAttributes[] = [
                         ],
                     },
                 ],
-            },
+            } as Core,
         ],
     },
 ];

@@ -14,53 +14,64 @@
 
 import { expect } from 'chai';
 import { spawnSync } from 'child_process';
-import { existsSync, readFileSync, readdirSync, copySync, removeSync } from 'fs-extra';
-import { homedir } from 'node:os';
+import { existsSync, readFileSync, readdirSync, removeSync } from 'fs-extra';
+import { homedir } from 'os';
 import path, { join } from 'path';
 import { cwd } from 'process';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
+import { PackageConfig } from '../../src/modules/package';
+import { packageDownloader } from '../../src/modules/package-downloader';
+import { getLatestVersion } from '../../src/modules/semver';
 
+const packageIndex = require('../../testbench/test-create/vehicle-app-template/package-index.json');
 const VELOCITAS_PROCESS = join('..', '..', '..', process.env['VELOCITAS_PROCESS'] ? process.env['VELOCITAS_PROCESS'] : 'velocitas');
 const TEST_ROOT = cwd();
 const VELOCITAS_HOME = `${homedir()}/.velocitas`;
 
 describe('CLI command', () => {
-    // describe('create', () => {
-    //     beforeEach(async () => {
-    //         // When using this as real "system test"
-    //         // the next two lines are not necessary
-    //         const sdkConfig = new SdkConfig('python');
-    //         await coreDownloader(sdkConfig).downloadPackage({ checkVersionOnly: false });
-    //         process.chdir(`${TEST_ROOT}/testbench/test-create`);
-    //         copySync('./sdk', `${VELOCITAS_HOME}/sdk/python/latest`);
-    //         process.chdir(`${TEST_ROOT}/testbench/test-create/vehicle-app-template`);
-    //     });
-    //     afterEach(() => {
-    //         process.chdir(`${TEST_ROOT}/testbench/test-create/vehicle-app-template`);
-    //         readdirSync(`${TEST_ROOT}/testbench/test-create/vehicle-app-template`).forEach((file) => {
-    //             const fileDir = path.join(`${TEST_ROOT}/testbench/test-create/vehicle-app-template`, file);
-    //             if (file !== 'package-index.json') {
-    //                 removeSync(fileDir);
-    //             }
-    //         });
-    //     });
-    //     it('should be able to create a project', async () => {
-    //         spawnSync(VELOCITAS_PROCESS, ['create', '-n', 'MyApp', '-c', 'vehicle-app-python-core'], {
-    //             encoding: DEFAULT_BUFFER_ENCODING,
-    //         });
-    //         const creationConfigFile = readFileSync(
-    //             `${VELOCITAS_HOME}/sdk/python/latest/.project-creation/config.json`,
-    //             DEFAULT_BUFFER_ENCODING,
-    //         );
-    //         const creationConfig = JSON.parse(creationConfigFile);
-    //         const fileCheck: boolean[] = [];
-    //         creationConfig.files.forEach((file: string) => {
-    //             file = file.replace('.project-creation/', '');
-    //             fileCheck.push(existsSync(`${TEST_ROOT}/testbench/test-create/vehicle-app-template/${file}`));
-    //         });
-    //         expect(fileCheck.every((v: boolean) => v === true)).to.be.true;
-    //         expect(existsSync(`${TEST_ROOT}/testbench/test-create/vehicle-app-template/.velocitas.json`)).to.be.true;
-    //         expect(existsSync(`${TEST_ROOT}/testbench/test-create/vehicle-app-template/app/AppManifest.json`)).to.be.true;
-    //     });
-    // });
+    describe('create', () => {
+        let latestMainPackageVersion: string;
+        beforeEach(async () => {
+            process.chdir(`${TEST_ROOT}/testbench/test-create/vehicle-app-template`);
+            let coreConfig: PackageConfig = new PackageConfig({
+                name: packageIndex[0].package,
+                version: 'v0.0.3', // We need a version to start from
+            });
+            const availableVersions = await coreConfig.getPackageVersions();
+            latestMainPackageVersion = getLatestVersion(availableVersions);
+            coreConfig = new PackageConfig({
+                name: packageIndex[0].package,
+                version: latestMainPackageVersion,
+            });
+            await packageDownloader(coreConfig!).downloadPackage({ checkVersionOnly: false });
+        });
+        afterEach(() => {
+            process.chdir(`${TEST_ROOT}/testbench/test-create/vehicle-app-template`);
+            readdirSync(`${TEST_ROOT}/testbench/test-create/vehicle-app-template`).forEach((file) => {
+                const fileDir = path.join(`${TEST_ROOT}/testbench/test-create/vehicle-app-template`, file);
+                if (file !== 'package-index.json') {
+                    removeSync(fileDir);
+                }
+            });
+        });
+        it('should be able to create a project', async () => {
+            spawnSync(VELOCITAS_PROCESS, ['create', '-n', 'MyApp', '-c', 'vapp-core-python'], {
+                encoding: DEFAULT_BUFFER_ENCODING,
+            });
+            const creationConfigFile = readFileSync(
+                `${VELOCITAS_HOME}/packages/pkg-velocitas-main/${latestMainPackageVersion}/core/vapp-python/.project-creation/config.json`,
+                DEFAULT_BUFFER_ENCODING,
+            );
+            const creationConfig = JSON.parse(creationConfigFile);
+            const fileCheck: boolean[] = [];
+            creationConfig.files.forEach((file: string) => {
+                file = file.replace('.project-creation/', '');
+                file = file.replace('templates/', '');
+                fileCheck.push(existsSync(`${TEST_ROOT}/testbench/test-create/vehicle-app-template/${file}`));
+            });
+            expect(fileCheck.every((v: boolean) => v === true)).to.be.true;
+            expect(existsSync(`${TEST_ROOT}/testbench/test-create/vehicle-app-template/.velocitas.json`)).to.be.true;
+            expect(existsSync(`${TEST_ROOT}/testbench/test-create/vehicle-app-template/app/AppManifest.json`)).to.be.true;
+        });
+    });
 });

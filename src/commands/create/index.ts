@@ -39,7 +39,8 @@ const inquirer = require('inquirer');
  * @prop {string} name - Name of the Vehicle App.
  * @prop {string} coreId - The ID of the selected core.
  * @prop {AppManifest} appManifest - App manifest for the project.
- * @prop {boolean} example - Indicates whether to use an example.
+ * @prop {PackageAttributes[]} packages - Packages needed for the project.
+ * @prop {boolean} example - Indicates whether to use an example or not.
  */
 interface CreateDataConfig {
     name: string;
@@ -69,24 +70,34 @@ class CreateData implements CreateDataConfig {
      * @param {boolean} example - Indicates if an example should be used.
      * @param {AppManifestInterfaceAttributes[]} interfaceAttributes - Interface attributes for the app manifest.
      */
-    constructor(coreId: string, appName: string, example: boolean, interfaceAttributes: AppManifestInterfaceAttributes[]) {
+    constructor(
+        coreId: string,
+        appName: string,
+        example: boolean,
+        interfaceAttributes: AppManifestInterfaceAttributes[],
+        packageIndex: PackageIndex,
+    ) {
         this.name = appName;
         this.coreId = coreId;
         this.appManifest = new AppManifest(appName, interfaceAttributes);
-        this.packages = this._parsePackages(coreId, interfaceAttributes);
+        this.packages = this._parsePackages(coreId, interfaceAttributes, packageIndex);
         this.example = example;
     }
 
-    private _parsePackages(coreId: string, interfaceAttributes: AppManifestInterfaceAttributes[]): PackageAttributes[] {
-        const packageIndex = PackageIndex.read();
+    private _parsePackages(
+        coreId: string,
+        interfaceAttributes: AppManifestInterfaceAttributes[],
+        packageIndex: PackageIndex,
+    ): PackageAttributes[] {
         const selectedPackagesSet = new Set<PackageAttributes>();
+
+        const corePackage = packageIndex.getPackageByComponentId(coreId);
+        selectedPackagesSet.add(corePackage);
 
         interfaceAttributes.forEach((interfaceAttribute: AppManifestInterfaceAttributes) => {
             const packageAttribute = packageIndex.getPackageByComponentId(interfaceAttribute.type);
             selectedPackagesSet.add(packageAttribute);
         });
-        const corePackage = packageIndex.getPackageByComponentId(coreId);
-        selectedPackagesSet.add(corePackage);
 
         packageIndex.getMandatoryPackages().forEach((packageAttribute: PackageAttributes) => {
             selectedPackagesSet.add(packageAttribute);
@@ -101,7 +112,7 @@ export default class Create extends Command {
     static description = 'Create a new Velocitas Vehicle App project.';
 
     static examples = [
-        `$ velocitas create -n VApp -c vehicle-app-python-core ...
+        `$ velocitas create -n VApp -c vapp-core-python ...
         Creating a new Velocitas project ...`,
     ];
 
@@ -139,7 +150,7 @@ export default class Create extends Command {
             return {
                 name: 'coreOptions',
                 prefix: '>',
-                message: 'Which flavor?',
+                message: 'Which option?',
                 type: 'list',
                 choices: () =>
                     coreOptions.map((coreOption: CoreOptions) => ({ name: coreOption.name, value: coreOptions.indexOf(coreOption) })),
@@ -213,7 +224,7 @@ export default class Create extends Command {
                 }
             }
         }
-        const createData: CreateData = new CreateData(flags.core, flags.name, flags.example, appManifestInterfaceAttributes);
+        const createData: CreateData = new CreateData(flags.core, flags.name, flags.example, appManifestInterfaceAttributes, packageIndex);
         return createData;
     }
 
@@ -225,6 +236,7 @@ export default class Create extends Command {
             corePromptResult.appName,
             corePromptResult.example,
             appManifestInterfaceAttributes,
+            packageIndex,
         );
         return createData;
     }

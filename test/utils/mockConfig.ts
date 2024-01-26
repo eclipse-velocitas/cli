@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ComponentType } from '../../src/modules/component';
-import { PackageAttributes } from '../../src/modules/package-index';
+import { Core, Extension, PackageAttributes } from '../../src/modules/package-index';
 
 export const velocitasConfigMock = {
     packages: [
@@ -66,7 +66,7 @@ export const packageIndexMock: PackageAttributes[] = [
                         type: 'object',
                     },
                 ],
-            },
+            } as Extension,
             {
                 id: 'test-extension',
                 type: 'extension',
@@ -134,7 +134,7 @@ export const packageIndexMock: PackageAttributes[] = [
                         ],
                     },
                 ],
-            },
+            } as Core,
         ],
     },
     {
