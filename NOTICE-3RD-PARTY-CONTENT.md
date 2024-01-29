@@ -14,11 +14,11 @@
 |@types/fs-extra|11.0.4|MIT|
 |@types/mocha|10.0.6|MIT|
 |@types/mock-fs|4.13.4|MIT|
-|@types/node|18.18.13|MIT|
-|@typescript-eslint/eslint-plugin|6.13.1|MIT|
-|@typescript-eslint/parser|6.13.1|unknown|
+|@types/node|18.19.10|MIT|
+|@typescript-eslint/eslint-plugin|6.19.1|MIT|
+|@typescript-eslint/parser|6.19.1|unknown|
 |archiver|5.3.2|MIT|
-|chai|4.3.10|MIT|
+|chai|4.4.1|MIT|
 |decompress|4.2.1|MIT|
 |eslint|8.54.0|MIT|
 |inquirer|8.2.6|MIT|
@@ -28,12 +28,12 @@
 |nyc|15.1.0|ISC<br/>MIT|
 |oclif|3.17.2|MIT|
 |pkg|5.8.1|MIT|
-|prettier|3.1.0|Apache 2.0|
+|prettier|3.2.4|Apache 2.0|
 |prettier-plugin-organize-imports|3.2.4|MIT|
 |recursive-copy|2.0.14|ISC|
 |semver|7.5.4|ISC|
 |shx|0.3.4|MIT|
-|simple-git|3.21.0|unknown|
+|simple-git|3.22.0|unknown|
 |sinon|15.2.0|MIT<br/>New BSD|
 |ts-node|10.9.1|MIT|
 |tslib|2.6.2|BSD Zero Clause License|
