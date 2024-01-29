@@ -34,7 +34,7 @@
 |semver|7.5.4|ISC|
 |shx|0.3.4|MIT|
 |simple-git|3.21.0|unknown|
-|sinon|15.2.0|MIT|
+|sinon|15.2.0|MIT<br/>New BSD|
 |ts-node|10.9.1|MIT|
 |tslib|2.6.2|BSD Zero Clause License|
 |typescript|5.3.2|Apache 2.0|
