@@ -16,16 +16,18 @@ import 'mocha';
 import mockfs from 'mock-fs';
 import { ProjectConfig } from '../../src/modules/project-config';
 import { expect } from 'chai';
+import { homedir } from 'node:os';
 
 describe('project-config - module', () => {
     before(() => {
+        const packageManifestPath = `${homedir()}/.velocitas/packages/pkg1/v1.0.0/manifest.json`;
         const mockfsConf: any = {
             '/.velocitasInvalid.json': 'foo',
             '/.velocitasValid.json':
                 '{ "packages": [{"repo":"pkg1", "version": "v1.0.0"}], "components": [{"id": "comp1"}], "variables": {} }',
             '/.velocitasValidNoComps.json': '{ "packages": [{"repo":"pkg1", "version": "v1.0.0"}], "variables": {} }',
-            '/home/vscode/.velocitas/packages/pkg1/v1.0.0/manifest.json': '{ "components": [{"id": "comp1"}, {"id": "comp2"}]}',
         };
+        mockfsConf[packageManifestPath] = '{ "components": [{"id": "comp1"}, {"id": "comp2"}]}';
         mockfs(mockfsConf, { createCwd: false });
     });
     describe('.velocitas.json reading', () => {
