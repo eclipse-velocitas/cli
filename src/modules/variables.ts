@@ -14,19 +14,52 @@
 
 import { realpathSync } from 'node:fs';
 import { cwd } from 'node:process';
-import { ComponentManifest } from './component';
+import { ComponentContext } from './component';
 import { mapReplacer } from './helpers';
-import { PackageConfig } from './package';
 import { ProjectCache } from './project-cache';
-import { ComponentConfig, ProjectConfig } from './project-config';
 
-const GITHUB_ORG = 'eclipse-velocitas';
+export enum ScopeIdenitfier {
+    package,
+    project,
+}
 
+/** Definition of a variable used within the component which may be overwritten by values in the project configuration. */
 export interface VariableDefinition {
+    // name of the variable
     name: string;
+
+    // description of the variable
     description: string;
+
+    // TypeScript type of the variable
     type: string;
+
+    // Scope in which the variable's value is valid. Defaults to component only.
+    scope?: ScopeIdenitfier;
+
+    // default value, if any
     default?: any;
+
+    // is component defined value constant? Defaults to false.
+    constant?: boolean;
+}
+
+/** Returns the Github org, if available. */
+export function getGithubOrgFromRepoUri(repoUri: string): string | undefined {
+    const SLASH = '/';
+
+    let lastSlashIndex = repoUri.lastIndexOf(SLASH);
+    if (lastSlashIndex === -1) {
+        return undefined;
+    }
+    const uriWithoutRepo = repoUri.substring(0, lastSlashIndex);
+    lastSlashIndex = uriWithoutRepo.lastIndexOf(SLASH);
+
+    if (lastSlashIndex === -1) {
+        return undefined;
+    }
+
+    return uriWithoutRepo.substring(lastSlashIndex + 1);
 }
 
 export class VariableCollection {
@@ -45,38 +78,69 @@ export class VariableCollection {
     }
 
     static build(
-        projectConfig: ProjectConfig,
-        packageConfig: PackageConfig,
-        componentConfig: ComponentConfig,
-        component: ComponentManifest,
+        projectComponents: ComponentContext[],
+        userDefinedVariableMappings: Map<string, any>,
+        currentComponentContext: ComponentContext,
     ): VariableCollection {
         let map = new Map<string, any>();
-        if (projectConfig.getVariableMappings()) {
-            map = new Map([...map.entries(), ...projectConfig.getVariableMappings().entries()]);
-        }
-        if (packageConfig.variables) {
-            map = new Map([...map.entries(), ...packageConfig.variables.entries()]);
-        }
-        if (componentConfig.variables) {
-            map = new Map([...map.entries(), ...componentConfig.variables.entries()]);
+        let usedVariableDefinitions: VariableDefinition[] = [];
+
+        // first add all user-defined, project-wide variables
+        if (userDefinedVariableMappings) {
+            map = new Map([...map.entries(), ...userDefinedVariableMappings.entries()]);
         }
 
-        verifyVariables(map, component);
+        // second add all user-defined, package-wide variables
+        if (currentComponentContext.packageConfig.variables) {
+            map = new Map([...map.entries(), ...currentComponentContext.packageConfig.variables.entries()]);
+        }
 
-        if (component.variables) {
-            for (const variableDef of component.variables) {
-                if (!map.has(variableDef.name) && variableDef.default) {
-                    map.set(variableDef.name, variableDef.default);
+        // second add all user-defined, component-wide variables
+        if (currentComponentContext.config.variables) {
+            map = new Map([...map.entries(), ...currentComponentContext.config.variables.entries()]);
+        }
+
+        // now we scan the all component manifests whether they provide variables which are in scope
+        for (const component of projectComponents) {
+            if (!component.manifest.variables) {
+                continue;
+            }
+
+            for (const variableDef of component.manifest.variables) {
+                const isCurrentComponent = currentComponentContext.manifest.id === component.manifest.id;
+
+                const isComponentInSamePackage =
+                    component.packageConfig.getPackageName() === currentComponentContext.packageConfig.getPackageName();
+
+                const isVariableInScope =
+                    isCurrentComponent ||
+                    (isComponentInSamePackage && variableDef.scope === ScopeIdenitfier.package) ||
+                    variableDef.scope === ScopeIdenitfier.project;
+
+                if (isVariableInScope) {
+                    if (map.has(variableDef.name) && variableDef.constant) {
+                        throw Error(
+                            `Constant variable '${variableDef.name}' provided by component '${component.manifest.id}' has been set already!`,
+                        );
+                    }
+
+                    if (!map.has(variableDef.name) && variableDef.default !== undefined) {
+                        map.set(variableDef.name, variableDef.default);
+                    }
+
+                    usedVariableDefinitions.push(variableDef);
                 }
             }
         }
 
+        verifyGivenVariables(currentComponentContext.manifest.id, map, usedVariableDefinitions);
+
         // set built-ins
-        map.set('builtin.package.version', packageConfig.version);
-        map.set('builtin.package.github.org', GITHUB_ORG);
-        map.set('builtin.package.github.repo', packageConfig.getPackageName());
-        map.set('builtin.package.github.ref', packageConfig.version);
-        map.set('builtin.component.id', component.id);
+        map.set('builtin.package.version', currentComponentContext.packageConfig.version);
+        map.set('builtin.package.github.org', getGithubOrgFromRepoUri(currentComponentContext.packageConfig.getPackageRepo()));
+        map.set('builtin.package.github.repo', currentComponentContext.packageConfig.getPackageName());
+        map.set('builtin.package.github.ref', currentComponentContext.packageConfig.version);
+        map.set('builtin.component.id', currentComponentContext.manifest.id);
 
         return new VariableCollection(map);
     }
@@ -136,10 +200,6 @@ function verifyGivenVariables(
     if (errorMessage.length > 0) {
         throw new Error(errorMessage);
     }
-}
-
-function verifyVariables(variables: Map<string, any>, component: ComponentManifest): void {
-    verifyGivenVariables(component.id, variables, component.variables);
 }
 
 function buildErrorMessageForComponent(

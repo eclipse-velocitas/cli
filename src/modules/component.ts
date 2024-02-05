@@ -13,8 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PackageConfig } from './package';
-import { ComponentConfig, ProjectConfig } from './project-config';
-import { VariableCollection, VariableDefinition } from './variables';
+import { VariableDefinition } from './variables';
 
 /**
  * Specification of a program that is exported by a component to be used via `velocitas exec`.
@@ -67,7 +66,7 @@ export interface FileSpec {
 }
 
 /**
- * Interface definition for implementing components
+ * Manifest describing the capabilities and interfaces of a component.
  */
 export interface ComponentManifest {
     // Unique ID of the component. Needs to be unique over all installed components.
@@ -86,32 +85,28 @@ export interface ComponentManifest {
     onPostInit?: Array<ExecSpec>;
 }
 
+/** Configuration of a component within a project configuration. */
+export class ComponentConfig {
+    // ID of the component
+    id: string;
+
+    // component-wide variable configuration
+    variables?: Map<string, any>;
+
+    constructor(id: string) {
+        this.id = id;
+    }
+}
+
 /** The context in which a component is used. It holds all necessary information to operate on a component. */
 export class ComponentContext {
     public packageConfig: PackageConfig;
     public manifest: ComponentManifest;
     public config: ComponentConfig;
-    public variableCollection: VariableCollection;
 
-    constructor(
-        packageReference: PackageConfig,
-        manifest: ComponentManifest,
-        config: ComponentConfig,
-        variableCollection: VariableCollection,
-    ) {
+    constructor(packageReference: PackageConfig, manifest: ComponentManifest, config: ComponentConfig) {
         this.packageConfig = packageReference;
         this.manifest = manifest;
         this.config = config;
-        this.variableCollection = variableCollection;
     }
-}
-
-export function findComponentByName(projectConfig: ProjectConfig, componentId: string): ComponentContext {
-    let result = projectConfig.getComponents().find((c) => c.manifest.id === componentId);
-
-    if (!result) {
-        throw Error(`Cannot find component with id '${componentId}'!`);
-    }
-
-    return result;
 }

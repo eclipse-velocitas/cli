@@ -4,13 +4,13 @@ The CLI exposes variables to files copied via the `files` entry in a component m
 
 Which variables are available from your packages can be viewed by the `packages` command which lists all of your installed packages and their exposed variables.
 
----
+## Variable scopes
 
-<p style="color:red;">
-<strong>Notice:</strong> Variables exposed by a component are only valid within the scope of that component! In more practical terms: If you have a component A which exposes a string variable <i>hello</i>, <i>hello</i> will not be available to any files or programs exposed by component B.
-</p>
-
----
+| Scope identifier | Validity |
+|:-----------------|:--------|
+| `component` (default) | Variable is valid only within the same toolchain component. |
+| `package` | Variable is valid within the same toolchain component and all of the components within the same package. Allows sharing of information within a package (e.g. a version identifier). |
+| `project` | Variable is valid within all toolchain components of the project. This allows toolchain components of type `core` to share information with all of it's `extensions`, for example a programming language or a configuration. |
 
 ## Built-in variables
 

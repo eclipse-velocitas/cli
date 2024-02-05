@@ -18,7 +18,6 @@ import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { ProjectConfig } from '../../modules/project-config';
 import { createEnvVars } from '../../modules/variables';
 import { ComponentContext } from '../../modules/component';
-import { existsSync } from 'fs';
 
 async function runPostInitHook(componentContext: ComponentContext, projectConfig: ProjectConfig, appManifest: any, verbose: boolean) {
     if (!componentContext.manifest.onPostInit || componentContext.manifest.onPostInit.length === 0) {
@@ -36,7 +35,7 @@ async function runPostInitHook(componentContext: ComponentContext, projectConfig
         }
         const envVars = createEnvVars(
             componentContext.packageConfig.getPackageDirectoryWithVersion(),
-            componentContext.variableCollection,
+            projectConfig.getVariableCollection(componentContext),
             appManifest,
         );
         await runExecSpec(execSpec, componentContext.manifest.id, projectConfig, envVars, { writeStdout: verbose, verbose: verbose });

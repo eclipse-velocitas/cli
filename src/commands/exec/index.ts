@@ -14,7 +14,7 @@
 
 import { Command, Flags, Args } from '@oclif/core';
 import { AppManifest } from '../../modules/app-manifest';
-import { ExecSpec, findComponentByName } from '../../modules/component';
+import { ExecSpec } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { ProjectConfig } from '../../modules/project-config';
 import { createEnvVars } from '../../modules/variables';
@@ -85,11 +85,11 @@ Executing script...
 
         const appManifestData = AppManifest.read();
 
-        const componentContext = findComponentByName(projectConfig, args.component);
+        const componentContext = projectConfig.findComponentByName(args.component);
 
         const envVars = createEnvVars(
             componentContext.packageConfig.getPackageDirectoryWithVersion(),
-            componentContext.variableCollection,
+            projectConfig.getVariableCollection(componentContext),
             appManifestData,
         );
 
