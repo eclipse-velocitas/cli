@@ -50,7 +50,7 @@ export class VariableCollection {
         componentConfig: ComponentConfig,
         component: ComponentManifest,
     ): VariableCollection {
-        var map = new Map<string, any>();
+        let map = new Map<string, any>();
         if (projectConfig.getVariableMappings()) {
             map = new Map([...map.entries(), ...projectConfig.getVariableMappings().entries()]);
         }
