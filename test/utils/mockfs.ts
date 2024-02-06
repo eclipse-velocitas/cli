@@ -18,6 +18,7 @@ import * as path from 'path';
 import { ProjectCache } from '../../src/modules/project-cache';
 import {
     appManifestMock,
+    corePackageManifestMock,
     mockCacheContent,
     packageIndexMock,
     runtimeComponentManifestMock,
@@ -28,6 +29,7 @@ import {
 export const userHomeDir = os.homedir();
 const runtimeComponentPath = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}/${velocitasConfigMock.packages[0].version}`;
 const setupComponentPath = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}/${velocitasConfigMock.packages[1].version}`;
+const corePackagePath = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[2].name}/${velocitasConfigMock.packages[2].version}`;
 
 type MockConfig = {
     velocitasConfig?: boolean;
@@ -61,6 +63,9 @@ export const mockFolders = (mockConfig?: MockConfig) => {
         };
         mockfsConf[setupComponentPath] = {
             'manifest.json': JSON.stringify(setupComponentManifestMock),
+        };
+        mockfsConf[corePackagePath] = {
+            'manifest.json': JSON.stringify(corePackageManifestMock),
         };
     }
     if (mockConfig && mockConfig.mockCache) {

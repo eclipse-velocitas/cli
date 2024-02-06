@@ -20,37 +20,58 @@ import * as exec from '../../../src/modules/exec';
 import sinon from 'sinon';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
 import { ProjectConfig } from '../../../src/modules/project-config';
-import { readAppManifest } from '../../../src/modules/app-manifest';
+import { AppManifest } from '../../../src/modules/app-manifest';
+import { Core, Extension } from '../../../src/modules/package-index';
 const inquirer = require('inquirer');
 
 const TEST_APP_NAME = 'TestApp';
-const TEST_EXPOSED_INTERFACE_TYPE = packageIndexMock[0].exposedInterfaces[0].type;
-const TEST_EXPOSED_INTERFACE_ARG_NAME_1 = packageIndexMock[0].exposedInterfaces[0].args[0].id;
-const TEST_EXPOSED_INTERFACE_ARG_DEFAULT_1 = packageIndexMock[0].exposedInterfaces[0].args[0].default;
-const TEST_EXPOSED_INTERFACE_ARG_NAME_2 = packageIndexMock[0].exposedInterfaces[0].args[1].id;
-const TEST_EXPOSED_INTERFACE_ARG_DEFAULT_2 = packageIndexMock[0].exposedInterfaces[0].args[1].default as string;
+
+const TEST_COMPONENT_EXTENSION_ID = packageIndexMock[0].components[0].id;
+const TEST_COMPONENT_EXTENSION = packageIndexMock[0].components[0] as Extension;
+
+const TEST_COMPONENT_CORE_ID = packageIndexMock[1].components[0].id;
+const TEST_COMPONENT_CORE = packageIndexMock[1].components[0] as Core;
+
+const TEST_COMPONENT_CORE_EXAMPLE = TEST_COMPONENT_CORE.options![0].parameters[0].values![0].id;
+
+const TEST_EXPOSED_INTERFACE_PARAMETER_NAME_1 = TEST_COMPONENT_EXTENSION.parameters![0].id;
+const TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_1 = TEST_COMPONENT_EXTENSION.parameters![0].default;
+const TEST_EXPOSED_INTERFACE_PARAMETER_NAME_2 = TEST_COMPONENT_EXTENSION.parameters![1].id;
+const TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_2 = TEST_COMPONENT_EXTENSION.parameters![1].default as string;
+
 const TEST_PACKAGE_URI = packageIndexMock[0].package;
 const TEST_PACKAGE_NAME = velocitasConfigMock.packages[0].name;
 const TEST_PACKAGE_VERSION = velocitasConfigMock.packages[0].version;
 
+const TEST_MAIN_PACKAGE_URI = packageIndexMock[1].package;
+const TEST_MAIN_PACKAGE_NAME = velocitasConfigMock.packages[2].name;
+const TEST_MAIN_PACKAGE_VERSION = velocitasConfigMock.packages[2].version;
+
+enum CoreOption {
+    fromExample = 0,
+    fromScratch = 1,
+}
+
 const EXPECTED_NON_INTERACTIVE_STDOUT = `Creating a new Velocitas project ...
 ... Project for Vehicle Application '${TEST_APP_NAME}' created!
 Initializing Velocitas packages ...
-... Downloading package: '${TEST_PACKAGE_NAME}:${TEST_PACKAGE_VERSION}'
+... '${TEST_MAIN_PACKAGE_NAME}:${TEST_MAIN_PACKAGE_VERSION}' already initialized.
+... '${TEST_PACKAGE_NAME}:${TEST_PACKAGE_VERSION}' already initialized.
 Syncing Velocitas components!
 `;
 
-const EXPECTED_INTERACTIVE_STDOUT = `Creating a new Velocitas project ...
+const EXPECTED_INTERACTIVE_STDOUT = (appName: string, withExtension?: string) => `Creating a new Velocitas project ...
 Interactive project creation started
-... Project for Vehicle Application '${TEST_APP_NAME}' created!
+${withExtension ? `Configure extension '${withExtension}'\n` : ''}... Project for Vehicle Application '${appName}' created!
 Initializing Velocitas packages ...
-... Downloading package: '${TEST_PACKAGE_NAME}:${TEST_PACKAGE_VERSION}'
+... '${TEST_MAIN_PACKAGE_NAME}:${TEST_MAIN_PACKAGE_VERSION}' already initialized.
+... '${TEST_PACKAGE_NAME}:${TEST_PACKAGE_VERSION}' already initialized.
 Syncing Velocitas components!
 `;
 
 describe('create', () => {
     test.do(() => {
-        mockFolders({ packageIndex: true });
+        mockFolders({ packageIndex: true, installedComponents: true });
     })
         .finally(() => {
             mockRestore();
@@ -61,20 +82,22 @@ describe('create', () => {
         .stub(exec, 'awaitSpawn', () => {
             return { exitCode: 0 };
         })
-        .command(['create', '-n', TEST_APP_NAME, '-l', 'test'])
+        .command(['create', '-n', TEST_APP_NAME, '-c', TEST_COMPONENT_CORE_ID])
         .it('creates a project with provided flags and generates .velocitas.json and AppManifest', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_NON_INTERACTIVE_STDOUT);
             expect(ProjectConfig.isAvailable()).to.be.true;
-            expect(readAppManifest()).to.not.be.undefined;
+            expect(AppManifest.read()).to.not.be.undefined;
 
             const velocitasConfig = ProjectConfig.read('v0.0.0');
-            expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
-            expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
+            expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
+            expect(velocitasConfig.packages[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
+            expect(velocitasConfig.packages[1].repo).to.be.equal(TEST_PACKAGE_URI);
+            expect(velocitasConfig.packages[1].version).to.be.equal(TEST_PACKAGE_VERSION);
             expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
-            const appManifest = readAppManifest();
-            expect(appManifest.name).to.be.equal(TEST_APP_NAME);
-            expect(appManifest.interfaces).to.be.empty;
+            const appManifest = AppManifest.read();
+            expect(appManifest!.name).to.be.equal(TEST_APP_NAME);
+            expect(appManifest!.interfaces).to.be.empty;
         });
 
     test.do(() => {
@@ -86,7 +109,7 @@ describe('create', () => {
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})
-        .command(['create', '-n', TEST_APP_NAME, '-l', 'test'])
+        .command(['create', '-n', TEST_APP_NAME, '-c', TEST_COMPONENT_CORE_ID])
         .catch('Unable to execute create script!')
         .it('throws error when project-creation script cannot be executed');
 
@@ -108,7 +131,7 @@ describe('create', () => {
             mockRestore();
         })
         .stdout()
-        .command(['create', '-l', 'test'])
+        .command(['create', '-c', TEST_COMPONENT_CORE_ID])
         .catch(`Missing required flag 'name'`)
         .it('throws error when required name flag is missing');
 
@@ -120,11 +143,11 @@ describe('create', () => {
         })
         .stdout()
         .command(['create', '-n', TEST_APP_NAME])
-        .catch(`Missing required flag 'language'`)
-        .it('throws error when required language flag is missing');
+        .catch(`Missing required flag 'core'`)
+        .it('throws error when required core flag is missing');
 
     test.do(() => {
-        mockFolders({ packageIndex: true });
+        mockFolders({ packageIndex: true, installedComponents: true });
     })
         .finally(() => {
             mockRestore();
@@ -138,83 +161,42 @@ describe('create', () => {
         .stub(inquirer, 'prompt', () => {
             return {
                 name: TEST_APP_NAME,
-                language: 'test',
-                exampleQuestion: false,
-                interface: [TEST_EXPOSED_INTERFACE_TYPE],
-            };
-        })
-        .command(['create'])
-        .it('creates a project in interactive mode without example and generates .velocitas.json and AppManifest with defaults', (ctx) => {
-            expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
-            expect(ProjectConfig.isAvailable()).to.be.true;
-            expect(readAppManifest()).to.not.be.undefined;
-
-            const velocitasConfig = ProjectConfig.read('v0.0.0');
-            expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
-            expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
-            expect(velocitasConfig.variables.get('language')).to.be.equal('test');
-
-            const appManifest = readAppManifest();
-            expect(appManifest.name).to.be.equal(TEST_APP_NAME);
-            expect(appManifest.interfaces[0].type).to.be.equal(TEST_EXPOSED_INTERFACE_TYPE);
-            expect(appManifest.interfaces[0].config[TEST_EXPOSED_INTERFACE_ARG_NAME_1]).to.be.equal(TEST_EXPOSED_INTERFACE_ARG_DEFAULT_1);
-            expect(appManifest.interfaces[0].config[TEST_EXPOSED_INTERFACE_ARG_NAME_2]).to.be.deep.equal(
-                JSON.parse(TEST_EXPOSED_INTERFACE_ARG_DEFAULT_2),
-            );
-        });
-
-    test.do(() => {
-        mockFolders({ packageIndex: true });
-    })
-        .finally(() => {
-            mockRestore();
-        })
-        .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
-        .stub(exec, 'runExecSpec', () => {})
-        .stub(exec, 'awaitSpawn', () => {
-            return { exitCode: 0 };
-        })
-        .stub(inquirer, 'prompt', () => {
-            return {
-                name: TEST_APP_NAME,
-                language: 'test',
-                exampleQuestion: false,
-                interface: [],
+                core: TEST_COMPONENT_CORE,
+                coreOptions: CoreOption.fromScratch,
+                coreParameter: TEST_APP_NAME,
+                extensions: [TEST_COMPONENT_EXTENSION],
+                extensionParameter: TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_2,
             };
         })
         .command(['create'])
         .it(
-            'creates a project in interactive mode with either example or interfaces and generates .velocitas.json and AppManifest correctly',
+            'creates a project in interactive mode without example and generates .velocitas.json and AppManifest without defaults',
             (ctx) => {
-                expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
+                expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT(TEST_APP_NAME, TEST_COMPONENT_EXTENSION_ID));
                 expect(ProjectConfig.isAvailable()).to.be.true;
-                expect(readAppManifest()).to.not.be.undefined;
+                expect(AppManifest.read()).to.not.be.undefined;
 
                 const velocitasConfig = ProjectConfig.read('v0.0.0');
-                expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
-                expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
+                expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
+                expect(velocitasConfig.packages[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
+                expect(velocitasConfig.packages[1].repo).to.be.equal(TEST_PACKAGE_URI);
+                expect(velocitasConfig.packages[1].version).to.be.equal(TEST_PACKAGE_VERSION);
                 expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
-                const appManifest = readAppManifest();
-                expect(appManifest.name).to.be.equal(TEST_APP_NAME);
-                expect(appManifest.interfaces).to.be.empty;
+                const appManifest = AppManifest.read();
+                expect(appManifest!.name).to.be.equal(TEST_APP_NAME);
+                expect(appManifest!.interfaces[0].type).to.be.equal(TEST_COMPONENT_EXTENSION_ID);
+                expect(appManifest!.interfaces[0].config[TEST_EXPOSED_INTERFACE_PARAMETER_NAME_1]).to.be.deep.equal(
+                    JSON.parse(TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_2),
+                );
+                expect(appManifest!.interfaces[0].config[TEST_EXPOSED_INTERFACE_PARAMETER_NAME_2]).to.be.deep.equal(
+                    JSON.parse(TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_2),
+                );
             },
         );
 
     test.do(() => {
-        mockFolders({ packageIndex: true });
-    })
-        .finally(() => {
-            mockRestore();
-        })
-        .stdout()
-        .command(['create', '-l', 'test'])
-        .catch(`Missing required flag 'name'`)
-        .it('throws error when required name flag is missing');
-
-    test.do(() => {
-        mockFolders({ packageIndex: true });
+        mockFolders({ packageIndex: true, installedComponents: true });
     })
         .finally(() => {
             mockRestore();
@@ -228,13 +210,29 @@ describe('create', () => {
         .stub(inquirer, 'prompt', () => {
             return {
                 name: TEST_APP_NAME,
-                language: 'no-example',
-                exampleQuestion: true,
+                core: TEST_COMPONENT_CORE,
+                coreOptions: CoreOption.fromScratch,
+                coreParameter: TEST_APP_NAME,
+                extensions: [],
             };
         })
         .command(['create'])
-        .catch(`No example for your chosen language 'no-example' available`)
-        .it('throws error when no example exists for chosen language');
+        .it('creates a project in interactive mode without example and generates .velocitas.json and AppManifest correctly', (ctx) => {
+            expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT(TEST_APP_NAME));
+            expect(ProjectConfig.isAvailable()).to.be.true;
+            expect(AppManifest.read()).to.not.be.undefined;
+
+            const velocitasConfig = ProjectConfig.read('v0.0.0');
+            expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
+            expect(velocitasConfig.packages[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
+            expect(velocitasConfig.packages[1].repo).to.be.equal(TEST_PACKAGE_URI);
+            expect(velocitasConfig.packages[1].version).to.be.equal(TEST_PACKAGE_VERSION);
+            expect(velocitasConfig.variables.get('language')).to.be.equal('test');
+
+            const appManifest = AppManifest.read();
+            expect(appManifest!.name).to.be.equal(TEST_APP_NAME);
+            expect(appManifest!.interfaces).to.be.empty;
+        });
 
     test.do(() => {
         mockFolders({ packageIndex: true });
@@ -248,7 +246,7 @@ describe('create', () => {
         .it('throws error when name and example flags are used in parallel');
 
     test.do(() => {
-        mockFolders({ packageIndex: true });
+        mockFolders({ packageIndex: true, installedComponents: true });
     })
         .finally(() => {
             mockRestore();
@@ -261,64 +259,26 @@ describe('create', () => {
         })
         .stub(inquirer, 'prompt', () => {
             return {
-                name: TEST_APP_NAME,
-                language: 'test',
-                exampleQuestion: false,
-                interface: [TEST_EXPOSED_INTERFACE_TYPE],
-                [TEST_EXPOSED_INTERFACE_ARG_NAME_1]: 'testNotDefault',
+                core: TEST_COMPONENT_CORE,
+                coreOptions: CoreOption.fromExample,
+                coreParameter: TEST_COMPONENT_CORE_EXAMPLE,
+                extensions: [],
             };
         })
         .command(['create'])
-        .it(
-            'creates a project in interactive mode without example and generates .velocitas.json and AppManifest without defaults',
-            (ctx) => {
-                expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
-                expect(ProjectConfig.isAvailable()).to.be.true;
-                expect(readAppManifest()).to.not.be.undefined;
-
-                const velocitasConfig = ProjectConfig.read('v0.0.0');
-                expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
-                expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
-                expect(velocitasConfig.variables.get('language')).to.be.equal('test');
-
-                const appManifest = readAppManifest();
-                expect(appManifest.name).to.be.equal(TEST_APP_NAME);
-                expect(appManifest.interfaces[0].type).to.be.equal(TEST_EXPOSED_INTERFACE_TYPE);
-                expect(appManifest.interfaces[0].config[TEST_EXPOSED_INTERFACE_ARG_NAME_1]).to.be.equal('testNotDefault');
-            },
-        );
-
-    test.do(() => {
-        mockFolders({ packageIndex: true });
-    })
-        .finally(() => {
-            mockRestore();
-        })
-        .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
-        .stub(exec, 'runExecSpec', () => {})
-        .stub(exec, 'awaitSpawn', () => {
-            return { exitCode: 0 };
-        })
-        .stub(inquirer, 'prompt', () => {
-            return {
-                language: 'test',
-                exampleQuestion: true,
-                exampleUse: TEST_APP_NAME,
-            };
-        })
-        .command(['create'])
-        .it('creates a project in interactive mode with example and generates .velocitas.json and AppManifest', (ctx) => {
-            expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT);
+        .it('creates a project in interactive mode with example and generates .velocitas.json and AppManifest correctly', (ctx) => {
+            expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT(TEST_COMPONENT_CORE_EXAMPLE));
             expect(ProjectConfig.isAvailable()).to.be.true;
-            expect(readAppManifest()).to.not.be.undefined;
+            expect(AppManifest.read()).to.not.be.undefined;
 
             const velocitasConfig = ProjectConfig.read('v0.0.0');
-            expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_PACKAGE_URI);
-            expect(velocitasConfig.packages[0].version).to.be.equal(TEST_PACKAGE_VERSION);
+            expect(velocitasConfig.packages[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
+            expect(velocitasConfig.packages[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
+            expect(velocitasConfig.packages[1].repo).to.be.equal(TEST_PACKAGE_URI);
+            expect(velocitasConfig.packages[1].version).to.be.equal(TEST_PACKAGE_VERSION);
             expect(velocitasConfig.variables.get('language')).to.be.equal('test');
 
-            const appManifest = readAppManifest();
-            expect(appManifest.name).to.be.equal(TEST_APP_NAME);
+            const appManifest = AppManifest.read();
+            expect(appManifest!.name).to.be.equal(TEST_COMPONENT_CORE_EXAMPLE);
         });
 });

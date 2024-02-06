@@ -14,16 +14,17 @@
 
 import { Command, Flags } from '@oclif/core';
 import { ProjectConfig } from '../../modules/project-config';
-import { sdkDownloader } from '../../modules/package-downloader';
-import { SdkConfig } from '../../modules/sdk';
-import { awaitSpawn } from '../../modules/exec';
-import { join } from 'path';
+import { packageDownloader } from '../../modules/package-downloader';
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import Exec from '../exec';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import Init from '../init';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import Sync from '../sync';
-import { Argument, ExampleDescription, FunctionalInterfaceDescription, PackageIndex } from '../../modules/package-index';
-import { AppManifestInterfaceEntry, AppManifestInterfaces, createAppManifest } from '../../modules/app-manifest';
+import { PackageIndex, Core, Extension, CoreOptions, DescribedId, Parameter, PackageAttributes } from '../../modules/package-index';
+import { AppManifest, AppManifestInterfaceAttributes } from '../../modules/app-manifest';
+import { InteractiveMode } from '../../modules/create-interactive';
+import { PackageConfig } from '../../modules/package';
 
 // inquirer >= v9 is an ESM package.
 // We are not using ESM in our CLI,
@@ -32,23 +33,94 @@ import { AppManifestInterfaceEntry, AppManifestInterfaces, createAppManifest } f
 // @ts-ignore: declaration file not found
 const inquirer = require('inquirer');
 
-let availableLanguages: string[] = [];
-let availableExamples: ExampleDescription[] = [];
-let availableInterfaces: FunctionalInterfaceDescription[] = [];
+/**
+ * Configuration data for creating a new Velocitas Vehicle App project.
+ * @interface CreateDataConfig
+ * @prop {string} name - Name of the Vehicle App.
+ * @prop {string} coreId - The ID of the selected core.
+ * @prop {AppManifest} appManifest - App manifest for the project.
+ * @prop {PackageAttributes[]} packages - Packages needed for the project.
+ * @prop {boolean} example - Indicates whether to use an example or not.
+ */
+interface CreateDataConfig {
+    name: string;
+    coreId: string;
+    appManifest: AppManifest;
+    packages: PackageAttributes[];
+    example: boolean;
+}
+
+/**
+ * Represents the data needed for creating a new project.
+ * @class
+ * @implements {CreateDataConfig}
+ */
+class CreateData implements CreateDataConfig {
+    name: string;
+    coreId: string;
+    appManifest: AppManifest;
+    packages: PackageAttributes[];
+    example: boolean = false;
+
+    /**
+     * Constructor for CreateData.
+     * @constructor
+     * @param {string} coreId - The ID of the selected core.
+     * @param {string} appName - The name of the application.
+     * @param {boolean} example - Indicates if an example should be used.
+     * @param {AppManifestInterfaceAttributes[]} interfaceAttributes - Interface attributes for the app manifest.
+     */
+    constructor(
+        coreId: string,
+        appName: string,
+        example: boolean,
+        interfaceAttributes: AppManifestInterfaceAttributes[],
+        packageIndex: PackageIndex,
+    ) {
+        this.name = appName;
+        this.coreId = coreId;
+        this.appManifest = new AppManifest(appName, interfaceAttributes);
+        this.packages = this._parsePackages(coreId, interfaceAttributes, packageIndex);
+        this.example = example;
+    }
+
+    private _parsePackages(
+        coreId: string,
+        interfaceAttributes: AppManifestInterfaceAttributes[],
+        packageIndex: PackageIndex,
+    ): PackageAttributes[] {
+        const selectedPackagesSet = new Set<PackageAttributes>();
+
+        const corePackage = packageIndex.getPackageByComponentId(coreId);
+        selectedPackagesSet.add(corePackage);
+
+        interfaceAttributes.forEach((interfaceAttribute: AppManifestInterfaceAttributes) => {
+            const packageAttribute = packageIndex.getPackageByComponentId(interfaceAttribute.type);
+            selectedPackagesSet.add(packageAttribute);
+        });
+
+        packageIndex.getMandatoryPackages().forEach((packageAttribute: PackageAttributes) => {
+            selectedPackagesSet.add(packageAttribute);
+        });
+        const selectedPackages = Array.from(selectedPackagesSet);
+
+        return selectedPackages;
+    }
+}
 
 export default class Create extends Command {
     static description = 'Create a new Velocitas Vehicle App project.';
 
     static examples = [
-        `$ velocitas create -n VApp -l python ...
+        `$ velocitas create -n VApp -c vapp-core-python ...
         Creating a new Velocitas project ...`,
     ];
 
     static flags = {
         name: Flags.string({ char: 'n', description: 'Name of the Vehicle App.', required: false }),
-        language: Flags.string({
-            char: 'l',
-            description: 'Programming language used for the Vehicle App (python, cpp).',
+        core: Flags.string({
+            char: 'c',
+            description: 'Which core to use for the project.',
             required: false,
         }),
         example: Flags.string({
@@ -65,191 +137,147 @@ export default class Create extends Command {
     };
 
     static prompts = {
-        name: {
-            name: 'name',
-            prefix: '',
-            message: '> What is the name of your project?',
-            type: 'input',
-        },
-        language: {
-            name: 'language',
-            prefix: '',
-            message: '> Which programming language would you like to use for your project?',
-            type: 'list',
-            choices: () => availableLanguages,
-        },
-        exampleQuestion: {
-            name: 'exampleQuestion',
-            prefix: '',
-            message: '> Would you like to use a provided example?',
-            type: 'confirm',
-        },
-        exampleUse: {
-            name: 'exampleUse',
-            prefix: '',
-            message: '> Which provided example would you like to use?',
-            type: 'list',
-            choices: () => availableExamples,
-        },
-        interface: {
-            name: 'interface',
-            prefix: '',
-            message: '> Which functional interfaces does your application have?',
-            type: 'checkbox',
-            choices: () => availableInterfaces,
-        },
-        additionalArg: (arg: Argument, interfaceEntry: string) => {
+        core: (availableCores: Core[]) => {
             return {
-                name: arg.id,
-                prefix: '',
-                message: `Config '${arg.id}' for interface '${interfaceEntry}': ${arg.description}`,
-                default: arg.default,
-                validate: (input: any) => {
-                    if (!input) {
-                        console.log('No empty value allowed for required argument!');
-                        return false;
-                    } else {
-                        return true;
-                    }
-                },
-                type: 'input',
+                name: 'core',
+                prefix: '>',
+                message: 'What kind of project would you like to create?',
+                type: 'list',
+                choices: () => availableCores.map((core: Core) => ({ name: core.name, value: core })),
+            };
+        },
+        coreOptions: (coreOptions: CoreOptions[]) => {
+            return {
+                name: 'coreOptions',
+                prefix: '>',
+                message: 'Which option?',
+                type: 'list',
+                choices: () =>
+                    coreOptions.map((coreOption: CoreOptions) => ({ name: coreOption.name, value: coreOptions.indexOf(coreOption) })),
+            };
+        },
+        coreParameters: (parameter: Parameter) => {
+            return {
+                name: 'coreParameter',
+                prefix: '>',
+                message: parameter.description,
+                default: parameter.default,
+                type: parameter.type,
+                choices: () => (parameter.values || []).map((value: DescribedId) => ({ name: value.description, value: value.id })),
+            };
+        },
+        extensions: (availableExtensions: Extension[]) => {
+            return {
+                name: 'extensions',
+                prefix: '>',
+                message: 'Which extensions do you want to use?',
+                type: 'checkbox',
+                choices: () => availableExtensions.map((ext: Extension) => ({ name: ext.name, value: ext })),
+            };
+        },
+        extensionParameters: (parameter: Parameter) => {
+            return {
+                name: 'extensionParameter',
+                prefix: '>',
+                message: parameter.description,
+                default: parameter.default,
+                type: parameter.type,
             };
         },
     };
 
-    appManifestInterfaces: AppManifestInterfaces = { interfaces: [] };
-
-    private _filterAvailableExamplesByLanguage(language: string) {
-        const filteredExamples = availableExamples.filter((example) => example.language === language);
-        if (!filteredExamples.length) {
-            throw new Error(`No example for your chosen language '${language}' available`);
+    static async createAppManifestInterfaceAttributes(
+        extensionId: string,
+        parameters: Parameter[],
+    ): Promise<AppManifestInterfaceAttributes> {
+        console.log(`Configure extension '${extensionId}'`);
+        const appManifestInterfaceEntry: AppManifestInterfaceAttributes = { type: extensionId, config: {} };
+        for (const parameter of parameters) {
+            const extensionPromptResult = await inquirer.prompt(Create.prompts.extensionParameters(parameter));
+            appManifestInterfaceEntry.config[parameter.id] = extensionPromptResult.extensionParameter;
         }
-        return filteredExamples;
+        return appManifestInterfaceEntry;
     }
 
-    private async _runInteractiveMode(flags: any) {
-        const interactiveResponses: any = await inquirer.prompt([Create.prompts.language, Create.prompts.exampleQuestion]);
-
-        flags.language = interactiveResponses.language;
-        flags.example = interactiveResponses.exampleQuestion;
-
-        if (flags.example) {
-            availableExamples = this._filterAvailableExamplesByLanguage(flags.language);
-            const exampleResponse = await inquirer.prompt([Create.prompts.exampleUse]);
-            flags.example = flags.name = exampleResponse.exampleUse;
-        } else {
-            const interactiveSkeletonAppResponses: any = await inquirer.prompt([Create.prompts.name, Create.prompts.interface]);
-            flags.name = interactiveSkeletonAppResponses.name;
-            flags.interface = interactiveSkeletonAppResponses.interface;
-
-            if (flags.interface && flags.interface.length > 0) {
-                await this._handleAdditionalInterfaceArgs(flags.interface);
-            }
-        }
-    }
-
-    private async _queryArgsForInterface(arg: Argument, interfaceEntry: string): Promise<any> {
-        let interfaceArgResponse: any = {};
-        let config: any = {};
-        if (arg.required) {
-            interfaceArgResponse = await inquirer.prompt([Create.prompts.additionalArg(arg, interfaceEntry)]);
-            config[arg.id] = interfaceArgResponse[arg.id];
-        } else {
-            interfaceArgResponse[arg.id] = '';
-        }
-        if (!interfaceArgResponse[arg.id] && arg.default) {
-            config[arg.id] = arg.default;
-            if (arg.type === 'object') {
-                config[arg.id] = JSON.parse(arg.default);
-            }
-        }
-        return config;
-    }
-
-    private async _handleAdditionalInterfaceArgs(interfaces: string[]) {
-        for (const interfaceEntry of interfaces) {
-            const appManifestInterfaceEntry: AppManifestInterfaceEntry = { type: interfaceEntry, config: {} };
-            const interfaceObject = availableInterfaces.find(
-                (availableInterface: FunctionalInterfaceDescription) => availableInterface.value === interfaceEntry,
-            );
-            for (const arg of interfaceObject!.args) {
-                const interfaceConfig = await this._queryArgsForInterface(arg, interfaceEntry);
-                appManifestInterfaceEntry.config = { ...appManifestInterfaceEntry.config, ...interfaceConfig };
-            }
-            this.appManifestInterfaces.interfaces.push(appManifestInterfaceEntry);
-        }
-    }
-
-    private _loadDataFromPackageIndex(packageIndex: PackageIndex) {
-        availableLanguages = packageIndex.getAvailableLanguages();
-        availableExamples = packageIndex.getAvailableExamples();
-        availableInterfaces = packageIndex.getAvailableInterfaces();
-        Create.flags.language.options = availableLanguages.map((languageEntry: string) => {
-            return languageEntry;
-        });
-        Create.flags.interface.options = availableInterfaces.map((interfaceEntry: FunctionalInterfaceDescription) => {
-            return interfaceEntry.value;
-        });
-    }
-
-    private _getScriptExecutionPath(sdkConfig: SdkConfig): string {
-        const basePath = process.env.VELOCITAS_SDK_PATH_OVERRIDE
-            ? process.env.VELOCITAS_SDK_PATH_OVERRIDE
-            : join(sdkConfig.getPackageDirectory(), 'latest');
-
-        return join(basePath, '.project-creation', 'run.py');
-    }
-
-    async run(): Promise<void> {
-        const packageIndex = PackageIndex.read();
-        this._loadDataFromPackageIndex(packageIndex);
-        const { flags } = await this.parse(Create);
-        this.log(`Creating a new Velocitas project ...`);
+    private async _parseFlags(packageIndex: PackageIndex, flags: any): Promise<CreateData> {
+        let appManifestInterfaceAttributes: AppManifestInterfaceAttributes[] = [];
 
         if (flags.name && flags.example) {
             throw new Error("Flags 'name' and 'example' are mutually exclusive!");
         }
-
         if (flags.example) {
             flags.name = flags.example;
         }
-
-        if (Object.keys(flags).length === 0) {
-            this.log('Interactive project creation started');
-            await this._runInteractiveMode(flags);
-        }
-
         if (!flags.name) {
             throw new Error("Missing required flag 'name'");
         }
-        if (!flags.language) {
-            throw new Error("Missing required flag 'language'");
+        if (!flags.core) {
+            throw new Error("Missing required flag 'core'");
         }
-
-        if (!flags.example && flags.interface) {
-            if (this.appManifestInterfaces.interfaces.length === 0 && flags.interface.length > 0) {
-                await this._handleAdditionalInterfaceArgs(flags.interface);
+        if (flags.interface) {
+            for (const interfaceEntry of flags.interface) {
+                const interfaceParameters = packageIndex.getExtensionParametersByParameterId(interfaceEntry);
+                if (interfaceParameters) {
+                    appManifestInterfaceAttributes.push(
+                        await Create.createAppManifestInterfaceAttributes(interfaceEntry, interfaceParameters!),
+                    );
+                }
             }
         }
+        const createData: CreateData = new CreateData(flags.core, flags.name, flags.example, appManifestInterfaceAttributes, packageIndex);
+        return createData;
+    }
 
-        await ProjectConfig.create(packageIndex.getExtensions(), flags.language, this.config.version);
-        await createAppManifest(flags.name, this.appManifestInterfaces);
-        const sdkConfig = new SdkConfig(flags.language);
-        await sdkDownloader(sdkConfig).downloadPackage({ checkVersionOnly: false });
-
-        const result = await awaitSpawn(
-            `python3`,
-            [this._getScriptExecutionPath(sdkConfig), '-d', process.cwd(), '-e', flags.example ? flags.example : ''],
-            process.cwd(),
-            process.env,
-            true,
+    private async _runInteractiveMode(packageIndex: PackageIndex): Promise<CreateData> {
+        const corePromptResult = await InteractiveMode.configureCore(packageIndex.getCores());
+        const appManifestInterfaceAttributes = await InteractiveMode.configureExtension(packageIndex, corePromptResult);
+        const createData: CreateData = new CreateData(
+            corePromptResult.chosenCore.id,
+            corePromptResult.appName,
+            corePromptResult.example,
+            appManifestInterfaceAttributes,
+            packageIndex,
         );
+        return createData;
+    }
 
-        if (result === null || result.exitCode !== 0) {
+    private _loadDataFromPackageIndex(packageIndex: PackageIndex) {
+        Create.flags.core.options = packageIndex.getCores().map((core: Core) => {
+            return core.id;
+        });
+        Create.flags.interface.options = packageIndex.getExtensions().map((ext: Extension) => {
+            return ext.id;
+        });
+    }
+
+    async run(): Promise<void> {
+        let createData: CreateData;
+        const packageIndex = PackageIndex.read();
+        this._loadDataFromPackageIndex(packageIndex);
+
+        const { flags } = await this.parse(Create);
+        this.log(`Creating a new Velocitas project ...`);
+
+        if (Object.keys(flags).length === 0) {
+            this.log('Interactive project creation started');
+            createData = await this._runInteractiveMode(packageIndex);
+        } else {
+            createData = await this._parseFlags(packageIndex, flags);
+        }
+        await ProjectConfig.create(createData.packages, createData.coreId.split('-').at(-1)!, this.config.version);
+        createData.appManifest.write();
+        const projectConfig = ProjectConfig.read(this.config.version);
+        const coreConfig = projectConfig.packages.find(
+            (packageConfig: PackageConfig) => packageConfig.repo === packageIndex.getPackageByComponentId(createData.coreId).package,
+        );
+        await packageDownloader(coreConfig!).downloadPackage({ checkVersionOnly: false });
+        try {
+            await Exec.run([createData.coreId, 'create-project', '-d', process.cwd(), '-e', createData.example ? createData.name : '']);
+        } catch (error) {
             this.error('Unable to execute create script!');
         }
 
-        this.log(`... Project for Vehicle Application '${flags.name}' created!`);
+        this.log(`... Project for Vehicle Application '${createData.name}' created!`);
         await Init.run(['--no-hooks']);
         await Sync.run([]);
     }

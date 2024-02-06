@@ -12,22 +12,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Copyright (c) 2022 Contributors to the Eclipse Foundationhe Eclipse Foundationhe Eclipse Foundation
-//
-// This program and the accompanying materials are made available under the
-// terms of the Apache License, Version 2.0 which is available at
-// https://www.apache.org/licenses/LICENSE-2.0.
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-// License for the specific language governing permissions and limitations
-// under the License.
-//
-// SPDX-License-Identifier: Apache-2.0
-
 import { ComponentType } from '../../src/modules/component';
-import { PkgIndexEntry } from '../../src/modules/package-index';
+import { Core, Extension, PackageAttributes } from '../../src/modules/package-index';
 
 export const velocitasConfigMock = {
     packages: [
@@ -40,6 +26,10 @@ export const velocitasConfigMock = {
             name: 'test-setup',
             version: 'v1.1.1',
         },
+        {
+            name: 'test-package-main',
+            version: 'v1.1.1',
+        },
     ],
     variables: {
         language: 'python',
@@ -49,15 +39,42 @@ export const velocitasConfigMock = {
     },
 };
 
-export const packageIndexMock: PkgIndexEntry[] = [
+export const packageIndexMock: PackageAttributes[] = [
     {
-        type: 'extension',
         package: 'https://github.com/eclipse-velocitas/test-runtime.git',
-        exposedInterfaces: [
+        components: [
             {
-                type: 'test-interface',
-                description: 'Test interface',
-                args: [
+                id: 'test-extension-mandatory',
+                type: 'extension',
+                name: 'Test Extension',
+                description: 'Test Extension',
+                mandatory: true,
+                compatibleCores: ['core-test'],
+                parameters: [
+                    {
+                        id: 'test-arg-required',
+                        description: 'Test config for required arg',
+                        default: 'test-arg-required',
+                        required: true,
+                        type: 'string',
+                    },
+                    {
+                        id: 'test',
+                        description: 'Test config for not required arg',
+                        default: '{"required":[{"path":"","access":""}]}',
+                        required: false,
+                        type: 'object',
+                    },
+                ],
+            } as Extension,
+            {
+                id: 'test-extension',
+                type: 'extension',
+                name: 'Test Extension',
+                description: 'Test Extension',
+                mandatory: false,
+                compatibleCores: ['core-test'],
+                parameters: [
                     {
                         id: 'test-arg-required',
                         description: 'Test config for required arg',
@@ -77,26 +94,60 @@ export const packageIndexMock: PkgIndexEntry[] = [
         ],
     },
     {
-        type: 'core',
-        package: 'https://github.com/eclipse-velocitas/vehicle-app-test-sdk',
-        exposedInterfaces: [
+        package: 'https://github.com/eclipse-velocitas/test-package-main.git',
+        components: [
             {
-                type: 'examples',
-                description: 'Provided test examples from test SDK',
-                args: [
+                id: 'core-test',
+                type: 'core',
+                name: 'Test Core Package',
+                description: 'Test Core Package',
+                mandatory: false,
+                options: [
                     {
-                        id: 'test-example',
-                        description: 'Test Example',
-                        type: 'string',
+                        id: 'from-example',
+                        name: 'Create an application from an example',
+                        parameters: [
+                            {
+                                id: 'example',
+                                description: 'Test Example',
+                                type: 'string',
+                                required: true,
+                                values: [
+                                    {
+                                        id: 'test-example',
+                                        description: 'Test Example',
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        id: 'from-skeleton',
+                        name: 'Create an application from scratch',
+                        parameters: [
+                            {
+                                id: 'name',
+                                required: true,
+                                description: 'Name of your application',
+                                type: 'string',
+                            },
+                        ],
                     },
                 ],
-            },
+            } as Core,
         ],
     },
     {
-        type: 'core',
         package: 'https://github.com/eclipse-velocitas/vehicle-app-no-example-sdk',
-        exposedInterfaces: [],
+        components: [
+            {
+                id: 'no-examples-test-core',
+                type: 'core',
+                name: 'Test Core Package with no examples',
+                description: 'Test Core Package no examples',
+                mandatory: false,
+            },
+        ],
     },
 ];
 
@@ -188,6 +239,33 @@ export const runtimeComponentManifestMock = {
                 {
                     id: 'test-script-2',
                     executable: './src/test.sh',
+                },
+            ],
+        },
+    ],
+};
+
+export const corePackageManifestMock = {
+    components: [
+        {
+            id: 'core-test',
+            name: 'VApp (Python)',
+            description: 'Velocitas VApp written in Python',
+            type: 'core',
+            programs: [
+                {
+                    id: 'create-project',
+                    description: 'Creates a new uProtocol project',
+                    executable: 'python',
+                    args: ['core/vapp-python/.project-creation/run.py'],
+                },
+            ],
+            variables: [
+                {
+                    name: 'language',
+                    description: 'Programming language of the project.',
+                    type: 'string',
+                    default: 'python',
                 },
             ],
         },

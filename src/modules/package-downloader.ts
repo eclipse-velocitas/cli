@@ -17,13 +17,12 @@ import { posix as pathPosix } from 'path';
 import { CheckRepoActions, SimpleGit, simpleGit } from 'simple-git';
 import { PackageConfig } from './package';
 import { getLatestVersion } from './semver';
-import { SdkConfig } from './sdk';
 
 export class PackageDownloader {
-    packageConfig: PackageConfig | SdkConfig;
+    packageConfig: PackageConfig;
     git: SimpleGit = simpleGit();
 
-    constructor(packageConfig: PackageConfig | SdkConfig) {
+    constructor(packageConfig: PackageConfig) {
         this.packageConfig = packageConfig;
     }
 
@@ -80,8 +79,4 @@ export class PackageDownloader {
 
 export const packageDownloader = (packageConfig: PackageConfig) => {
     return new PackageDownloader(packageConfig);
-};
-
-export const sdkDownloader = (sdkConfig: SdkConfig) => {
-    return new PackageDownloader(sdkConfig);
 };
