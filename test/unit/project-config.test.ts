@@ -16,13 +16,18 @@ import 'mocha';
 import mockfs from 'mock-fs';
 import { ProjectConfig } from '../../src/modules/project-config';
 import { expect } from 'chai';
+import { homedir } from 'node:os';
 
 describe('project-config - module', () => {
     before(() => {
+        const packageManifestPath = `${homedir()}/.velocitas/packages/pkg1/v1.0.0/manifest.json`;
         const mockfsConf: any = {
             '/.velocitasInvalid.json': 'foo',
-            '/.velocitasValid.json': '{ "packages": [], "variables": {} }',
+            '/.velocitasValid.json':
+                '{ "packages": [{"repo":"pkg1", "version": "v1.0.0"}], "components": [{"id": "comp1"}], "variables": {} }',
+            '/.velocitasValidNoComps.json': '{ "packages": [{"repo":"pkg1", "version": "v1.0.0"}], "variables": {} }',
         };
+        mockfsConf[packageManifestPath] = '{ "components": [{"id": "comp1"}, {"id": "comp2"}]}';
         mockfs(mockfsConf, { createCwd: false });
     });
     describe('.velocitas.json reading', () => {
@@ -39,6 +44,19 @@ describe('project-config - module', () => {
         });
         it('should read the ProjectConfig when .velocitas.json is valid.', () => {
             expect(ProjectConfig.read.bind(ProjectConfig.read, ...['v0.0.0', '/.velocitasValid.json'])).to.not.throw();
+        });
+    });
+    describe('ProjectConfig components', () => {
+        it('should only return referenced components', () => {
+            const projectConfig = ProjectConfig.read('v0.0.0', '/.velocitasValid.json');
+            expect(projectConfig.getComponents()).to.have.length(1);
+            expect(projectConfig.getComponents()[0].manifest.id).to.be.eq('comp1');
+        });
+        it('should only return all components, if no components are referenced', () => {
+            const projectConfig = ProjectConfig.read('v0.0.0', '/.velocitasValidNoComps.json');
+            expect(projectConfig.getComponents()).to.have.length(2);
+            expect(projectConfig.getComponents()[0].manifest.id).to.be.eq('comp1');
+            expect(projectConfig.getComponents()[1].manifest.id).to.be.eq('comp2');
         });
     });
     after(() => {

@@ -30,17 +30,18 @@ describe('init', () => {
         })
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', () => {})
         .command(['init'])
         .it('downloads packages from preconfigured velocitas.json', (ctx) => {
             expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
             expect(ctx.stdout).to.contain(
-                `... Downloading package: '${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version}'`,
+                `... Downloading package: '${velocitasConfigMock.packages[0].repo}:${velocitasConfigMock.packages[0].version}'`,
             );
             expect(ctx.stdout).to.contain(
-                `... Downloading package: '${velocitasConfigMock.packages[1].name}:${velocitasConfigMock.packages[1].version}'`,
+                `... Downloading package: '${velocitasConfigMock.packages[1].repo}:${velocitasConfigMock.packages[1].version}'`,
             );
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}`)).to.be.true;
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}`)).to.be.true;
         });
 
     test.do(() => {
@@ -55,13 +56,13 @@ describe('init', () => {
             console.error(ctx.stdout);
             expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
             expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version}' already initialized.`,
+                `... '${velocitasConfigMock.packages[0].repo}:${velocitasConfigMock.packages[0].version}' already initialized.`,
             );
             expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[1].name}:${velocitasConfigMock.packages[1].version}' already initialized.`,
+                `... '${velocitasConfigMock.packages[1].repo}:${velocitasConfigMock.packages[1].version}' already initialized.`,
             );
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}`)).to.be.true;
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}`)).to.be.true;
         });
 
     test.do(() => {

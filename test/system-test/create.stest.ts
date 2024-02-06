@@ -34,13 +34,13 @@ describe('CLI command', () => {
         beforeEach(async () => {
             process.chdir(`${TEST_ROOT}/testbench/test-create/vehicle-app-template`);
             let coreConfig: PackageConfig = new PackageConfig({
-                name: packageIndex[0].package,
+                repo: packageIndex[0].package,
                 version: 'v0.0.3', // We need a version to start from
             });
             const availableVersions = await coreConfig.getPackageVersions();
             latestMainPackageVersion = getLatestVersion(availableVersions);
             coreConfig = new PackageConfig({
-                name: packageIndex[0].package,
+                repo: packageIndex[0].package,
                 version: latestMainPackageVersion,
             });
             await packageDownloader(coreConfig!).downloadPackage({ checkVersionOnly: false });

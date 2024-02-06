@@ -19,23 +19,30 @@ import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { mapReplacer } from './helpers';
 import { PackageConfig } from './package';
 import { getLatestVersion } from './semver';
-import { PackageAttributes } from './package-index';
+import { PackageIndex } from './package-index';
 import { DEFAULT_APP_MANIFEST_PATH } from './app-manifest';
+import { ComponentContext, ComponentManifest } from './component';
+import { VariableCollection } from './variables';
 
-export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), './.velocitas.json');
+export const DEFAULT_CONFIG_FILE_NAME = '.velocitas.json';
+export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), DEFAULT_CONFIG_FILE_NAME);
 
-interface ProjectConfigOptions {
+export interface ProjectConfigOptions {
     packages: PackageConfig[];
+    components?: ComponentConfig[];
     variables: Map<string, any>;
     cliVersion?: string;
 }
 
-export class ProjectConfig implements ProjectConfigOptions {
+export class ProjectConfig {
     // packages used in the project
-    packages: Array<PackageConfig> = new Array<PackageConfig>();
+    private _packages: Array<PackageConfig> = new Array<PackageConfig>();
+
+    // components used in the project
+    private _components: Array<ComponentConfig> = new Array<ComponentConfig>();
 
     // project-wide variable configuration
-    variables: Map<string, any> = new Map<string, any>();
+    private _variables: Map<string, any> = new Map<string, any>();
     cliVersion: string;
 
     private static _parsePackageConfig(packages: PackageConfig[]): PackageConfig[] {
@@ -45,10 +52,15 @@ export class ProjectConfig implements ProjectConfigOptions {
         });
         return configArray;
     }
-
+    /**
+     * Create a new project configuration.
+     *
+     * @param config The options to use when creating the confugration. May be undefined.
+     */
     constructor(cliVersion: string, config?: ProjectConfigOptions) {
-        this.packages = config?.packages ? ProjectConfig._parsePackageConfig(config.packages) : this.packages;
-        this.variables = config?.variables ? config.variables : this.variables;
+        this._packages = config?.packages ? ProjectConfig._parsePackageConfig(config.packages) : this._packages;
+        this._components = config?.components ? config.components : this._components;
+        this._variables = config?.variables ? config.variables : this._variables;
         this.cliVersion = config?.cliVersion ? config.cliVersion : cliVersion;
     }
 
@@ -58,23 +70,23 @@ export class ProjectConfig implements ProjectConfigOptions {
         try {
             config = new ProjectConfig(cliVersion, JSON.parse(readFileSync(path, DEFAULT_BUFFER_ENCODING)));
         } catch (error) {
-            throw new Error(`Error in parsing .velocitas.json: ${(error as Error).message}`);
+            throw new Error(`Error in parsing ${DEFAULT_CONFIG_FILE_NAME}: ${(error as Error).message}`);
         }
 
-        if (config.variables) {
-            config.variables = new Map(Object.entries(config.variables));
+        if (config._variables) {
+            config._variables = new Map(Object.entries(config._variables));
         }
 
-        for (let packageConfig of config.packages) {
+        for (let packageConfig of config._packages) {
             if (packageConfig.variables) {
                 packageConfig.variables = new Map(Object.entries(packageConfig.variables));
             }
+        }
 
-            if (packageConfig.components) {
-                for (let componentConfig of packageConfig.components) {
-                    if (componentConfig.variables) {
-                        componentConfig.variables = new Map(Object.entries(componentConfig.variables));
-                    }
+        if (config._components) {
+            for (let componentConfig of config._components) {
+                if (componentConfig.variables) {
+                    componentConfig.variables = new Map(Object.entries(componentConfig.variables));
                 }
             }
         }
@@ -84,35 +96,124 @@ export class ProjectConfig implements ProjectConfigOptions {
 
     static isAvailable = (path: PathLike = DEFAULT_CONFIG_FILE_PATH) => existsSync(path);
 
-    static async create(usedPackages: PackageAttributes[], language: string, cliVersion: string) {
+    static async create(usedComponents: Set<string>, packageIndex: PackageIndex, language: string, cliVersion: string) {
         const projectConfig = new ProjectConfig(`v${cliVersion}`);
-        for (const usedPackage of usedPackages) {
-            const packageConfig = new PackageConfig({ name: usedPackage.package });
+        const usedPackageRepos = new Set<string>();
+        for (const usedComponent of usedComponents) {
+            const pkg = packageIndex.getPackageByComponentId(usedComponent);
+            usedPackageRepos.add(pkg.package);
+            projectConfig._components.push(new ComponentConfig(usedComponent));
+        }
+
+        for (const usedPackageRepo of usedPackageRepos) {
+            const packageConfig = new PackageConfig({ repo: usedPackageRepo, version: '' });
             const versions = await packageConfig.getPackageVersions();
             const latestVersion = getLatestVersion(versions);
 
-            packageConfig.repo = usedPackage.package;
+            packageConfig.repo = usedPackageRepo;
             packageConfig.version = latestVersion;
-            projectConfig.packages.push(packageConfig);
+            projectConfig.getPackages().push(packageConfig);
         }
-        projectConfig.variables.set('language', language);
-        projectConfig.variables.set('repoType', 'app');
-        projectConfig.variables.set('appManifestPath', DEFAULT_APP_MANIFEST_PATH);
-        projectConfig.variables.set('githubRepoId', '<myrepo>');
+        projectConfig.getVariableMappings().set('language', language);
+        projectConfig.getVariableMappings().set('repoType', 'app');
+        projectConfig.getVariableMappings().set('appManifestPath', DEFAULT_APP_MANIFEST_PATH);
+        projectConfig.getVariableMappings().set('githubRepoId', '<myrepo>');
         projectConfig.write();
     }
 
+    /**
+     * Write the project configuration to file.
+     *
+     * @param path Path of the file to write the configuration to.
+     */
     write(path: PathLike = DEFAULT_CONFIG_FILE_PATH): void {
-        // replaceAll because of having "backward compatibility" before deprecate "name" completely
-        const configString = `${JSON.stringify(this, mapReplacer, 4).replaceAll('"repo"', '"name"')}\n`;
+        // if we find an "old" project configuration with no components explicitly mentioned
+        // we persist all components we can find.
+        let componentsToSerialize: ComponentConfig[] = this._components;
+
+        if (!componentsToSerialize || componentsToSerialize.length === 0) {
+            componentsToSerialize = this.getComponents().map((cc) => cc.config);
+        }
+
+        const projectConfigOptions: ProjectConfigOptions = {
+            packages: this._packages,
+            components: componentsToSerialize,
+            variables: this._variables,
+            cliVersion: this.cliVersion,
+        };
+        const configString = `${JSON.stringify(projectConfigOptions, mapReplacer, 4)}\n`;
         writeFileSync(path, configString, DEFAULT_BUFFER_ENCODING);
+    }
+
+    /**
+     * Return the configuration of a component.
+     *
+     * @param projectConfig The project configuration.
+     * @param componentId   The ID of the component.
+     * @returns The configuration of the component.
+     */
+    getComponentConfig(componentId: string): ComponentConfig {
+        let maybeComponentConfig: ComponentConfig | undefined;
+        if (this._components) {
+            maybeComponentConfig = this._components.find((compCfg: ComponentConfig) => compCfg.id === componentId);
+        }
+        return maybeComponentConfig ? maybeComponentConfig : new ComponentConfig(componentId);
+    }
+
+    /**
+     * Return all components used by the project. If the project specifies no components explicitly,
+     * all components are used by default.
+     *
+     * @returns A list of all components used by the project.
+     */
+    getComponents(): Array<ComponentContext> {
+        const componentContexts: ComponentContext[] = [];
+
+        const usedComponents = this._components;
+
+        for (const packageConfig of this.getPackages()) {
+            const packageManifest = packageConfig.readPackageManifest();
+
+            for (const componentManifest of packageManifest.components) {
+                if (usedComponents.length === 0 || usedComponents.find((compCfg: ComponentConfig) => compCfg.id === componentManifest.id)) {
+                    componentContexts.push(
+                        new ComponentContext(
+                            packageConfig,
+                            componentManifest,
+                            this.getComponentConfig(componentManifest.id),
+                            VariableCollection.build(this, packageConfig, this.getComponentConfig(componentManifest.id), componentManifest),
+                        ),
+                    );
+                }
+            }
+        }
+
+        return componentContexts;
+    }
+
+    /**
+     * @returns all used packages by the project.
+     */
+    getPackages(): Array<PackageConfig> {
+        return this._packages;
+    }
+
+    /**
+     * @returns all declared variable mappings on project level.
+     */
+    getVariableMappings(): Map<string, any> {
+        return this._variables;
     }
 }
 
 export class ComponentConfig {
     // ID of the component
-    id: string = '';
+    id: string;
 
     // component-wide variable configuration
-    variables: Map<string, any> = new Map<string, any>();
+    variables?: Map<string, any>;
+
+    constructor(id: string) {
+        this.id = id;
+    }
 }

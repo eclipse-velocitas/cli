@@ -78,20 +78,20 @@ interface ComponentBase {
 }
 /**
  * Represents a core component with optional options.
- * @interface Core
+ * @interface CoreComponent
  * @prop {CoreOptions[]} [options] - Array of options of a core component.
  */
-export interface Core extends ComponentBase {
+export interface CoreComponent extends ComponentBase {
     options?: CoreOptions[];
 }
 
 /**
  * Represents an extension package with compatible cores, and optional parameters.
- * @interface Extension
+ * @interface ExtensionComponent
  * @prop {string[]} compatibleCores - Array of compatible core types.
  * @prop {Parameter[]} [parameters] - Array of parameters.
  */
-export interface Extension extends ComponentBase {
+export interface ExtensionComponent extends ComponentBase {
     compatibleCores: string[];
     parameters?: Parameter[];
 }
@@ -154,29 +154,29 @@ export class PackageIndex {
 
     /**
      * Gets an array of Core instances from the package index.
-     * @returns {Core[]} - Array of Core instances.
+     * @returns {CoreComponent[]} - Array of Core instances.
      * @public
      */
-    getCores(): Core[] {
-        return this._getComponents().filter((component: ComponentBase): component is Core => component.type === 'core');
+    getCores(): CoreComponent[] {
+        return this._getComponents().filter((component: ComponentBase): component is CoreComponent => component.type === 'core');
     }
 
     /**
      * Gets an array of Extension instances from the package index.
-     * @returns {Extension[]} - Array of Extension instances.
+     * @returns {ExtensionComponent[]} - Array of Extension instances.
      * @public
      */
-    getExtensions(): Extension[] {
-        return this._getComponents().filter((component: ComponentBase): component is Extension => component.type === 'extension');
+    getExtensions(): ExtensionComponent[] {
+        return this._getComponents().filter((component: ComponentBase): component is ExtensionComponent => component.type === 'extension');
     }
 
     /**
-     * Gets an array of all mandatory Packages.
-     * @returns {PackageAttributes[]} - Array of PackageAttributes.
+     * Gets an array of mandatory Extension instances from the package index.
+     * @returns {ExtensionComponent[]} - Array of mandatory Extension instances.
      * @public
      */
-    getMandatoryPackages(): PackageAttributes[] {
-        return this._packages.filter((pkg: PackageAttributes) => pkg.components.some((component: ComponentBase) => component.mandatory));
+    getMandatoryExtensions(): ExtensionComponent[] {
+        return this.getExtensions().filter((ext) => ext.mandatory);
     }
 
     /**
@@ -199,14 +199,16 @@ export class PackageIndex {
      */
     getExtensionParametersByParameterId(parameterId: string): Parameter[] | undefined {
         const foundPackage = this._packages.find((pkg: PackageAttributes) =>
-            pkg.components.some((component: ComponentBase): component is Extension => component.id === parameterId),
+            pkg.components.some((component: ComponentBase): component is ExtensionComponent => component.id === parameterId),
         );
 
-        let foundExposedInterface: Extension | undefined;
+        let foundExposedInterface: ExtensionComponent | undefined;
 
         if (foundPackage) {
             const components = foundPackage.components as ComponentBase[];
-            foundExposedInterface = components.find((component: ComponentBase): component is Extension => component.id === parameterId);
+            foundExposedInterface = components.find(
+                (component: ComponentBase): component is ExtensionComponent => component.id === parameterId,
+            );
         }
         return foundExposedInterface?.parameters;
     }

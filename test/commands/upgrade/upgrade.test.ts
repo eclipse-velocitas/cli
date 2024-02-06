@@ -16,7 +16,7 @@ import { ux } from '@oclif/core';
 import { expect, test } from '@oclif/test';
 import * as fs from 'fs';
 import * as packageModule from '../../../src/modules/package';
-import { ProjectConfig } from '../../../src/modules/project-config';
+import { ProjectConfigOptions } from '../../../src/modules/project-config';
 import { velocitasConfigMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore, userHomeDir } from '../../utils/mockfs';
 import * as gitModule from 'simple-git';
@@ -38,10 +38,10 @@ describe('upgrade', () => {
         .it('checking for upgrades in dry-run - no installed sources found', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
             expect(ctx.stdout).to.contain(
-                `... No installed sources for ${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version} found`,
+                `... No installed sources for ${velocitasConfigMock.packages[0].repo}:${velocitasConfigMock.packages[0].version} found`,
             );
             expect(ctx.stdout).to.contain(
-                `... No installed sources for ${velocitasConfigMock.packages[1].name}:${velocitasConfigMock.packages[1].version} found`,
+                `... No installed sources for ${velocitasConfigMock.packages[1].repo}:${velocitasConfigMock.packages[1].version} found`,
             );
         });
 
@@ -56,8 +56,8 @@ describe('upgrade', () => {
         .command(['upgrade', '--dry-run'])
         .it('checking for upgrades in dry-run - up to date', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
-            expect(ctx.stdout).to.contain(`... '${velocitasConfigMock.packages[0].name}' is up to date!`);
-            expect(ctx.stdout).to.contain(`... '${velocitasConfigMock.packages[1].name}' is up to date!`);
+            expect(ctx.stdout).to.contain(`... '${velocitasConfigMock.packages[0].repo}' is up to date!`);
+            expect(ctx.stdout).to.contain(`... '${velocitasConfigMock.packages[1].repo}' is up to date!`);
         });
 
     test.do(() => {
@@ -72,10 +72,10 @@ describe('upgrade', () => {
         .it('checking for upgrades in dry-run - can be updated', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
             expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[0].name}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersionTag}`,
+                `... '${velocitasConfigMock.packages[0].repo}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersionTag}`,
             );
             expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[1].name}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersionTag}`,
+                `... '${velocitasConfigMock.packages[1].repo}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersionTag}`,
             );
         });
 
@@ -92,13 +92,13 @@ describe('upgrade', () => {
         .it('checking for upgrades - no installed sources found - download', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
             expect(ctx.stdout).to.contain(
-                `... No installed sources for ${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version} found`,
+                `... No installed sources for ${velocitasConfigMock.packages[0].repo}:${velocitasConfigMock.packages[0].version} found`,
             );
             expect(ctx.stdout).to.contain(
-                `... No installed sources for ${velocitasConfigMock.packages[1].name}:${velocitasConfigMock.packages[1].version} found`,
+                `... No installed sources for ${velocitasConfigMock.packages[1].repo}:${velocitasConfigMock.packages[1].version} found`,
             );
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}`)).to.be.true;
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}`)).to.be.true;
         });
 
     test.do(() => {
@@ -119,7 +119,7 @@ describe('upgrade', () => {
         .it('catches error during upgrade', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
             expect(ctx.stdout).to.contain(
-                `... No installed sources for ${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version} found`,
+                `... No installed sources for ${velocitasConfigMock.packages[0].repo}:${velocitasConfigMock.packages[0].version} found`,
             );
         });
 
@@ -136,21 +136,21 @@ describe('upgrade', () => {
         .it('checking for upgrades - no installed sources found - do nothing', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
             expect(ctx.stdout).to.contain(
-                `... No installed sources for ${velocitasConfigMock.packages[0].name}:${velocitasConfigMock.packages[0].version} found`,
+                `... No installed sources for ${velocitasConfigMock.packages[0].repo}:${velocitasConfigMock.packages[0].version} found`,
             );
             expect(ctx.stdout).to.contain(
-                `... No installed sources for ${velocitasConfigMock.packages[1].name}:${velocitasConfigMock.packages[1].version} found`,
+                `... No installed sources for ${velocitasConfigMock.packages[1].repo}:${velocitasConfigMock.packages[1].version} found`,
             );
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}/_cache`)).to.be.true;
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}/_cache`)).to.be.true;
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}/_cache`)).to.be.true;
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}/_cache`)).to.be.true;
             expect(
                 fs.existsSync(
-                    `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}/${velocitasConfigMock.packages[0].version}`,
+                    `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}/${velocitasConfigMock.packages[0].version}`,
                 ),
             ).to.be.false;
             expect(
                 fs.existsSync(
-                    `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}/${velocitasConfigMock.packages[1].version}`,
+                    `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}/${velocitasConfigMock.packages[1].version}`,
                 ),
             ).to.be.false;
         });
@@ -166,8 +166,8 @@ describe('upgrade', () => {
         .command(['upgrade'])
         .it('checking for upgrades - up to date', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
-            expect(ctx.stdout).to.contain(`... '${velocitasConfigMock.packages[0].name}' is up to date!`);
-            expect(ctx.stdout).to.contain(`... '${velocitasConfigMock.packages[1].name}' is up to date!`);
+            expect(ctx.stdout).to.contain(`... '${velocitasConfigMock.packages[0].repo}' is up to date!`);
+            expect(ctx.stdout).to.contain(`... '${velocitasConfigMock.packages[1].repo}' is up to date!`);
         });
 
     test.do(() => {
@@ -183,14 +183,14 @@ describe('upgrade', () => {
         .it('checking for upgrades - can be updated - download', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
             expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[0].name}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersionTag}`,
+                `... '${velocitasConfigMock.packages[0].repo}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersionTag}`,
             );
             expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[1].name}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersionTag}`,
+                `... '${velocitasConfigMock.packages[1].repo}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersionTag}`,
             );
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;
-            const newVelocitasConfig: ProjectConfig = JSON.parse(
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}`)).to.be.true;
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}`)).to.be.true;
+            const newVelocitasConfig: ProjectConfigOptions = JSON.parse(
                 fs.readFileSync(`${process.cwd()}/.velocitas.json`, { encoding: 'utf8', flag: 'r' }),
             );
             expect(newVelocitasConfig.packages[0].version).to.be.equal(mockedNewVersionTag);
@@ -210,12 +210,12 @@ describe('upgrade', () => {
         .it('checking for upgrades - can be updated - do nothing', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
             expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[0].name}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersionTag}`,
+                `... '${velocitasConfigMock.packages[0].repo}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersionTag}`,
             );
             expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[1].name}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersionTag}`,
+                `... '${velocitasConfigMock.packages[1].repo}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersionTag}`,
             );
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].name}`)).to.be.true;
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].name}`)).to.be.true;
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}`)).to.be.true;
+            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}`)).to.be.true;
         });
 });
