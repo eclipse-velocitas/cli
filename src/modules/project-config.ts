@@ -167,7 +167,7 @@ export class ProjectConfig {
      * @returns A list of all components used by the project.
      */
     getComponents(): Array<ComponentContext> {
-        const componentContextes: ComponentContext[] = [];
+        const componentContexts: ComponentContext[] = [];
 
         const usedComponents = this._components;
 
@@ -176,7 +176,7 @@ export class ProjectConfig {
 
             for (const componentManifest of packageManifest.components) {
                 if (usedComponents.length === 0 || usedComponents.find((compCfg: ComponentConfig) => compCfg.id === componentManifest.id)) {
-                    componentContextes.push(
+                    componentContexts.push(
                         new ComponentContext(
                             packageConfig,
                             componentManifest,
@@ -188,7 +188,7 @@ export class ProjectConfig {
             }
         }
 
-        return componentContextes;
+        return componentContexts;
     }
 
     /**
