@@ -35,7 +35,7 @@ describe('CLI command', () => {
             process.chdir(`${TEST_ROOT}/testbench/test-create/vehicle-app-template`);
             let coreConfig: PackageConfig = new PackageConfig({
                 repo: packageIndex[0].package,
-                version: 'v0.0.3', // We need a version to start from
+                version: 'v0.0.1', // We need a version to start from
             });
             const availableVersions = await coreConfig.getPackageVersions();
             latestMainPackageVersion = getLatestVersion(availableVersions);

@@ -1,6 +1,6 @@
 [
     {
-        "package": "https://github.com/doosuu/pkg-velocitas-main.git",
+        "package": "https://github.com/eclipse-velocitas/pkg-velocitas-main.git",
         "components": [
             {
                 "id": "vapp-core-python",
