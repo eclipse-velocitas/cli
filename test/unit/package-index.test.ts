@@ -178,6 +178,7 @@ const EXPECTED_AVAILABLE_CORES: CoreComponent[] = validPackageIndexMock[1].compo
 const EXPECTED_AVAILABLE_EXTENSIONS: ExtensionComponent[] = validPackageIndexMock[0].components as ExtensionComponent[];
 const EXPECTED_AVAILABLE_EXTENSION_PARAMETER: Parameter[] = EXPECTED_AVAILABLE_EXTENSIONS[0].parameters!;
 const EXPECTED_AVAILABLE_PACKAGES = [validPackageIndexMock[0]];
+const EXPECTED_MANDATORY_EXTENSION_IDS: string[] = ['test-extension'];
 
 describe('package-index - module', () => {
     before(() => {
@@ -204,10 +205,10 @@ describe('package-index - module', () => {
             const availableExtensions = packageIndex.getExtensions();
             expect(availableExtensions).to.be.deep.equal(EXPECTED_AVAILABLE_EXTENSIONS);
         });
-        it('should parse available packages correctly from valid package-index.json.', () => {
+        it('should parse available mandatory extensions correctly from valid package-index.json.', () => {
             const packageIndex = PackageIndex.read();
-            const availablePackages = packageIndex.getMandatoryPackages();
-            expect(availablePackages).to.be.deep.equal(EXPECTED_AVAILABLE_PACKAGES);
+            const mandatoryExtensionIds = packageIndex.getMandatoryExtensions().map((ext: ExtensionComponent) => ext.id);
+            expect(mandatoryExtensionIds).to.be.deep.equal(EXPECTED_MANDATORY_EXTENSION_IDS);
         });
         it('should get correct extension parameters by parameterId.', () => {
             const packageIndex = PackageIndex.read();
@@ -224,10 +225,10 @@ describe('package-index - module', () => {
             const availableExtensions = packageIndex.getExtensions();
             expect(availableExtensions).to.be.empty;
         });
-        it('should parse available packages correctly from valid invalidPackage-index.json.', () => {
+        it('should parse available mandatory extensions correctly from valid invalidPackage-index.json.', () => {
             const packageIndex = PackageIndex.read('./invalidPackage-index.json');
-            const availablePackages = packageIndex.getMandatoryPackages();
-            expect(availablePackages).to.be.empty;
+            const mandatoryExtensions = packageIndex.getMandatoryExtensions();
+            expect(mandatoryExtensions).to.be.empty;
         });
     });
     after(() => {

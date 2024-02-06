@@ -58,7 +58,7 @@ By default, all components of a package will be used, but if desired the used co
 }
 ```
 
-The project above will only used the components `component-exposed-by-pkg-a` and `component-exposed-by-pkg-b`, ignoring any other components exposed by the packages.
+The project above will only use the components `component-exposed-by-pkg-a` and `component-exposed-by-pkg-b`, ignoring any other components exposed by the packages.
 
 ## File Structure
 

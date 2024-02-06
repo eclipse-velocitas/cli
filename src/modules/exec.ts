@@ -15,7 +15,7 @@
 import { exec } from 'child_process';
 import { IPty, spawn } from 'node-pty';
 import { join, resolve } from 'node:path';
-import { ExecSpec, findComponentByName } from './component';
+import { ExecSpec, ProgramSpec, findComponentByName } from './component';
 import { ProjectCache } from './project-cache';
 import { ProjectConfig } from './project-config';
 
@@ -116,7 +116,7 @@ export async function runExecSpec(
         throw new Error(`Component '${componentId}' has no exposed programs!`);
     }
 
-    const programSpec = componentContext.manifest.programs.find((prog) => prog.id === execSpec.ref);
+    const programSpec = componentContext.manifest.programs.find((prog: ProgramSpec) => prog.id === execSpec.ref);
     if (!programSpec) {
         throw new Error(`No program found for item '${execSpec.ref}' referenced in program list of '${componentId}'`);
     }

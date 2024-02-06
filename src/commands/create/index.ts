@@ -70,7 +70,11 @@ class CreateData {
         this.name = appName;
         this.coreId = coreId;
         this.appManifest = new AppManifest(appName, interfaceAttributes);
-        this.componentIds = new Set<string>([coreId, ...interfaceAttributes.map((ifa) => ifa.type).values(), ...mandatoryExtensionIds]);
+        this.componentIds = new Set<string>([
+            coreId,
+            ...interfaceAttributes.map((ifa: AppManifestInterfaceAttributes) => ifa.type).values(),
+            ...mandatoryExtensionIds,
+        ]);
         this.example = example;
     }
 }
@@ -196,10 +200,7 @@ export default class Create extends Command {
             flags.name,
             flags.example,
             appManifestInterfaceAttributes,
-            packageIndex
-                .getExtensions()
-                .filter((ext) => ext.mandatory)
-                .map((ext) => ext.id),
+            packageIndex.getMandatoryExtensions().map((ext: ExtensionComponent) => ext.id),
         );
         return createData;
     }
@@ -212,10 +213,7 @@ export default class Create extends Command {
             corePromptResult.appName,
             corePromptResult.example,
             appManifestInterfaceAttributes,
-            packageIndex
-                .getExtensions()
-                .filter((ext) => ext.mandatory)
-                .map((ext) => ext.id),
+            packageIndex.getMandatoryExtensions().map((ext: ExtensionComponent) => ext.id),
         );
         return createData;
     }

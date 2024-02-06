@@ -21,7 +21,7 @@ import { PackageConfig } from './package';
 import { getLatestVersion } from './semver';
 import { PackageIndex } from './package-index';
 import { DEFAULT_APP_MANIFEST_PATH } from './app-manifest';
-import { ComponentContext } from './component';
+import { ComponentContext, ComponentManifest } from './component';
 import { VariableCollection } from './variables';
 
 export const DEFAULT_CONFIG_FILE_NAME = '.velocitas.json';
@@ -153,9 +153,9 @@ export class ProjectConfig {
      * @returns The configuration of the component.
      */
     getComponentConfig(componentId: string): ComponentConfig {
-        var maybeComponentConfig: ComponentConfig | undefined;
+        let maybeComponentConfig: ComponentConfig | undefined;
         if (this._components) {
-            maybeComponentConfig = this._components.find((c) => c.id === componentId);
+            maybeComponentConfig = this._components.find((compCfg: ComponentConfig) => compCfg.id === componentId);
         }
         return maybeComponentConfig ? maybeComponentConfig : new ComponentConfig(componentId);
     }
@@ -167,7 +167,7 @@ export class ProjectConfig {
      * @returns A list of all components used by the project.
      */
     getComponents(): Array<ComponentContext> {
-        var componentContextes = new Array<ComponentContext>();
+        const componentContextes: ComponentContext[] = [];
 
         const usedComponents = this._components;
 
@@ -175,7 +175,7 @@ export class ProjectConfig {
             const packageManifest = packageConfig.readPackageManifest();
 
             for (const componentManifest of packageManifest.components) {
-                if (usedComponents.length === 0 || usedComponents.find((c) => c.id === componentManifest.id)) {
+                if (usedComponents.length === 0 || usedComponents.find((compCfg: ComponentConfig) => compCfg.id === componentManifest.id)) {
                     componentContextes.push(
                         new ComponentContext(
                             packageConfig,

@@ -171,12 +171,12 @@ export class PackageIndex {
     }
 
     /**
-     * Gets an array of all mandatory Packages.
-     * @returns {PackageAttributes[]} - Array of PackageAttributes.
+     * Gets an array of mandatory Extension instances from the package index.
+     * @returns {ExtensionComponent[]} - Array of mandatory Extension instances.
      * @public
      */
-    getMandatoryPackages(): PackageAttributes[] {
-        return this._packages.filter((pkg: PackageAttributes) => pkg.components.some((component: ComponentBase) => component.mandatory));
+    getMandatoryExtensions(): ExtensionComponent[] {
+        return this.getExtensions().filter((ext) => ext.mandatory);
     }
 
     /**
