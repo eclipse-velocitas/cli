@@ -12,6 +12,10 @@ Which variables are available from your packages can be viewed by the `packages`
 | `package` | Variable is valid within the same toolchain component and all of the components within the same package. Allows sharing of information within a package (e.g. a version identifier). |
 | `project` | Variable is valid within all toolchain components of the project. This allows toolchain components of type `core` to share information with all of it's `extensions`, for example a programming language or a configuration. |
 
+## Constants
+
+Variables can be marked as `constant` in a component's manifest. By marking a variable as constant, it can not be overwritten by project configuration. If an identically named variable is found, the CLI will raise an error until the collision is fixed manually.
+
 ## Built-in variables
 
 | Name | Example | Description |

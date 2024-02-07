@@ -96,7 +96,7 @@ export class ProjectConfig {
 
     static isAvailable = (path: PathLike = DEFAULT_CONFIG_FILE_PATH) => existsSync(path);
 
-    static async create(usedComponents: Set<string>, packageIndex: PackageIndex, language: string, cliVersion: string) {
+    static async create(usedComponents: Set<string>, packageIndex: PackageIndex, cliVersion: string) {
         const projectConfig = new ProjectConfig(`v${cliVersion}`);
         const usedPackageRepos = new Set<string>();
         for (const usedComponent of usedComponents) {
@@ -114,8 +114,6 @@ export class ProjectConfig {
             packageConfig.version = latestVersion;
             projectConfig.getPackages().push(packageConfig);
         }
-        projectConfig.getVariableMappings().set('language', language);
-        projectConfig.getVariableMappings().set('repoType', 'app');
         projectConfig.getVariableMappings().set('appManifestPath', DEFAULT_APP_MANIFEST_PATH);
         projectConfig.getVariableMappings().set('githubRepoId', '<myrepo>');
         projectConfig.write();
