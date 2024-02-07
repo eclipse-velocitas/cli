@@ -40,6 +40,9 @@ export interface VariableDefinition {
     // default value, if any
     default?: any;
 
+    // alternative name for default in case of a constant.
+    value?: any;
+
     // is component defined value constant? Defaults to false.
     constant?: boolean;
 }
@@ -77,6 +80,46 @@ export class VariableCollection {
         return envVars;
     }
 
+    private static _addVariablesInScopeToMap(
+        projectComponents: ComponentContext[],
+        currentComponentContext: ComponentContext,
+        variableMap: Map<string, any>,
+        usedVariableDefinitions: VariableDefinition[],
+    ) {
+        // now we scan the all component manifests whether they provide variables which are in scope
+        for (const component of projectComponents) {
+            if (!component.manifest.variables) {
+                continue;
+            }
+
+            for (const variableDef of component.manifest.variables) {
+                const isCurrentComponent = currentComponentContext.manifest.id === component.manifest.id;
+
+                const isComponentInSamePackage =
+                    component.packageConfig.getPackageName() === currentComponentContext.packageConfig.getPackageName();
+
+                const isVariableInScope =
+                    isCurrentComponent ||
+                    (isComponentInSamePackage && variableDef.scope === ScopeIdenitfier.package) ||
+                    variableDef.scope === ScopeIdenitfier.project;
+
+                if (isVariableInScope) {
+                    if (variableMap.has(variableDef.name) && variableDef.constant) {
+                        throw Error(
+                            `Constant variable '${variableDef.name}' provided by component '${component.manifest.id}' has been set already!`,
+                        );
+                    }
+
+                    if (!variableMap.has(variableDef.name) && variableDef.default !== undefined) {
+                        variableMap.set(variableDef.name, variableDef.default);
+                    }
+
+                    usedVariableDefinitions.push(variableDef);
+                }
+            }
+        }
+    }
+
     static build(
         projectComponents: ComponentContext[],
         userDefinedVariableMappings: Map<string, any>,
@@ -100,38 +143,7 @@ export class VariableCollection {
             map = new Map([...map.entries(), ...currentComponentContext.config.variables.entries()]);
         }
 
-        // now we scan the all component manifests whether they provide variables which are in scope
-        for (const component of projectComponents) {
-            if (!component.manifest.variables) {
-                continue;
-            }
-
-            for (const variableDef of component.manifest.variables) {
-                const isCurrentComponent = currentComponentContext.manifest.id === component.manifest.id;
-
-                const isComponentInSamePackage =
-                    component.packageConfig.getPackageName() === currentComponentContext.packageConfig.getPackageName();
-
-                const isVariableInScope =
-                    isCurrentComponent ||
-                    (isComponentInSamePackage && variableDef.scope === ScopeIdenitfier.package) ||
-                    variableDef.scope === ScopeIdenitfier.project;
-
-                if (isVariableInScope) {
-                    if (map.has(variableDef.name) && variableDef.constant) {
-                        throw Error(
-                            `Constant variable '${variableDef.name}' provided by component '${component.manifest.id}' has been set already!`,
-                        );
-                    }
-
-                    if (!map.has(variableDef.name) && variableDef.default !== undefined) {
-                        map.set(variableDef.name, variableDef.default);
-                    }
-
-                    usedVariableDefinitions.push(variableDef);
-                }
-            }
-        }
+        this._addVariablesInScopeToMap(projectComponents, currentComponentContext, map, usedVariableDefinitions);
 
         verifyGivenVariables(currentComponentContext.manifest.id, map, usedVariableDefinitions);
 

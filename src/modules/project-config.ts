@@ -173,7 +173,7 @@ export class ProjectConfig {
             const packageManifest = packageConfig.readPackageManifest();
 
             for (const componentManifest of packageManifest.components) {
-                if (usedComponents.length === 0 || usedComponents.find((c) => c.id === componentManifest.id)) {
+                if (usedComponents.length === 0 || usedComponents.find((compCfg: ComponentConfig) => compCfg.id === componentManifest.id)) {
                     componentContexts.push(
                         new ComponentContext(packageConfig, componentManifest, this.getComponentConfig(componentManifest.id)),
                     );
@@ -190,7 +190,7 @@ export class ProjectConfig {
      * @returns The context the component is used in.
      */
     findComponentByName(componentId: string): ComponentContext {
-        let result = this.getComponents().find((c) => c.manifest.id === componentId);
+        let result = this.getComponents().find((compCtx: ComponentContext) => compCtx.manifest.id === componentId);
 
         if (!result) {
             throw Error(`Cannot find component with id '${componentId}'!`);

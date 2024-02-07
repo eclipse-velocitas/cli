@@ -13,6 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CoreComponent, ExtensionComponent, PackageAttributes } from '../../src/modules/package-index';
+import { ScopeIdenitfier } from '../../src/modules/variables';
 
 export const velocitasConfigMock = {
     packages: [
@@ -31,10 +32,8 @@ export const velocitasConfigMock = {
         },
     ],
     variables: {
-        language: 'python',
-        repoType: 'app',
-        appManifestPath: 'app/AppManifest.json',
-        githubRepoId: 'test',
+        appManifestPath: './app/AppManifest.json',
+        githubRepoId: 'myRepo',
     },
 };
 
@@ -264,7 +263,16 @@ export const corePackageManifestMock = {
                     name: 'language',
                     description: 'Programming language of the project.',
                     type: 'string',
+                    scope: ScopeIdenitfier.project,
+                    constant: true,
                     default: 'python',
+                },
+                {
+                    name: 'repoType',
+                    description: 'The type of the repository',
+                    type: 'string',
+                    scope: ScopeIdenitfier.project,
+                    default: 'app',
                 },
             ],
         },

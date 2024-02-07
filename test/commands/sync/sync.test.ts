@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
-import { runtimePackageManifestMock, setupPackageManifestMock, velocitasConfigMock } from '../../utils/mockConfig';
+import { runtimePackageManifestMock, setupPackageManifestMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore } from '../../utils/mockfs';
 
 describe('sync', () => {
