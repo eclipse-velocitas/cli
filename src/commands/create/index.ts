@@ -241,7 +241,7 @@ export default class Create extends Command {
         } else {
             createData = await this._parseFlags(packageIndex, flags);
         }
-        await ProjectConfig.create(createData.componentIds, packageIndex, createData.coreId.split('-').at(-1)!, this.config.version);
+        await ProjectConfig.create(createData.componentIds, packageIndex, this.config.version);
         createData.appManifest.write();
 
         this.log(`... Project for Vehicle Application '${createData.name}' created!`);

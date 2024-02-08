@@ -93,7 +93,6 @@ describe('create', () => {
             expect(velocitasConfig.getPackages()[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
             expect(velocitasConfig.getPackages()[1].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.getPackages()[1].version).to.be.equal(TEST_PACKAGE_VERSION);
-            expect(velocitasConfig.getVariableMappings().get('language')).to.be.equal('test');
 
             const appManifest = AppManifest.read();
             expect(appManifest!.name).to.be.equal(TEST_APP_NAME);
@@ -183,7 +182,6 @@ describe('create', () => {
                 expect(velocitasConfig.getPackages()[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
                 expect(velocitasConfig.getPackages()[1].repo).to.be.equal(TEST_PACKAGE_URI);
                 expect(velocitasConfig.getPackages()[1].version).to.be.equal(TEST_PACKAGE_VERSION);
-                expect(velocitasConfig.getVariableMappings().get('language')).to.be.equal('test');
 
                 const appManifest = AppManifest.read();
                 expect(appManifest!.name).to.be.equal(TEST_APP_NAME);
@@ -229,7 +227,6 @@ describe('create', () => {
             expect(velocitasConfig.getPackages()[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
             expect(velocitasConfig.getPackages()[1].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.getPackages()[1].version).to.be.equal(TEST_PACKAGE_VERSION);
-            expect(velocitasConfig.getVariableMappings().get('language')).to.be.equal('test');
 
             const appManifest = AppManifest.read();
             expect(appManifest!.name).to.be.equal(TEST_APP_NAME);
@@ -278,7 +275,6 @@ describe('create', () => {
             expect(velocitasConfig.getPackages()[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
             expect(velocitasConfig.getPackages()[1].repo).to.be.equal(TEST_PACKAGE_URI);
             expect(velocitasConfig.getPackages()[1].version).to.be.equal(TEST_PACKAGE_VERSION);
-            expect(velocitasConfig.getVariableMappings().get('language')).to.be.equal('test');
 
             const appManifest = AppManifest.read();
             expect(appManifest!.name).to.be.equal(TEST_COMPONENT_CORE_EXAMPLE);

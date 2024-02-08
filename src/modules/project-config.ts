@@ -21,7 +21,7 @@ import { PackageConfig } from './package';
 import { getLatestVersion } from './semver';
 import { PackageIndex } from './package-index';
 import { DEFAULT_APP_MANIFEST_PATH } from './app-manifest';
-import { ComponentContext, ComponentManifest } from './component';
+import { ComponentConfig, ComponentContext } from './component';
 import { VariableCollection } from './variables';
 
 export const DEFAULT_CONFIG_FILE_NAME = '.velocitas.json';
@@ -96,7 +96,7 @@ export class ProjectConfig {
 
     static isAvailable = (path: PathLike = DEFAULT_CONFIG_FILE_PATH) => existsSync(path);
 
-    static async create(usedComponents: Set<string>, packageIndex: PackageIndex, language: string, cliVersion: string) {
+    static async create(usedComponents: Set<string>, packageIndex: PackageIndex, cliVersion: string) {
         const projectConfig = new ProjectConfig(`v${cliVersion}`);
         const usedPackageRepos = new Set<string>();
         for (const usedComponent of usedComponents) {
@@ -114,8 +114,6 @@ export class ProjectConfig {
             packageConfig.version = latestVersion;
             projectConfig.getPackages().push(packageConfig);
         }
-        projectConfig.getVariableMappings().set('language', language);
-        projectConfig.getVariableMappings().set('repoType', 'app');
         projectConfig.getVariableMappings().set('appManifestPath', DEFAULT_APP_MANIFEST_PATH);
         projectConfig.getVariableMappings().set('githubRepoId', '<myrepo>');
         projectConfig.write();
@@ -177,18 +175,28 @@ export class ProjectConfig {
             for (const componentManifest of packageManifest.components) {
                 if (usedComponents.length === 0 || usedComponents.find((compCfg: ComponentConfig) => compCfg.id === componentManifest.id)) {
                     componentContexts.push(
-                        new ComponentContext(
-                            packageConfig,
-                            componentManifest,
-                            this.getComponentConfig(componentManifest.id),
-                            VariableCollection.build(this, packageConfig, this.getComponentConfig(componentManifest.id), componentManifest),
-                        ),
+                        new ComponentContext(packageConfig, componentManifest, this.getComponentConfig(componentManifest.id)),
                     );
                 }
             }
         }
 
         return componentContexts;
+    }
+
+    /**
+     * Find a single component by its ID.
+     * @param componentId   The component ID to find.
+     * @returns The context the component is used in.
+     */
+    findComponentByName(componentId: string): ComponentContext {
+        let result = this.getComponents().find((compCtx: ComponentContext) => compCtx.manifest.id === componentId);
+
+        if (!result) {
+            throw Error(`Cannot find component with id '${componentId}'!`);
+        }
+
+        return result;
     }
 
     /**
@@ -204,16 +212,8 @@ export class ProjectConfig {
     getVariableMappings(): Map<string, any> {
         return this._variables;
     }
-}
 
-export class ComponentConfig {
-    // ID of the component
-    id: string;
-
-    // component-wide variable configuration
-    variables?: Map<string, any>;
-
-    constructor(id: string) {
-        this.id = id;
+    getVariableCollection(componentContext: ComponentContext): VariableCollection {
+        return VariableCollection.build(this.getComponents(), this.getVariableMappings(), componentContext);
     }
 }

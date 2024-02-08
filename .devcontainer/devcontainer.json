@@ -38,7 +38,8 @@
                 "ms-python.python",
                 "rpdswtk.vsmqtt",
                 "ms-kubernetes-tools.vscode-kubernetes-tools",
-                "leizongmin.node-module-intellisense"
+                "leizongmin.node-module-intellisense",
+                "bierner.markdown-preview-github-styles"
             ]
         }
     },

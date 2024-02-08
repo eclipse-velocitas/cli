@@ -37,7 +37,7 @@ Syncing Velocitas components!
             }
 
             this.log(`... syncing '${component.manifest.id}'`);
-            installComponent(component.packageConfig, component.manifest, component.variableCollection);
+            installComponent(component.packageConfig, component.manifest, projectConfig.getVariableCollection(component));
         }
     }
 }
