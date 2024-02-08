@@ -72,7 +72,9 @@ export async function awaitSpawn(
         };
         process.on('SIGINT', sigintCallback);
         ptyProcess.onExit((code) => {
-            process.stdin.unref();
+            if (process.stdin) {
+                process.stdin.unref();
+            }
             ptyProcess.kill();
             resolveFunc(code);
             projectCache.write();
