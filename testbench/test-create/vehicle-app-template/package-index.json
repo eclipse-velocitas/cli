@@ -48,10 +48,10 @@
         ]
     },
     {
-        "package": "https://github.com/eclipse-velocitas/uprotocol-java-core",
+        "package": "https://github.com/eclipse-velocitas/pkg-velocitas-uprotocol",
         "components": [
             {
-                "id": "uprotocol-java-core",
+                "id": "uprotocol-core-java",
                 "type": "core",
                 "name": "uProtocol App/Service (Java)",
                 "description": "Creates a uProtocol Application or Service written in Java",
@@ -68,12 +68,8 @@
                                 "required": true,
                                 "values": [
                                     {
-                                        "id": "seat-adjuster",
-                                        "description": "Seat Adjuster Example"
-                                    },
-                                    {
-                                        "id": "dog-mode",
-                                        "description": "Dog Mode Example"
+                                        "id": "horn-activator",
+                                        "description": "Horn Activator Example"
                                     }
                                 ]
                             }
@@ -175,7 +171,7 @@
                 "description": "",
                 "mandatory": false,
                 "compatibleCores": [
-                    "uprotocol-java-core"
+                    "uprotocol-core-java"
                 ],
                 "parameters": [
                     {
