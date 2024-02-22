@@ -18,9 +18,9 @@ import { ComponentContext } from './component';
 import { mapReplacer } from './helpers';
 import { ProjectCache } from './project-cache';
 
-export enum ScopeIdenitfier {
-    package,
-    project,
+export enum ScopeIdentifier {
+    package = 'package',
+    project = 'project',
 }
 
 /** Definition of a variable used within the component which may be overwritten by values in the project configuration. */
@@ -35,7 +35,7 @@ export interface VariableDefinition {
     type: string;
 
     // Scope in which the variable's value is valid. Defaults to component only.
-    scope?: ScopeIdenitfier;
+    scope?: ScopeIdentifier;
 
     // default value, if any
     default?: any;
@@ -100,8 +100,8 @@ export class VariableCollection {
 
                 const isVariableInScope =
                     isCurrentComponent ||
-                    (isComponentInSamePackage && variableDef.scope === ScopeIdenitfier.package) ||
-                    variableDef.scope === ScopeIdenitfier.project;
+                    (isComponentInSamePackage && variableDef.scope === ScopeIdentifier.package) ||
+                    variableDef.scope === ScopeIdentifier.project;
 
                 if (isVariableInScope) {
                     if (variableMap.has(variableDef.name) && variableDef.constant) {
@@ -114,7 +114,11 @@ export class VariableCollection {
                         variableMap.set(variableDef.name, variableDef.default);
                     }
 
-                    usedVariableDefinitions.push(variableDef);
+                    const varNameAlreadyExists = usedVariableDefinitions.some((def: VariableDefinition) => def.name === variableDef.name);
+
+                    if (!varNameAlreadyExists) {
+                        usedVariableDefinitions.push(variableDef);
+                    }
                 }
             }
         }

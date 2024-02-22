@@ -16,7 +16,7 @@ import { expect } from 'chai';
 import 'mocha';
 import { PackageConfig } from '../../src/modules/package';
 import { ProjectConfig } from '../../src/modules/project-config';
-import { ScopeIdenitfier, VariableCollection } from '../../src/modules/variables';
+import { ScopeIdentifier, VariableCollection } from '../../src/modules/variables';
 import { ComponentConfig, ComponentContext, ComponentManifest } from '../../src/modules/component';
 
 let projectConfig: ProjectConfig;
@@ -75,7 +75,7 @@ describe('variables - module', () => {
                 {
                     name: 'exportedStringConst',
                     type: 'string',
-                    scope: ScopeIdenitfier.project,
+                    scope: ScopeIdentifier.project,
                     default: 'PROJECT_EXPORTED',
                     constant: true,
                     description: 'Exported string const',
@@ -83,7 +83,7 @@ describe('variables - module', () => {
                 {
                     name: 'exportedString',
                     type: 'string',
-                    scope: ScopeIdenitfier.package,
+                    scope: ScopeIdentifier.package,
                     default: 'PACKAGE_EXPORTED',
                     description: 'Exported string const',
                 },
