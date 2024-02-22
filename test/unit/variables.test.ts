@@ -16,7 +16,7 @@ import { expect } from 'chai';
 import 'mocha';
 import { PackageConfig } from '../../src/modules/package';
 import { ProjectConfig } from '../../src/modules/project-config';
-import { ScopeIdenitfier, VariableCollection } from '../../src/modules/variables';
+import { ScopeIdentifier, VariableCollection } from '../../src/modules/variables';
 import { ComponentConfig, ComponentContext, ComponentManifest } from '../../src/modules/component';
 
 let projectConfig: ProjectConfig;
@@ -75,7 +75,7 @@ describe('variables - module', () => {
                 {
                     name: 'exportedStringConst',
                     type: 'string',
-                    scope: ScopeIdenitfier.project,
+                    scope: ScopeIdentifier.project,
                     default: 'PROJECT_EXPORTED',
                     constant: true,
                     description: 'Exported string const',
@@ -83,7 +83,7 @@ describe('variables - module', () => {
                 {
                     name: 'exportedString',
                     type: 'string',
-                    scope: ScopeIdenitfier.package,
+                    scope: ScopeIdentifier.package,
                     default: 'PACKAGE_EXPORTED',
                     description: 'Exported string const',
                 },
@@ -194,6 +194,25 @@ describe('variables - module', () => {
             expect(envVars['builtin_package_github_repo']).to.equal('test-package');
             expect(envVars['builtin_package_github_ref']).to.equal('v1.1.1');
             expect(envVars['builtin_component_id']).to.equal('test-component');
+        });
+        it('should not throw an error when trying to build VariableCollection with identical VariableDefinition names', () => {
+            const buildVariableCollection = () => {
+                const alreadyExistingVariableDefName = {
+                    name: 'testString',
+                    type: 'string',
+                    description: 'This is a test duplicate',
+                };
+                pkg1Comp1Manifest.variables?.push(alreadyExistingVariableDefName);
+                const componentContextWithMultipleVariableDef = new ComponentContext(pkg1Config, pkg1Comp1Manifest, pkg1Comp1Cfg);
+
+                return VariableCollection.build(
+                    [componentContextWithMultipleVariableDef],
+                    variablesMap,
+                    componentContextWithMultipleVariableDef,
+                );
+            };
+
+            expect(buildVariableCollection).not.to.throw();
         });
     });
 });
