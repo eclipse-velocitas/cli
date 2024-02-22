@@ -195,5 +195,24 @@ describe('variables - module', () => {
             expect(envVars['builtin_package_github_ref']).to.equal('v1.1.1');
             expect(envVars['builtin_component_id']).to.equal('test-component');
         });
+        it('should not throw an error when trying to build VariableCollection with identical VariableDefinition names', () => {
+            const buildVariableCollection = () => {
+                const alreadyExistingVariableDefName = {
+                    name: 'testString',
+                    type: 'string',
+                    description: 'This is a test duplicate',
+                };
+                pkg1Comp1Manifest.variables?.push(alreadyExistingVariableDefName);
+                const componentContextWithMultipleVariableDef = new ComponentContext(pkg1Config, pkg1Comp1Manifest, pkg1Comp1Cfg);
+
+                return VariableCollection.build(
+                    [componentContextWithMultipleVariableDef],
+                    variablesMap,
+                    componentContextWithMultipleVariableDef,
+                );
+            };
+
+            expect(buildVariableCollection).not.to.throw();
+        });
     });
 });
