@@ -175,8 +175,8 @@ export class PackageIndex {
      * @returns {ExtensionComponent[]} - Array of mandatory Extension instances.
      * @public
      */
-    getMandatoryExtensions(): ExtensionComponent[] {
-        return this.getExtensions().filter((ext) => ext.mandatory);
+    getMandatoryExtensionsByCoreId(coreId: string): ExtensionComponent[] {
+        return this.getExtensions().filter((ext) => ext.mandatory && ext.compatibleCores.includes(coreId));
     }
 
     /**

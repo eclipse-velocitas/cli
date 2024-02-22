@@ -48,7 +48,7 @@
         ]
     },
     {
-        "package": "https://github.com/eclipse-velocitas/pkg-velocitas-uprotocol",
+        "package": "https://github.com/eclipse-velocitas/pkg-velocitas-uprotocol.git",
         "components": [
             {
                 "id": "uprotocol-core-java",
@@ -63,7 +63,7 @@
                         "parameters": [
                             {
                                 "id": "example",
-                                "description": "Provided Examples from SDK",
+                                "description": "Provided Examples from Velocitas uProtocol Core Package",
                                 "type": "list",
                                 "required": true,
                                 "values": [

@@ -207,7 +207,7 @@ describe('package-index - module', () => {
         });
         it('should parse available mandatory extensions correctly from valid package-index.json.', () => {
             const packageIndex = PackageIndex.read();
-            const mandatoryExtensionIds = packageIndex.getMandatoryExtensions().map((ext: ExtensionComponent) => ext.id);
+            const mandatoryExtensionIds = packageIndex.getMandatoryExtensionsByCoreId('core-test').map((ext: ExtensionComponent) => ext.id);
             expect(mandatoryExtensionIds).to.be.deep.equal(EXPECTED_MANDATORY_EXTENSION_IDS);
         });
         it('should get correct extension parameters by parameterId.', () => {
@@ -227,7 +227,7 @@ describe('package-index - module', () => {
         });
         it('should parse available mandatory extensions correctly from valid invalidPackage-index.json.', () => {
             const packageIndex = PackageIndex.read('./invalidPackage-index.json');
-            const mandatoryExtensions = packageIndex.getMandatoryExtensions();
+            const mandatoryExtensions = packageIndex.getMandatoryExtensionsByCoreId('core-test');
             expect(mandatoryExtensions).to.be.empty;
         });
     });

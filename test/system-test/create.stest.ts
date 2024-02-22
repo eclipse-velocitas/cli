@@ -59,7 +59,7 @@ describe('CLI command', () => {
                 encoding: DEFAULT_BUFFER_ENCODING,
             });
             const creationConfigFile = readFileSync(
-                `${VELOCITAS_HOME}/packages/pkg-velocitas-main/${latestMainPackageVersion}/core/vapp-python/.project-creation/config.json`,
+                `${VELOCITAS_HOME}/packages/pkg-velocitas-main/${latestMainPackageVersion}/components/cores/vapp-python/.project-creation/config.json`,
                 DEFAULT_BUFFER_ENCODING,
             );
             const creationConfig = JSON.parse(creationConfigFile);

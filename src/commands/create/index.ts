@@ -200,7 +200,7 @@ export default class Create extends Command {
             flags.name,
             flags.example,
             appManifestInterfaceAttributes,
-            packageIndex.getMandatoryExtensions().map((ext: ExtensionComponent) => ext.id),
+            packageIndex.getMandatoryExtensionsByCoreId(flags.core).map((ext: ExtensionComponent) => ext.id),
         );
         return createData;
     }
@@ -213,7 +213,7 @@ export default class Create extends Command {
             corePromptResult.appName,
             corePromptResult.example,
             appManifestInterfaceAttributes,
-            packageIndex.getMandatoryExtensions().map((ext: ExtensionComponent) => ext.id),
+            packageIndex.getMandatoryExtensionsByCoreId(corePromptResult.chosenCore.id).map((ext: ExtensionComponent) => ext.id),
         );
         return createData;
     }
@@ -247,7 +247,16 @@ export default class Create extends Command {
         this.log(`... Project for Vehicle Application '${createData.name}' created!`);
         await Init.run(['--no-hooks']);
         try {
-            await Exec.run([createData.coreId, 'create-project', '-d', process.cwd(), '-e', createData.example ? createData.name : '']);
+            await Exec.run([
+                createData.coreId,
+                'create-project',
+                '-d',
+                process.cwd(),
+                '-e',
+                createData.example ? createData.name : '',
+                '-n',
+                createData.name,
+            ]);
         } catch (error) {
             this.error('Unable to execute create script!');
         }
