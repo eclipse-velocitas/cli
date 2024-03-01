@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
-import { velocitasConfigMock } from '../../utils/mockConfig';
+import { runtimeComponentManifestMock, setupComponentManifestMock, velocitasConfigMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore } from '../../utils/mockfs';
 
 describe('sync', () => {
@@ -27,7 +27,7 @@ describe('sync', () => {
         .command(['sync'])
         .it('syncing components into project directory', (ctx) => {
             expect(ctx.stdout).to.contain('Syncing Velocitas components!');
-            expect(ctx.stdout).to.contain(`... syncing '${velocitasConfigMock.packages[1].name}'`);
-            expect(ctx.stdout).to.not.contain(`... syncing '${velocitasConfigMock.packages[0].name}'`);
+            expect(ctx.stdout).to.contain(`... syncing '${setupComponentManifestMock.components[0].id}'`);
+            expect(ctx.stdout).to.not.contain(`... syncing '${runtimeComponentManifestMock.components[0].id}'`);
         });
 });

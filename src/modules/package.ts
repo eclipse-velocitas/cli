@@ -132,10 +132,6 @@ function getPackageFolderPath(): string {
     return join(getVelocitasRoot(), 'packages');
 }
 
-export function getComponentByType(packageManifest: PackageManifest, type: ComponentType): Component {
-    const component = packageManifest.components.find((component: Component) => component.type === type);
-    if (component === undefined) {
-        throw new TypeError(`No Subcomponent with type "${type}" found!`);
-    }
-    return component;
+export function getComponentsByType(packageManifest: PackageManifest, type: ComponentType): Component[] {
+    return packageManifest.components.filter((component: Component) => component.type === type);
 }

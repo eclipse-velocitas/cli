@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { getComponentByType, PackageConfig, PackageManifest } from './package';
+import { getComponentsByType, PackageConfig, PackageManifest } from './package';
 import { ComponentConfig, ProjectConfig } from './project-config';
 import { VariableDefinition } from './variables';
 
@@ -105,9 +105,11 @@ export function findComponentsByType<TComponentType extends Component>(
 ): Array<[PackageConfig, PackageManifest, TComponentType]> {
     const result = new Array<[PackageConfig, PackageManifest, TComponentType]>();
     for (const packageConfig of projectConfig.packages) {
-        const componentManifest = packageConfig.readPackageManifest();
+        const packageManifest = packageConfig.readPackageManifest();
         try {
-            result.push([packageConfig, componentManifest, getComponentByType(componentManifest, type) as TComponentType]);
+            for(const component of getComponentsByType(packageManifest, type)) {
+                result.push([packageConfig, packageManifest, component as TComponentType]);
+            }
         } catch (e) {}
     }
 
