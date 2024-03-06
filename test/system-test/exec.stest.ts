@@ -15,17 +15,11 @@
 import { expect } from 'chai';
 import { spawn, spawnSync } from 'child_process';
 import { copySync } from 'fs-extra';
-import { homedir } from 'node:os';
-import { join } from 'path';
-import { cwd } from 'process';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import YAML from 'yaml';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
 import { readFileSync } from 'fs';
-
-const VELOCITAS_PROCESS = join('..', '..', process.env['VELOCITAS_PROCESS'] ? process.env['VELOCITAS_PROCESS'] : 'velocitas');
-const TEST_ROOT = cwd();
-const VELOCITAS_HOME = `${homedir()}/.velocitas`;
+import { TEST_ROOT, VELOCITAS_HOME, VELOCITAS_PROCESS } from '../utils/systemTestConfig';
 
 describe('CLI command', () => {
     describe('exec', () => {

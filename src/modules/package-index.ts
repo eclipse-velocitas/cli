@@ -37,14 +37,27 @@ export interface Parameter {
 }
 
 /**
+ * Represents a mandatory component with an ID and a config property.
+ * @interface MandatoryComponent
+ * @prop {string} id - ID of the component.
+ * @prop {any} config - Config for the mandatory component.
+ */
+export interface MandatoryComponent {
+    id: string;
+    config: any;
+}
+
+/**
  * Represents a value with an ID and a description.
  * @interface DescribedId
  * @prop {string} id - Unique ID of the value.
  * @prop {string} description - Description of the value.
+ * @prop {MandatoryComponent[]} mandatoryComponents - Array of mandatory components.
  */
 export interface DescribedId {
     id: string;
     description: string;
+    mandatoryComponents: MandatoryComponent[];
 }
 
 /**
@@ -171,17 +184,42 @@ export class PackageIndex {
     }
 
     /**
-     * Gets an array of mandatory Extension instances from the package index.
+     * Gets an array of mandatory Extension instances from the package index by a coreId.
+     * @param {string} coreId - Unique core ID.
      * @returns {ExtensionComponent[]} - Array of mandatory Extension instances.
      * @public
      */
     getMandatoryExtensionsByCoreId(coreId: string): ExtensionComponent[] {
-        return this.getExtensions().filter((ext) => ext.mandatory && ext.compatibleCores.includes(coreId));
+        return this.getExtensions().filter((ext: ExtensionComponent) => ext.mandatory && ext.compatibleCores.includes(coreId));
+    }
+
+    /**
+     * Gets an array of mandatory Extension IDs from the package index by a chosen example.
+     * @param {string} coreId - Unique core ID.
+     * @param {string} example - Chosen example ID.
+     * @returns {string[]} - Array of mandatory Extension IDs.
+     * @public
+     */
+    getMandatoryExtensionsByExampleForCore(coreId: string, exampleId: string): string[] {
+        const core = this.getCores().find((core: CoreComponent) => core.id === coreId);
+
+        if (!core || !core.options) {
+            return [];
+        }
+        const exampleOption = core.options
+            .flatMap((option: CoreOptions) => option.parameters)
+            .flatMap((parameter: Parameter) => parameter.values)
+            .find((option: DescribedId | undefined): option is DescribedId => option?.id === exampleId);
+
+        if (!exampleOption || !exampleOption.mandatoryComponents) {
+            return [];
+        }
+        return exampleOption.mandatoryComponents.map((component: MandatoryComponent) => component.id);
     }
 
     /**
      * Gets the parameters of an extension by parameter ID.
-     * @param {string} parameterId - ID of the parameter to search for.
+     * @param {string} componentId - ID of the parameter to search for.
      * @returns {Parameter[] | undefined} - Array of parameters if found, undefined otherwise.
      * @public
      */

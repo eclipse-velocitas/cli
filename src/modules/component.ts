@@ -29,7 +29,7 @@ export interface ProgramSpec {
     executable: string;
 
     // Default arguments passed to the invoked program upon execution.
-    args?: Array<string>;
+    args?: string[];
 }
 
 /**
@@ -41,7 +41,7 @@ export interface ExecSpec {
     ref: string;
 
     // Additional arguments to be passed to the exposed program.
-    args?: Array<string>;
+    args?: string[];
 
     // Regular expression which identifies a successful startup of the program.
     startupLine?: string;
@@ -73,16 +73,16 @@ export interface ComponentManifest {
     id: string;
 
     // A list of files that need to be copied from source to target when running `velocitas sync`.
-    files?: Array<FileSpec>;
+    files?: FileSpec[];
 
     // A list of all variable definitions exposed by this component.
-    variables?: Array<VariableDefinition>;
+    variables?: VariableDefinition[];
 
     // A list of programs exposed by this component.
-    programs?: Array<ProgramSpec>;
+    programs?: ProgramSpec[];
 
     // Hook which is called after the component has been initialized.
-    onPostInit?: Array<ExecSpec>;
+    onPostInit?: ExecSpec[];
 }
 
 /** Configuration of a component within a project configuration. */

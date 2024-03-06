@@ -1,6 +1,6 @@
 {
     "manifestVersion": "v3",
-    "name": "TestExec",
+    "name": "TestInit",
     "interfaces": [
         {
             "type": "vehicle-signal-interface",

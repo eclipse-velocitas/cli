@@ -195,13 +195,10 @@ export default class Create extends Command {
                 }
             }
         }
-        const createData: CreateData = new CreateData(
-            flags.core,
-            flags.name,
-            flags.example,
-            appManifestInterfaceAttributes,
-            packageIndex.getMandatoryExtensionsByCoreId(flags.core).map((ext: ExtensionComponent) => ext.id),
-        );
+        const createData: CreateData = new CreateData(flags.core, flags.name, flags.example, appManifestInterfaceAttributes, [
+            ...packageIndex.getMandatoryExtensionsByExampleForCore(flags.core, flags.example),
+            ...packageIndex.getMandatoryExtensionsByCoreId(flags.core).map((ext: ExtensionComponent) => ext.id),
+        ]);
         return createData;
     }
 

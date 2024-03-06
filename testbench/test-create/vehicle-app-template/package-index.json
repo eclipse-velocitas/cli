@@ -21,10 +21,22 @@
                                 "values": [
                                     {
                                         "id": "seat-adjuster",
+                                        "mandatoryComponents": [
+                                            {
+                                                "id": "vehicle-signal-interface",
+                                                "config": {}
+                                            }
+                                        ],
                                         "description": "Seat Adjuster Example"
                                     },
                                     {
                                         "id": "dog-mode",
+                                        "mandatoryComponents": [
+                                            {
+                                                "id": "vehicle-signal-interface",
+                                                "config": {}
+                                            }
+                                        ],
                                         "description": "Dog Mode Example"
                                     }
                                 ]
@@ -69,6 +81,12 @@
                                 "values": [
                                     {
                                         "id": "horn-activator",
+                                        "mandatoryComponents": [
+                                            {
+                                                "id": "uservice-interface",
+                                                "config": {}
+                                            }
+                                        ],
                                         "description": "Horn Activator Example"
                                     }
                                 ]
@@ -132,7 +150,18 @@
                 ]
             },
             {
-                "id": "grpc-interface",
+                "id": "sdk-installer",
+                "type": "extension",
+                "name": "SDK Installer",
+                "description": "Installs the Velocitas core SDK if it is referenced by the Vehicle Applications requirements file",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": []
+            },
+            {
+                "id": "grpc-interface-support",
                 "type": "extension",
                 "name": "gRPC Service Contract",
                 "description": "gRPC service contract based on a proto interface description",
@@ -189,10 +218,65 @@
         "package": "https://github.com/eclipse-velocitas/devenv-runtimes.git",
         "components": [
             {
-                "id": "devcontainer-setup",
+                "id": "runtime-local",
                 "type": "extension",
-                "name": "Devcontainer Setup",
-                "description": "Mandatory component for devcontainer setup",
+                "name": "Local Runtime",
+                "description": "Component for local runtime",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": []
+            },
+            {
+                "id": "runtime-k3d",
+                "type": "extension",
+                "name": "K3D Runtime",
+                "description": "Component for kubernetes runtime",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": []
+            },
+            {
+                "id": "deployment-k3d",
+                "type": "extension",
+                "name": "K3D Runtime",
+                "description": "Component for kubernetes runtime deployment",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": []
+            },
+            {
+                "id": "runtime-kanto",
+                "type": "extension",
+                "name": "Kanto Runtime",
+                "description": "Component for kanto runtime",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": []
+            },
+            {
+                "id": "deployment-kanto",
+                "type": "extension",
+                "name": "Kanto Runtime Deployment",
+                "description": "Component for kanto runtime deployment",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": []
+            },
+            {
+                "id": "pantaris-integration",
+                "type": "extension",
+                "name": "Integration for Pantaris",
+                "description": "Component for pantaris integration",
                 "mandatory": true,
                 "compatibleCores": [
                     "vapp-core-python"

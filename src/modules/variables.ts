@@ -183,12 +183,12 @@ class VerifyFlags {
 function verifyGivenVariables(
     componentId: string,
     providedVariables: Map<string, any>,
-    variableDefinitions?: Array<VariableDefinition>,
+    variableDefinitions?: VariableDefinition[],
     flags = new VerifyFlags(),
 ) {
     const configuredVars = new Map(providedVariables);
-    const missingVars = new Array<VariableDefinition>();
-    const wronglyTypedVars = new Array<string>();
+    const missingVars: VariableDefinition[] = [];
+    const wronglyTypedVars: string[] = [];
 
     if (!variableDefinitions || variableDefinitions.length === 0) {
         return;
@@ -221,7 +221,7 @@ function verifyGivenVariables(
 function buildErrorMessageForComponent(
     componentId: string,
     flags: VerifyFlags,
-    vars: { configuredVars: Map<string, any>; missingVars: Array<VariableDefinition>; wronglyTypedVars: Array<string> },
+    vars: { configuredVars: Map<string, any>; missingVars: VariableDefinition[]; wronglyTypedVars: string[] },
 ): string {
     let errorMessage: string = '';
     if (

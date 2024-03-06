@@ -19,6 +19,7 @@ import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { outputFileSync } from 'fs-extra';
 
 export const DEFAULT_APP_MANIFEST_PATH = './app/AppManifest.json';
+export const APP_MANIFEST_PATH_VARIABLE = 'appManifestPath';
 const APP_MANIFEST_PATH = resolve(cwd(), DEFAULT_APP_MANIFEST_PATH);
 
 /**

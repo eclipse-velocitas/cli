@@ -36,10 +36,10 @@ export interface ProjectConfigOptions {
 
 export class ProjectConfig {
     // packages used in the project
-    private _packages: Array<PackageConfig> = new Array<PackageConfig>();
+    private _packages: PackageConfig[] = [];
 
     // components used in the project
-    private _components: Array<ComponentConfig> = new Array<ComponentConfig>();
+    private _components: ComponentConfig[] = [];
 
     // project-wide variable configuration
     private _variables: Map<string, any> = new Map<string, any>();
@@ -164,9 +164,8 @@ export class ProjectConfig {
      *
      * @returns A list of all components used by the project.
      */
-    getComponents(): Array<ComponentContext> {
+    getComponents(): ComponentContext[] {
         const componentContexts: ComponentContext[] = [];
-
         const usedComponents = this._components;
 
         for (const packageConfig of this.getPackages()) {
@@ -182,6 +181,18 @@ export class ProjectConfig {
         }
 
         return componentContexts;
+    }
+
+    validateUsedComponents() {
+        // Check for components in usedComponents that couldn't be found in any componentManifest
+        this._components.forEach((compCfg: ComponentConfig) => {
+            const foundInManifest = this.getPackages().some((packageConfig) =>
+                packageConfig.readPackageManifest().components.some((componentManifest) => componentManifest.id === compCfg.id),
+            );
+            if (!foundInManifest) {
+                throw Error(`Component with ID ${compCfg.id} not found in any component manifest.`);
+            }
+        });
     }
 
     /**
@@ -202,7 +213,7 @@ export class ProjectConfig {
     /**
      * @returns all used packages by the project.
      */
-    getPackages(): Array<PackageConfig> {
+    getPackages(): PackageConfig[] {
         return this._packages;
     }
 

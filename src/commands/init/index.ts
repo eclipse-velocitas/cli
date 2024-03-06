@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ux, Command, Flags } from '@oclif/core';
-import { AppManifest } from '../../modules/app-manifest';
+import { APP_MANIFEST_PATH_VARIABLE, AppManifest } from '../../modules/app-manifest';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { ProjectConfig } from '../../modules/project-config';
 import { createEnvVars } from '../../modules/variables';
@@ -91,8 +91,6 @@ Velocitas project found!
         this.log(`Initializing Velocitas packages ...`);
         let projectConfig: ProjectConfig;
 
-        const appManifestData = AppManifest.read();
-
         if (!ProjectConfig.isAvailable()) {
             this.log('... Directory is no velocitas project. Creating .velocitas.json at the root of your repository.');
             projectConfig = new ProjectConfig(`v${this.config.version}`);
@@ -100,9 +98,12 @@ Velocitas project found!
         }
         projectConfig = ProjectConfig.read(`v${this.config.version}`);
 
+        const appManifestData = AppManifest.read(projectConfig.getVariableMappings().get(APP_MANIFEST_PATH_VARIABLE));
+
         await this.ensurePackagesAreDownloaded(projectConfig, flags.force, flags.verbose);
 
         if (!flags['no-hooks']) {
+            projectConfig.validateUsedComponents();
             for (const componentContext of projectConfig.getComponents()) {
                 try {
                     await runPostInitHook(componentContext, projectConfig, appManifestData, flags.verbose);

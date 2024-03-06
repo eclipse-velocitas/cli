@@ -15,18 +15,12 @@
 import { expect } from 'chai';
 import { spawnSync } from 'child_process';
 import { existsSync, readFileSync, readdirSync, removeSync } from 'fs-extra';
-import { homedir } from 'os';
-import path, { join } from 'path';
-import { cwd } from 'process';
+import path from 'path';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
 import { PackageConfig } from '../../src/modules/package';
 import { packageDownloader } from '../../src/modules/package-downloader';
 import { getLatestVersion } from '../../src/modules/semver';
-
-const packageIndex = require('../../testbench/test-create/vehicle-app-template/package-index.json');
-const VELOCITAS_PROCESS = join('..', '..', '..', process.env['VELOCITAS_PROCESS'] ? process.env['VELOCITAS_PROCESS'] : 'velocitas');
-const TEST_ROOT = cwd();
-const VELOCITAS_HOME = `${homedir()}/.velocitas`;
+import { TEST_ROOT, VELOCITAS_HOME, VELOCITAS_PROCESS, packageIndex } from '../utils/systemTestConfig';
 
 describe('CLI command', () => {
     describe('create', () => {

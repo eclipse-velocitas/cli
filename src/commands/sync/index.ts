@@ -15,7 +15,6 @@
 import { Command } from '@oclif/core';
 import { ProjectConfig } from '../../modules/project-config';
 import { installComponent } from '../../modules/setup';
-import { VariableCollection } from '../../modules/variables';
 
 export default class Sync extends Command {
     static description = 'Syncs Velocitas components into your repo.';

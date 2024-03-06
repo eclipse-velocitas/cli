@@ -51,14 +51,13 @@ $ velocitas component --get-path devenv-runtime-local
 
         const projectConfig = ProjectConfig.read(`v${this.config.version}`);
 
-        let packagesToPrint: Array<PackageConfig>;
+        let packagesToPrint: PackageConfig[] = [];
 
         if (!args.name && flags.getPath) {
             throw new Error('Path can be only printed for a single package, please specify <name>!');
         }
 
         if (args.name) {
-            packagesToPrint = new Array<PackageConfig>();
             packagesToPrint.push(projectConfig.getPackages().find((pkgCfg: PackageConfig) => pkgCfg.getPackageName() === args.name)!);
 
             const componentDir = join(packagesToPrint[0].getPackageDirectory(), packagesToPrint[0].version);
