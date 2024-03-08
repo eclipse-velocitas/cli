@@ -14,7 +14,7 @@
 
 import { gt, SemVer, valid } from 'semver';
 
-export function getLatestVersion(versions: Array<string>): string {
+export function getLatestVersion(versions: string[]): string {
     let latestVersion: SemVer | undefined = undefined;
     for (const version of versions) {
         if (valid(version)) {

@@ -51,15 +51,14 @@ $ velocitas component --get-path devenv-runtime-local
 
         const projectConfig = ProjectConfig.read(`v${this.config.version}`);
 
-        let packagesToPrint: Array<PackageConfig>;
+        let packagesToPrint: PackageConfig[] = [];
 
         if (!args.name && flags.getPath) {
             throw new Error('Path can be only printed for a single package, please specify <name>!');
         }
 
         if (args.name) {
-            packagesToPrint = new Array<PackageConfig>();
-            packagesToPrint.push(projectConfig.packages.find((p) => p.getPackageName() === args.name)!);
+            packagesToPrint.push(projectConfig.getPackages().find((pkgCfg: PackageConfig) => pkgCfg.getPackageName() === args.name)!);
 
             const componentDir = join(packagesToPrint[0].getPackageDirectory(), packagesToPrint[0].version);
 
@@ -68,7 +67,7 @@ $ velocitas component --get-path devenv-runtime-local
                 return;
             }
         } else {
-            packagesToPrint = projectConfig.packages;
+            packagesToPrint = projectConfig.getPackages();
         }
 
         for (const packageToPrint of packagesToPrint) {
@@ -79,7 +78,6 @@ $ velocitas component --get-path devenv-runtime-local
             this.log(`${' '.repeat(4)}components:`);
             for (const component of packageManifest.components) {
                 this.log(`${' '.repeat(5)} - id: ${component.id}`);
-                this.log(`${' '.repeat(8)}type: ${component.type}`);
                 if (component.variables && component.variables.length > 0) {
                     this.log(`${' '.repeat(8)}variables:`);
                     for (const exposedVariable of component.variables) {

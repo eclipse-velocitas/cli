@@ -1,0 +1,67 @@
+{
+    "packages": [
+        {
+            "repo": "https://github.com/eclipse-velocitas/pkg-velocitas-main.git",
+            "version": "v0.0.1"
+        },
+        {
+            "repo": "https://github.com/eclipse-velocitas/devenv-devcontainer-setup.git",
+            "version": "v1.5.1"
+        },
+        {
+            "repo": "https://github.com/eclipse-velocitas/devenv-runtimes.git",
+            "version": "v2.2.6"
+        },
+        {
+            "repo": "https://github.com/eclipse-velocitas/devenv-github-templates.git",
+            "version": "v1.0.3"
+        },
+        {
+            "repo": "https://github.com/eclipse-velocitas/devenv-github-workflows.git",
+            "version": "v4.1.4"
+        }
+    ],
+    "components": [
+        {
+            "id": "vapp-core-python"
+        },
+        {
+            "id": "vehicle-signal-interface"
+        },
+        {
+            "id": "devcontainer-setup"
+        },
+        {
+            "id": "sdk-installer"
+        },
+        {
+            "id": "runtime-local"
+        },
+        {
+            "id": "runtime-k3d"
+        },
+        {
+            "id": "deployment-k3d"
+        },
+        {
+            "id": "runtime-kanto"
+        },
+        {
+            "id": "deployment-kanto"
+        },
+        {
+            "id": "pantaris-integration"
+        },
+        {
+            "id": "github-templates"
+        },
+        {
+            "id": "github-workflows"
+        }
+    ],
+    "variables": {
+        "appManifestPath": "./app/AppManifest.json",
+        "githubRepoId": "<myrepo>"
+    },
+    "cliVersion": "v0.6.3"
+}

@@ -14,28 +14,30 @@
 
 import { expect } from 'chai';
 import { spawnSync } from 'child_process';
-import { existsSync, readFileSync, readdirSync, copySync, removeSync } from 'fs-extra';
-import { homedir } from 'node:os';
-import path, { join } from 'path';
-import { cwd } from 'process';
+import { existsSync, readFileSync, readdirSync, removeSync } from 'fs-extra';
+import path from 'path';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
-import { SdkConfig } from '../../src/modules/sdk';
-import { sdkDownloader } from '../../src/modules/package-downloader';
-
-const VELOCITAS_PROCESS = join('..', '..', '..', process.env['VELOCITAS_PROCESS'] ? process.env['VELOCITAS_PROCESS'] : 'velocitas');
-const TEST_ROOT = cwd();
-const VELOCITAS_HOME = `${homedir()}/.velocitas`;
+import { PackageConfig } from '../../src/modules/package';
+import { packageDownloader } from '../../src/modules/package-downloader';
+import { getLatestVersion } from '../../src/modules/semver';
+import { TEST_ROOT, VELOCITAS_HOME, VELOCITAS_PROCESS, packageIndex } from '../utils/systemTestConfig';
 
 describe('CLI command', () => {
     describe('create', () => {
+        let latestMainPackageVersion: string;
         beforeEach(async () => {
-            // When using this as real "system test"
-            // the next two lines are not necessary
-            const sdkConfig = new SdkConfig('python');
-            await sdkDownloader(sdkConfig).downloadPackage({ checkVersionOnly: false });
-            process.chdir(`${TEST_ROOT}/testbench/test-create`);
-            copySync('./sdk', `${VELOCITAS_HOME}/sdk/python/latest`);
             process.chdir(`${TEST_ROOT}/testbench/test-create/vehicle-app-template`);
+            let coreConfig: PackageConfig = new PackageConfig({
+                repo: packageIndex[0].package,
+                version: 'v0.0.1', // We need a version to start from
+            });
+            const availableVersions = await coreConfig.getPackageVersions();
+            latestMainPackageVersion = getLatestVersion(availableVersions);
+            coreConfig = new PackageConfig({
+                repo: packageIndex[0].package,
+                version: latestMainPackageVersion,
+            });
+            await packageDownloader(coreConfig!).downloadPackage({ checkVersionOnly: false });
         });
         afterEach(() => {
             process.chdir(`${TEST_ROOT}/testbench/test-create/vehicle-app-template`);
@@ -47,21 +49,20 @@ describe('CLI command', () => {
             });
         });
         it('should be able to create a project', async () => {
-            spawnSync(VELOCITAS_PROCESS, ['create', '-n', 'MyApp', '-l', 'python'], {
+            spawnSync(VELOCITAS_PROCESS, ['create', '-n', 'MyApp', '-c', 'vapp-core-python'], {
                 encoding: DEFAULT_BUFFER_ENCODING,
             });
-
             const creationConfigFile = readFileSync(
-                `${VELOCITAS_HOME}/sdk/python/latest/.project-creation/config.json`,
+                `${VELOCITAS_HOME}/packages/pkg-velocitas-main/${latestMainPackageVersion}/components/cores/vapp-python/.project-creation/config.json`,
                 DEFAULT_BUFFER_ENCODING,
             );
             const creationConfig = JSON.parse(creationConfigFile);
             const fileCheck: boolean[] = [];
             creationConfig.files.forEach((file: string) => {
                 file = file.replace('.project-creation/', '');
+                file = file.replace('templates/', '');
                 fileCheck.push(existsSync(`${TEST_ROOT}/testbench/test-create/vehicle-app-template/${file}`));
             });
-
             expect(fileCheck.every((v: boolean) => v === true)).to.be.true;
             expect(existsSync(`${TEST_ROOT}/testbench/test-create/vehicle-app-template/.velocitas.json`)).to.be.true;
             expect(existsSync(`${TEST_ROOT}/testbench/test-create/vehicle-app-template/app/AppManifest.json`)).to.be.true;

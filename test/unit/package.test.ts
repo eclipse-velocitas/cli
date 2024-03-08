@@ -34,7 +34,7 @@ describe('package - module', () => {
     });
     describe('Package manifest', () => {
         it('should be loaded from VELOCITAS_HOME', () => {
-            const packageConfig = new PackageConfig({ name: 'TestPackage', version: 'v1.2.3' });
+            const packageConfig = new PackageConfig({ repo: 'TestPackage', version: 'v1.2.3' });
 
             process.env = { VELOCITAS_HOME: '/my/custom/path' };
 
@@ -44,15 +44,15 @@ describe('package - module', () => {
     describe('Package config', () => {
         it('should get package name', () => {
             const packageNamePlain = 'TestPackage';
-            const packageConfigPlan = new PackageConfig({ name: packageNamePlain, version: 'v1.2.3' });
+            const packageConfigPlan = new PackageConfig({ repo: packageNamePlain, version: 'v1.2.3' });
             const packageNameHttps = 'https://testserver.com/TestOrg/TestPackage.git';
-            const packageConfigHttps = new PackageConfig({ name: packageNameHttps, version: 'v1.2.3' });
+            const packageConfigHttps = new PackageConfig({ repo: packageNameHttps, version: 'v1.2.3' });
             const packageNameHttp = 'http://testserver.com/TestOrg/TestPackage.git';
-            const packageConfigHttp = new PackageConfig({ name: packageNameHttp, version: 'v1.2.3' });
+            const packageConfigHttp = new PackageConfig({ repo: packageNameHttp, version: 'v1.2.3' });
             const packageNameSsh = 'ssh://testuser@testserver.com:TestOrg/TestPackage.git';
-            const packageConfigSsh = new PackageConfig({ name: packageNameSsh, version: 'v1.2.3' });
+            const packageConfigSsh = new PackageConfig({ repo: packageNameSsh, version: 'v1.2.3' });
             const packageNameSshAlternate = 'testuser@testserver.com:TestOrg/TestPackage.git';
-            const packageConfigSshAlternate = new PackageConfig({ name: packageNameSshAlternate, version: 'v1.2.3' });
+            const packageConfigSshAlternate = new PackageConfig({ repo: packageNameSshAlternate, version: 'v1.2.3' });
 
             expect(packageConfigPlan.getPackageName()).equals(packageNamePlain);
             expect(packageConfigHttps.getPackageName()).equals(packageNamePlain);

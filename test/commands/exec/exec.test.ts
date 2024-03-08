@@ -15,7 +15,7 @@
 import { expect, test } from '@oclif/test';
 import { IEvent, IPty } from 'node-pty';
 import { setSpawnImplementation } from '../../../src/modules/exec';
-import { runtimeComponentManifestMock } from '../../utils/mockConfig';
+import { runtimePackageManifestMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore } from '../../utils/mockfs';
 
 type ExitType = {
@@ -73,11 +73,7 @@ describe('exec', () => {
         })
         .stdout()
         .stderr()
-        .command([
-            'exec',
-            `${runtimeComponentManifestMock.components[0].id}`,
-            `${runtimeComponentManifestMock.components[0].programs[0].id}`,
-        ])
+        .command(['exec', `${runtimePackageManifestMock.components[0].id}`, `${runtimePackageManifestMock.components[0].programs[0].id}`])
         .it('executes a runtime script', (ctx) => {
             expect(ctx.stderr).to.be.empty;
         });
@@ -93,8 +89,8 @@ describe('exec', () => {
         .stderr()
         .command([
             'exec',
-            `${runtimeComponentManifestMock.components[0].id}`,
-            `${runtimeComponentManifestMock.components[0].programs[0].id}`,
+            `${runtimePackageManifestMock.components[0].id}`,
+            `${runtimePackageManifestMock.components[0].programs[0].id}`,
             '--args',
             `additionalArgument`,
             `additionalArgument2`,
@@ -112,11 +108,7 @@ describe('exec', () => {
         })
         .stdout()
         .stderr()
-        .command([
-            'exec',
-            `${runtimeComponentManifestMock.components[1].id}`,
-            `${runtimeComponentManifestMock.components[1].programs[0].id}`,
-        ])
+        .command(['exec', `${runtimePackageManifestMock.components[1].id}`, `${runtimePackageManifestMock.components[1].programs[0].id}`])
         .it('executes a deployment script', (ctx) => {
             expect(ctx.stderr).to.be.empty;
         });
@@ -128,11 +120,7 @@ describe('exec', () => {
             mockRestore();
         })
         .stdout()
-        .command([
-            'exec',
-            `${runtimeComponentManifestMock.components[1].id}`,
-            `${runtimeComponentManifestMock.components[1].programs[0].id}`,
-        ])
+        .command(['exec', `${runtimePackageManifestMock.components[1].id}`, `${runtimePackageManifestMock.components[1].programs[0].id}`])
         .it('should log warning when no AppManifest.json is found', (ctx) => {
             console.error(ctx.stdout);
             expect(ctx.stdout).to.contain('*** Info ***: No AppManifest found');
@@ -146,10 +134,8 @@ describe('exec', () => {
             mockRestore();
         })
         .stdout()
-        .command(['exec', `${runtimeComponentManifestMock.components[0].id}`, 'unknown-script'])
-        .catch(
-            `No program found for item 'unknown-script' referenced in program list of '${runtimeComponentManifestMock.components[0].id}'`,
-        )
+        .command(['exec', `${runtimePackageManifestMock.components[0].id}`, 'unknown-script'])
+        .catch(`No program found for item 'unknown-script' referenced in program list of '${runtimePackageManifestMock.components[0].id}'`)
         .it('throws error when program is not found in specified runtime component');
 
     test.do(() => {
@@ -160,9 +146,7 @@ describe('exec', () => {
             mockRestore();
         })
         .stdout()
-        .command(['exec', `${runtimeComponentManifestMock.components[1].id}`, 'unknown-script'])
-        .catch(
-            `No program found for item 'unknown-script' referenced in program list of '${runtimeComponentManifestMock.components[1].id}'`,
-        )
+        .command(['exec', `${runtimePackageManifestMock.components[1].id}`, 'unknown-script'])
+        .catch(`No program found for item 'unknown-script' referenced in program list of '${runtimePackageManifestMock.components[1].id}'`)
         .it('throws error when program is not found in specified deployment component');
 });

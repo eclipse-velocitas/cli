@@ -13,11 +13,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Command, Flags, Args } from '@oclif/core';
-import { readAppManifest } from '../../modules/app-manifest';
-import { ExecSpec, findComponentByName } from '../../modules/component';
+import { APP_MANIFEST_PATH_VARIABLE, AppManifest } from '../../modules/app-manifest';
+import { ExecSpec } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { ProjectConfig } from '../../modules/project-config';
-import { createEnvVars, VariableCollection } from '../../modules/variables';
+import { createEnvVars } from '../../modules/variables';
 
 export default class Exec extends Command {
     static description = 'Executes a script contained in one of your installed components.';
@@ -83,13 +83,15 @@ Executing script...
             args: programArgsAndFlags,
         };
 
-        const appManifestData = readAppManifest();
+        const appManifestData = AppManifest.read(projectConfig.getVariableMappings().get(APP_MANIFEST_PATH_VARIABLE));
 
-        const [packageConfig, componentConfig, component] = findComponentByName(projectConfig, args.component);
+        const componentContext = projectConfig.findComponentByName(args.component);
 
-        const variables = VariableCollection.build(projectConfig, packageConfig, componentConfig, component);
-
-        const envVars = createEnvVars(packageConfig.getPackageDirectoryWithVersion(), variables, appManifestData);
+        const envVars = createEnvVars(
+            componentContext.packageConfig.getPackageDirectoryWithVersion(),
+            projectConfig.getVariableCollection(componentContext),
+            appManifestData,
+        );
 
         try {
             await runExecSpec(execSpec, args.component, projectConfig, envVars, { verbose: flags.verbose });

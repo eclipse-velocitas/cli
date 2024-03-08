@@ -13,63 +13,34 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ux, Command, Flags } from '@oclif/core';
-import { readAppManifest } from '../../modules/app-manifest';
-import { Component } from '../../modules/component';
+import { APP_MANIFEST_PATH_VARIABLE, AppManifest } from '../../modules/app-manifest';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
-import { PackageConfig, PackageManifest } from '../../modules/package';
-import { ComponentConfig, ProjectConfig } from '../../modules/project-config';
-import { createEnvVars, VariableCollection } from '../../modules/variables';
+import { ProjectConfig } from '../../modules/project-config';
+import { createEnvVars } from '../../modules/variables';
+import { ComponentContext } from '../../modules/component';
 
-async function runPostInitHook(
-    component: Component,
-    packageConfig: PackageConfig,
-    projectConfig: ProjectConfig,
-    appManifest: any,
-    verbose: boolean,
-) {
-    if (!component.onPostInit || component.onPostInit.length === 0) {
+async function runPostInitHook(componentContext: ComponentContext, projectConfig: ProjectConfig, appManifest: any, verbose: boolean) {
+    if (!componentContext.manifest.onPostInit || componentContext.manifest.onPostInit.length === 0) {
         return;
     }
 
-    console.log(`... > Running post init hook for '${component.id}'`);
+    console.log(`... > Running post init hook for '${componentContext.manifest.id}'`);
 
-    const maybeComponentConfig = packageConfig.components?.find((c) => c.id === component.id);
-    const componentConfig = maybeComponentConfig ? maybeComponentConfig : new ComponentConfig();
-    const variables = VariableCollection.build(projectConfig, packageConfig, componentConfig, component);
-
-    for (const execSpec of component.onPostInit) {
+    for (const execSpec of componentContext.manifest.onPostInit) {
         const message = `Running '${execSpec.ref}'`;
         if (!verbose) {
             ux.action.start(message);
         } else {
             console.log(message);
         }
-        const envVars = createEnvVars(packageConfig.getPackageDirectoryWithVersion(), variables, appManifest);
-        await runExecSpec(execSpec, component.id, projectConfig, envVars, { writeStdout: verbose, verbose: verbose });
+        const envVars = createEnvVars(
+            componentContext.packageConfig.getPackageDirectoryWithVersion(),
+            projectConfig.getVariableCollection(componentContext),
+            appManifest,
+        );
+        await runExecSpec(execSpec, componentContext.manifest.id, projectConfig, envVars, { writeStdout: verbose, verbose: verbose });
         if (!verbose) {
             ux.action.stop();
-        }
-    }
-}
-
-async function runPostInitHooks(
-    packageManifest: PackageManifest,
-    packageConfig: PackageConfig,
-    projectConfig: ProjectConfig,
-    appManifestData: any,
-    verbose: boolean,
-) {
-    for (const component of packageManifest.components) {
-        try {
-            await runPostInitHook(component, packageConfig, projectConfig, appManifestData, verbose);
-        } catch (e) {
-            if (e instanceof ExecExitError) {
-                throw e;
-            } else if (e instanceof Error) {
-                throw new Error(e.message);
-            } else {
-                throw new Error(`An unexpected error occured during initialization of component: ${component.id}`);
-            }
         }
     }
 }
@@ -103,13 +74,22 @@ Velocitas project found!
         }),
     };
 
+    async ensurePackagesAreDownloaded(projectConfig: ProjectConfig, force: boolean, verbose: boolean) {
+        for (const packageConfig of projectConfig.getPackages()) {
+            if (!force && packageConfig.isPackageInstalled()) {
+                this.log(`... '${packageConfig.getPackageName()}:${packageConfig.version}' already initialized.`);
+                continue;
+            }
+            this.log(`... Downloading package: '${packageConfig.getPackageName()}:${packageConfig.version}'`);
+            await packageConfig.downloadPackageVersion(verbose);
+        }
+    }
+
     async run(): Promise<void> {
         const { flags } = await this.parse(Init);
 
         this.log(`Initializing Velocitas packages ...`);
         let projectConfig: ProjectConfig;
-
-        const appManifestData = readAppManifest();
 
         if (!ProjectConfig.isAvailable()) {
             this.log('... Directory is no velocitas project. Creating .velocitas.json at the root of your repository.');
@@ -118,16 +98,24 @@ Velocitas project found!
         }
         projectConfig = ProjectConfig.read(`v${this.config.version}`);
 
-        for (const packageConfig of projectConfig.packages) {
-            if (!flags.force && packageConfig.isPackageInstalled()) {
-                this.log(`... '${packageConfig.getPackageName()}:${packageConfig.version}' already initialized.`);
-                continue;
-            }
-            this.log(`... Downloading package: '${packageConfig.getPackageName()}:${packageConfig.version}'`);
-            await packageConfig.downloadPackageVersion(flags.verbose);
-            const packageManifest = packageConfig.readPackageManifest();
-            if (!flags['no-hooks']) {
-                await runPostInitHooks(packageManifest, packageConfig, projectConfig, appManifestData, flags.verbose);
+        const appManifestData = AppManifest.read(projectConfig.getVariableMappings().get(APP_MANIFEST_PATH_VARIABLE));
+
+        await this.ensurePackagesAreDownloaded(projectConfig, flags.force, flags.verbose);
+
+        if (!flags['no-hooks']) {
+            projectConfig.validateUsedComponents();
+            for (const componentContext of projectConfig.getComponents()) {
+                try {
+                    await runPostInitHook(componentContext, projectConfig, appManifestData, flags.verbose);
+                } catch (e) {
+                    if (e instanceof ExecExitError) {
+                        throw e;
+                    } else if (e instanceof Error) {
+                        throw new Error(e.message);
+                    } else {
+                        throw new Error(`An unexpected error occured during initialization of component: ${componentContext.config.id}`);
+                    }
+                }
             }
         }
     }

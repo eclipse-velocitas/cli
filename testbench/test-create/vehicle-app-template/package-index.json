@@ -1,12 +1,138 @@
 [
     {
-        "type": "extension",
-        "package": "https://github.com/eclipse-velocitas/devenv-devcontainer-setup.git",
-        "exposedInterfaces": [
+        "package": "https://github.com/eclipse-velocitas/pkg-velocitas-main.git",
+        "components": [
             {
-                "type": "vehicle-signal-interface",
+                "id": "vapp-core-python",
+                "type": "core",
+                "name": "Velocitas Vehicle App (Python)",
+                "description": "Creates a Vehicle App written in Python",
+                "mandatory": false,
+                "options": [
+                    {
+                        "id": "from-example",
+                        "name": "Create an application from an example",
+                        "parameters": [
+                            {
+                                "id": "example",
+                                "description": "Provided Examples from SDK",
+                                "type": "list",
+                                "required": true,
+                                "values": [
+                                    {
+                                        "id": "seat-adjuster",
+                                        "mandatoryComponents": [
+                                            {
+                                                "id": "vehicle-signal-interface",
+                                                "config": {}
+                                            }
+                                        ],
+                                        "description": "Seat Adjuster Example"
+                                    },
+                                    {
+                                        "id": "dog-mode",
+                                        "mandatoryComponents": [
+                                            {
+                                                "id": "vehicle-signal-interface",
+                                                "config": {}
+                                            }
+                                        ],
+                                        "description": "Dog Mode Example"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "id": "from-skeleton",
+                        "name": "Create an application from scratch",
+                        "parameters": [
+                            {
+                                "id": "name",
+                                "required": true,
+                                "description": "Name of your application",
+                                "type": "string"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "package": "https://github.com/eclipse-velocitas/pkg-velocitas-uprotocol.git",
+        "components": [
+            {
+                "id": "uprotocol-core-java",
+                "type": "core",
+                "name": "uProtocol App/Service (Java)",
+                "description": "Creates a uProtocol Application or Service written in Java",
+                "mandatory": false,
+                "options": [
+                    {
+                        "id": "from-example",
+                        "name": "Create an application from an example",
+                        "parameters": [
+                            {
+                                "id": "example",
+                                "description": "Provided Examples from Velocitas uProtocol Core Package",
+                                "type": "list",
+                                "required": true,
+                                "values": [
+                                    {
+                                        "id": "horn-activator",
+                                        "mandatoryComponents": [
+                                            {
+                                                "id": "uservice-interface",
+                                                "config": {}
+                                            }
+                                        ],
+                                        "description": "Horn Activator Example"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "id": "from-skeleton",
+                        "name": "Create an application from scratch",
+                        "parameters": [
+                            {
+                                "id": "name",
+                                "required": true,
+                                "description": "Name of your application",
+                                "type": "string"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "package": "https://github.com/eclipse-velocitas/devenv-devcontainer-setup.git",
+        "components": [
+            {
+                "id": "devcontainer-setup",
+                "type": "extension",
+                "name": "Devcontainer Setup",
+                "description": "Mandatory component for devcontainer setup",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": []
+            },
+            {
+                "id": "vehicle-signal-interface",
+                "type": "extension",
+                "name": "Vehicle Signal Interface",
                 "description": "Vehicle Signal Interface based on VSS and KUKSA Databroker",
-                "args": [
+                "mandatory": false,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": [
                     {
                         "id": "src",
                         "description": "URI or path to VSS json",
@@ -24,9 +150,26 @@
                 ]
             },
             {
-                "type": "grpc-interface",
+                "id": "sdk-installer",
+                "type": "extension",
+                "name": "SDK Installer",
+                "description": "Installs the Velocitas core SDK if it is referenced by the Vehicle Applications requirements file",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": []
+            },
+            {
+                "id": "grpc-interface-support",
+                "type": "extension",
+                "name": "gRPC Service Contract",
                 "description": "gRPC service contract based on a proto interface description",
-                "args": [
+                "mandatory": false,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": [
                     {
                         "id": "src",
                         "description": "URI to the proto file which acts as the service interface",
@@ -49,55 +192,128 @@
                         "type": "object"
                     }
                 ]
+            },
+            {
+                "id": "uservice-interface",
+                "type": "extension",
+                "name": "uService Catalogue",
+                "description": "",
+                "mandatory": false,
+                "compatibleCores": [
+                    "uprotocol-core-java"
+                ],
+                "parameters": [
+                    {
+                        "id": "repo",
+                        "description": "uServices repository",
+                        "default": "https://github.com/COVESA/uservices.git",
+                        "required": true,
+                        "type": "string"
+                    }
+                ]
             }
         ]
     },
     {
-        "type": "extension",
         "package": "https://github.com/eclipse-velocitas/devenv-runtimes.git",
-        "exposedInterfaces": []
-    },
-    {
-        "type": "extension",
-        "package": "https://github.com/eclipse-velocitas/devenv-github-templates.git",
-        "exposedInterfaces": []
-    },
-    {
-        "type": "extension",
-        "package": "https://github.com/eclipse-velocitas/devenv-github-workflows.git",
-        "exposedInterfaces": []
-    },
-    {
-        "type": "core",
-        "package": "https://github.com/eclipse-velocitas/vehicle-app-python-sdk",
-        "exposedInterfaces": [
+        "components": [
             {
-                "type": "examples",
-                "description": "Provided Examples from SDK",
-                "args": [
-                    {
-                        "id": "seat-adjuster",
-                        "description": "Seat Adjuster Example",
-                        "type": "string"
-                    }
-                ]
+                "id": "runtime-local",
+                "type": "extension",
+                "name": "Local Runtime",
+                "description": "Component for local runtime",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": []
+            },
+            {
+                "id": "runtime-k3d",
+                "type": "extension",
+                "name": "K3D Runtime",
+                "description": "Component for kubernetes runtime",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": []
+            },
+            {
+                "id": "deployment-k3d",
+                "type": "extension",
+                "name": "K3D Runtime",
+                "description": "Component for kubernetes runtime deployment",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": []
+            },
+            {
+                "id": "runtime-kanto",
+                "type": "extension",
+                "name": "Kanto Runtime",
+                "description": "Component for kanto runtime",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": []
+            },
+            {
+                "id": "deployment-kanto",
+                "type": "extension",
+                "name": "Kanto Runtime Deployment",
+                "description": "Component for kanto runtime deployment",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": []
+            },
+            {
+                "id": "pantaris-integration",
+                "type": "extension",
+                "name": "Integration for Pantaris",
+                "description": "Component for pantaris integration",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": []
             }
         ]
     },
     {
-        "type": "core",
-        "package": "https://github.com/eclipse-velocitas/vehicle-app-cpp-sdk",
-        "exposedInterfaces": [
+        "package": "https://github.com/eclipse-velocitas/devenv-github-templates.git",
+        "components": [
             {
-                "type": "examples",
-                "description": "Provided Examples from SDK",
-                "args": [
-                    {
-                        "id": "seat-adjuster",
-                        "description": "Seat Adjuster Example",
-                        "type": "string"
-                    }
-                ]
+                "id": "github-templates",
+                "type": "extension",
+                "name": "GitHub Templates",
+                "description": "Mandatory component for including all relevant GitHub template files for the project",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": []
+            }
+        ]
+    },
+    {
+        "package": "https://github.com/eclipse-velocitas/devenv-github-workflows.git",
+        "components": [
+            {
+                "id": "github-workflows",
+                "type": "extension",
+                "name": "GitHub Workflows",
+                "description": "Mandatory component for including all relevant GitHub Action workflow files",
+                "mandatory": true,
+                "compatibleCores": [
+                    "vapp-core-python"
+                ],
+                "parameters": []
             }
         ]
     }

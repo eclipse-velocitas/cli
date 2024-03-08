@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 Contributors to the Eclipse Foundation
+// Copyright (c) 2024 Contributors to the Eclipse Foundation
 //
 // This program and the accompanying materials are made available under the
 // terms of the Apache License, Version 2.0 which is available at
@@ -12,25 +12,14 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+import { cwd } from 'process';
+import { readFileSync } from 'fs';
 import { homedir } from 'os';
+import { resolve } from 'path';
 
-export class SdkConfig {
-    // name of the package to the package repository
-    repo: string = '';
+export const VELOCITAS_PROCESS = resolve(__dirname, '..', '..', process.env['VELOCITAS_PROCESS'] || 'velocitas');
+export const TEST_ROOT = cwd();
+export const VELOCITAS_HOME = `${homedir()}/.velocitas`;
 
-    // version of the package to use
-    version: string = '';
-
-    constructor(language: string) {
-        this.repo = language;
-        this.version = 'latest';
-    }
-
-    getPackageRepo(): string {
-        return `https://github.com/eclipse-velocitas/vehicle-app-${this.repo}-sdk`;
-    }
-
-    getPackageDirectory(): string {
-        return `${homedir()}/.velocitas/sdk/${this.repo}`;
-    }
-}
+const packageIndexPath = resolve(__dirname, '../../testbench/test-create/vehicle-app-template/package-index.json');
+export const packageIndex = JSON.parse(readFileSync(packageIndexPath, 'utf8'));

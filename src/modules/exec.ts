@@ -15,7 +15,7 @@
 import { exec } from 'child_process';
 import { IPty, spawn } from 'node-pty';
 import { join, resolve } from 'node:path';
-import { ExecSpec, findComponentByName } from './component';
+import { ExecSpec, ProgramSpec } from './component';
 import { ProjectCache } from './project-cache';
 import { ProjectConfig } from './project-config';
 
@@ -112,18 +112,18 @@ export async function runExecSpec(
         console.info(`Starting ${componentId}/${execSpec.ref}`);
     }
 
-    const [packageConfig, , component] = findComponentByName(projectConfig, componentId);
+    const componentContext = projectConfig.findComponentByName(componentId);
 
-    if (!component.programs) {
+    if (!componentContext.manifest.programs) {
         throw new Error(`Component '${componentId}' has no exposed programs!`);
     }
 
-    const programSpec = component.programs.find((prog) => prog.id === execSpec.ref);
+    const programSpec = componentContext.manifest.programs.find((prog: ProgramSpec) => prog.id === execSpec.ref);
     if (!programSpec) {
-        throw new Error(`No program found for item '${execSpec.ref}' referenced in program list of '${component.id}'`);
+        throw new Error(`No program found for item '${execSpec.ref}' referenced in program list of '${componentId}'`);
     }
 
-    const cwd = join(packageConfig.getPackageDirectory(), packageConfig.version);
+    const cwd = join(componentContext.packageConfig.getPackageDirectory(), componentContext.packageConfig.version);
 
     let programArgs = programSpec.args ? programSpec.args : [];
     if (execSpec.args && execSpec.args.length > 0) {
