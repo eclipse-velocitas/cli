@@ -38,6 +38,9 @@ on:
         required: false
         type: string
 
+env:
+  NODE_VERSION: 18
+
 jobs:
   compile:
     strategy:
@@ -53,7 +56,7 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Set version in package.json
         run: |
@@ -71,7 +74,7 @@ jobs:
         if: ${{ matrix.arch == 'arm64' }}
         uses: uraimo/run-on-arch-action@v2
         with:
-          base_image: arm64v8/node:lts-bullseye
+          base_image: arm64v8/node:${{ env.NODE_VERSION }}-bullseye
           run: |
             npm install .
 
@@ -81,7 +84,7 @@ jobs:
           npm install .
 
       - name: Compile EXE for ${{ matrix.arch }}
-        run: TARGET=node18-${{ matrix.os }}-${{ matrix.arch }} ARCH=${{ matrix.arch }} OS=${{ matrix.os }} npm run compile-exe
+        run: TARGET=node${{ env.NODE_VERSION }}-${{ matrix.os }}-${{ matrix.arch }} ARCH=${{ matrix.arch }} OS=${{ matrix.os }} npm run compile-exe
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.os }}-${{ matrix.arch }}
