@@ -69,7 +69,7 @@ jobs:
   system-tests:
     name: "Run system tests for ${{ matrix.language }}"
     runs-on: ubuntu-22.04
-    container: ghcr.io/eclipse-velocitas/devcontainer-base-images/${{ matrix.language }}:v0.1
+    container: ghcr.io/eclipse-velocitas/devcontainer-base-images/${{ matrix.language }}:v0.2
     strategy:
       matrix:
         language: ["python", "cpp"]
