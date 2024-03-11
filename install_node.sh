@@ -24,3 +24,5 @@ echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.co
 
 sudo apt-get update
 sudo apt-get install nodejs -y
+# To keep npm aligned with compilation step inside CI
+sudo npm install -g npm@9.9.3
