@@ -13,11 +13,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Command, Flags, Args } from '@oclif/core';
-import { APP_MANIFEST_PATH_VARIABLE, AppManifest } from '../../modules/app-manifest';
-import { ExecSpec } from '../../modules/component';
-import { ExecExitError, runExecSpec } from '../../modules/exec';
-import { ProjectConfig } from '../../modules/project-config';
-import { createEnvVars } from '../../modules/variables';
+import { APP_MANIFEST_PATH_VARIABLE, AppManifest } from '../../modules/app-manifest.js';
+import { ExecSpec } from '../../modules/component.js';
+import { ExecExitError, runExecSpec } from '../../modules/exec.js';
+import { ProjectConfig } from '../../modules/project-config.js';
+import { createEnvVars } from '../../modules/variables.js';
 
 export default class Exec extends Command {
     static description = 'Executes a script contained in one of your installed components.';

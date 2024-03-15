@@ -12,11 +12,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { existsSync } from 'fs-extra';
-import { posix as pathPosix } from 'path';
+import fse from 'fs-extra/esm';
+import { posix as pathPosix } from 'node:path';
 import { CheckRepoActions, SimpleGit, simpleGit } from 'simple-git';
-import { PackageConfig } from './package';
-import { getLatestVersion } from './semver';
+import { PackageConfig } from './package.js';
+import { getLatestVersion } from './semver.js';
 
 export class PackageDownloader {
     packageConfig: PackageConfig;
@@ -62,7 +62,7 @@ export class PackageDownloader {
             checkRepoAction = CheckRepoActions.IS_REPO_ROOT;
         }
 
-        if (!existsSync(packageDir)) {
+        if (!fse.pathExistsSync(packageDir)) {
             await this.cloneRepository(packageDir, cloneOpts);
         }
 

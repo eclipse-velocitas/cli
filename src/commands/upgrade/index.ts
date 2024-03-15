@@ -13,8 +13,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ux, Command, Flags } from '@oclif/core';
-import { ProjectConfig } from '../../modules/project-config';
-import { getLatestVersion } from '../../modules/semver';
+import { ProjectConfig } from '../../modules/project-config.js';
+import { getLatestVersion } from '../../modules/semver.js';
 
 export default class Upgrade extends Command {
     static description = 'Updates Velocitas components.';

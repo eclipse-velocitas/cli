@@ -13,9 +13,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Command, Args } from '@oclif/core';
-import { mapReplacer } from '../../modules/helpers';
-import { ProjectCache } from '../../modules/project-cache';
-import { ProjectConfig } from '../../modules/project-config';
+import { mapReplacer } from '../../modules/helpers.js';
+import { ProjectCache } from '../../modules/project-cache.js';
+import { ProjectConfig } from '../../modules/project-config.js';
 
 export default class Get extends Command {
     static description = 'Get the complete cache contents as JSON string or the value of a single key.';

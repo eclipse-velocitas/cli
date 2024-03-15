@@ -12,8 +12,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { readFileSync } from 'fs-extra';
-import { DEFAULT_BUFFER_ENCODING } from './constants';
+import { readFileSync } from 'node:fs';
+import { DEFAULT_BUFFER_ENCODING } from './constants.js';
 
 /**
  * Additional argument for exposed interface

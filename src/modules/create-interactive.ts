@@ -12,16 +12,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { PackageIndex, CoreComponent, ExtensionComponent } from './package-index';
-import { AppManifestInterfaceAttributes } from './app-manifest';
+import { PackageIndex, CoreComponent, ExtensionComponent } from './package-index.js';
+import { AppManifestInterfaceAttributes } from './app-manifest.js';
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import Create from '../commands/create';
-// inquirer >= v9 is an ESM package.
-// We are not using ESM in our CLI,
-// We need to set moduleResolution to node16 in tsconfig.json
-// and import inquirer using "await import"
-// @ts-ignore: declaration file not found
-const inquirer = require('inquirer');
+import Create from '../commands/create/index.js';
 
 /**
  * Result of the core prompt in the interactive mode.
@@ -43,9 +37,9 @@ export class InteractiveMode {
      * @returns {Promise<CorePromptResult>} - Object containing all data received by prompts for the core.
      */
     static async configureCore(availableCores: CoreComponent[]): Promise<CorePromptResult> {
-        let promptResult = await inquirer.prompt(Create.prompts.core(availableCores));
+        let promptResult = await Create.prompts.core(availableCores);
         let corePromptResult: CorePromptResult = {
-            chosenCore: promptResult.core as CoreComponent,
+            chosenCore: promptResult as CoreComponent,
             appName: '',
             example: false,
         };
@@ -54,13 +48,13 @@ export class InteractiveMode {
         if (sets !== undefined) {
             let chosenCoreOptionId = 0;
             if (sets.length > 0) {
-                const coreOptionsPromptResult = await inquirer.prompt(Create.prompts.coreOptions(sets));
-                chosenCoreOptionId = coreOptionsPromptResult.coreOptions;
+                const coreOptionsPromptResult = await Create.prompts.coreOptions(sets);
+                chosenCoreOptionId = coreOptionsPromptResult;
             }
 
             for (const parameter of sets[chosenCoreOptionId].parameters) {
-                const coreParametersPromptResult = await inquirer.prompt(Create.prompts.coreParameters(parameter));
-                corePromptResult.appName = coreParametersPromptResult.coreParameter;
+                const coreParametersPromptResult = await Create.prompts.coreParameters(parameter);
+                corePromptResult.appName = coreParametersPromptResult;
                 if (parameter.id === 'example') {
                     corePromptResult.example = true;
                 }
@@ -93,9 +87,9 @@ export class InteractiveMode {
             return appManifestInterfaceEntries;
         }
 
-        let extensionPromptResult = await inquirer.prompt(Create.prompts.extensions(availableExtensions));
+        let extensionPromptResult = await Create.prompts.extensions(availableExtensions);
 
-        for (const selectedExtension of extensionPromptResult.extensions) {
+        for (const selectedExtension of extensionPromptResult) {
             const typedExtension = selectedExtension as ExtensionComponent;
             appManifestInterfaceEntries.push(
                 await Create.createAppManifestInterfaceAttributes(typedExtension.id, typedExtension.parameters!),

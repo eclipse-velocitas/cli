@@ -13,8 +13,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
-import { getCacheData } from '../../helpers/cache';
-import { mockFolders, mockRestore } from '../../utils/mockfs';
+import { getCacheData } from '../../helpers/cache.js';
+import { mockFolders, mockRestore } from '../../utils/mockfs.js';
 
 describe('cache', () => {
     test.do(() => {

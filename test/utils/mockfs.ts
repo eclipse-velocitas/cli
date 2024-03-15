@@ -25,12 +25,13 @@ import {
     setupPackageManifestMock,
     velocitasConfigMock,
 } from './mockConfig';
-
+import { fileURLToPath } from 'node:url';
 export const userHomeDir = os.homedir();
 const runtimePackagePath = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}/${velocitasConfigMock.packages[0].version}`;
 const setupPackagePath = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}/${velocitasConfigMock.packages[1].version}`;
 const corePackagePath = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[2].repo}/${velocitasConfigMock.packages[2].version}`;
-
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 type MockConfig = {
     velocitasConfig?: boolean;
     installedComponents?: boolean;

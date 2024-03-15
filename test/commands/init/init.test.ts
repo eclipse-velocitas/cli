@@ -18,7 +18,6 @@ import { velocitasConfigMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore, userHomeDir } from '../../utils/mockfs';
 import * as gitModule from 'simple-git';
 import * as exec from '../../../src/modules/exec';
-import sinon from 'sinon';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
 
 describe('init', () => {
@@ -29,8 +28,8 @@ describe('init', () => {
             mockRestore();
         })
         .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
-        .stub(exec, 'runExecSpec', () => {})
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
         .command(['init'])
         .it('downloads packages from preconfigured velocitas.json', (ctx) => {
             expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
@@ -101,8 +100,8 @@ describe('init', () => {
             mockRestore();
         })
         .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
-        .stub(exec, 'runExecSpec', () => {})
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
         .command(['init'])
         .it('runs post-init hooks', (ctx) => {
             expect(ctx.stdout).to.contain(`... > Running post init hook for 'test-runtime-local'`);

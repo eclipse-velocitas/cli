@@ -12,12 +12,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { existsSync, readFileSync } from 'fs-extra';
-import { homedir } from 'os';
-import { join } from 'path';
-import { ComponentManifest } from './component';
-import { DEFAULT_BUFFER_ENCODING } from './constants';
-import { packageDownloader } from './package-downloader';
+import { readFileSync } from 'node:fs';
+import fse from 'fs-extra/esm';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
+import { ComponentManifest } from './component.js';
+import { DEFAULT_BUFFER_ENCODING } from './constants.js';
+import { packageDownloader } from './package-downloader.js';
 
 export const MANIFEST_FILE_NAME = 'manifest.json';
 
@@ -116,7 +117,7 @@ export class PackageConfig {
     }
 
     isPackageInstalled(): boolean {
-        if (!existsSync(this.getPackageDirectoryWithVersion())) {
+        if (!fse.pathExistsSync(this.getPackageDirectoryWithVersion())) {
             return false;
         }
         return true;

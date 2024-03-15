@@ -12,16 +12,17 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { existsSync, Stats } from 'fs';
-import { Transform } from 'node:stream';
-import path, { join } from 'path';
-import { cwd } from 'process';
-import copy from 'recursive-copy';
-import { TransformCallback, TransformOptions } from 'stream';
-import { PackageConfig } from './package';
-import { VariableCollection } from './variables';
-import { ComponentManifest } from './component';
-
+import { Stats } from 'node:fs';
+import fse from 'fs-extra';
+import { Transform, TransformCallback, TransformOptions } from 'node:stream';
+import path, { join } from 'node:path';
+import { cwd } from 'node:process';
+import { PackageConfig } from './package.js';
+import { VariableCollection } from './variables.js';
+import { ComponentManifest } from './component.js';
+// TODO: Fix this -> either of next 2 lines are not working
+// import copy from 'recursive-copy';
+// const copy = require('recursive-copy');
 const SUPPORTED_TEXT_FILES_ARRAY = ['.md', '.yaml', '.yml', '.txt', '.json', '.sh', '.html', '.htm', '.xml', '.tpl'];
 
 class ReplaceVariablesStream extends Transform {
@@ -91,18 +92,18 @@ export function installComponent(packageConfig: PackageConfig, component: Compon
                 const sourceFileOrDir = join(packageConfig.getPackageDirectory(), packageConfig.version, src);
                 const destFileOrDir = join(cwd(), dst);
                 try {
-                    if (existsSync(sourceFileOrDir)) {
-                        copy(sourceFileOrDir, destFileOrDir, {
-                            dot: true,
-                            overwrite: true,
-                            transform: function (src: string, _: string, stats: Stats) {
-                                if (!SUPPORTED_TEXT_FILES_ARRAY.includes(path.extname(src))) {
-                                    return null;
-                                }
-
-                                return new ReplaceVariablesStream(path.extname(src), variables);
-                            },
-                        });
+                    if (fse.pathExistsSync(sourceFileOrDir)) {
+                        // TODO: Fix this
+                        // copy(sourceFileOrDir, destFileOrDir, {
+                        //     dot: true,
+                        //     overwrite: true,
+                        //     transform: function (src: string, _: string, stats: Stats) {
+                        //         if (!SUPPORTED_TEXT_FILES_ARRAY.includes(path.extname(src))) {
+                        //             return null;
+                        //         }
+                        //         return new ReplaceVariablesStream(path.extname(src), variables);
+                        //     },
+                        // });
                     }
                 } catch (e) {
                     console.error(`Error during copy: ${e}`);

@@ -13,8 +13,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Command } from '@oclif/core';
-import { ProjectCache } from '../../modules/project-cache';
-import { ProjectConfig } from '../../modules/project-config';
+import { ProjectCache } from '../../modules/project-cache.js';
+import { ProjectConfig } from '../../modules/project-config.js';
 
 export default class Clear extends Command {
     static description = "Clean a project's cache.";

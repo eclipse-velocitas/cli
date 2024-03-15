@@ -20,7 +20,6 @@ import { ProjectConfigOptions } from '../../../src/modules/project-config';
 import { velocitasConfigMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore, userHomeDir } from '../../utils/mockfs';
 import * as gitModule from 'simple-git';
-import sinon from 'sinon';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
 
 const mockedNewVersionTag = 'v2.0.0';
@@ -33,7 +32,7 @@ describe('upgrade', () => {
             mockRestore();
         })
         .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
         .command(['upgrade', '--dry-run'])
         .it('checking for upgrades in dry-run - no installed sources found', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
@@ -52,7 +51,7 @@ describe('upgrade', () => {
             mockRestore();
         })
         .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
         .command(['upgrade', '--dry-run'])
         .it('checking for upgrades in dry-run - up to date', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
@@ -67,7 +66,7 @@ describe('upgrade', () => {
             mockRestore();
         })
         .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock(mockedNewVersionTag)))
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock(mockedNewVersionTag)))
         .command(['upgrade', '--dry-run'])
         .it('checking for upgrades in dry-run - can be updated', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
@@ -86,8 +85,8 @@ describe('upgrade', () => {
             mockRestore();
         })
         .stdout()
-        .stub(ux, 'prompt', () => 'y')
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
+        .stub(ux, 'prompt', (stub) => stub.returns('y'))
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
         .command(['upgrade'])
         .it('checking for upgrades - no installed sources found - download', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
@@ -109,8 +108,8 @@ describe('upgrade', () => {
         })
         .stderr()
         .stdout()
-        .stub(ux, 'prompt', () => 'y')
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
+        .stub(ux, 'prompt', (stub) => stub.returns('y'))
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
         .stub(packageModule.PackageConfig.prototype, 'downloadPackageVersion', () => {
             throw new Error('Error in downloading package');
         })
@@ -130,8 +129,8 @@ describe('upgrade', () => {
             mockRestore();
         })
         .stdout()
-        .stub(ux, 'prompt', () => 'n')
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
+        .stub(ux, 'prompt', (stub) => stub.returns('n'))
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
         .command(['upgrade'])
         .it('checking for upgrades - no installed sources found - do nothing', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
@@ -162,7 +161,7 @@ describe('upgrade', () => {
             mockRestore();
         })
         .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
         .command(['upgrade'])
         .it('checking for upgrades - up to date', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
@@ -177,8 +176,8 @@ describe('upgrade', () => {
             mockRestore();
         })
         .stdout()
-        .stub(ux, 'prompt', () => 'y')
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock(mockedNewVersionTag)))
+        .stub(ux, 'prompt', (stub) => stub.returns('y'))
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock(mockedNewVersionTag)))
         .command(['upgrade'])
         .it('checking for upgrades - can be updated - download', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');
@@ -204,8 +203,8 @@ describe('upgrade', () => {
             mockRestore();
         })
         .stdout()
-        .stub(ux, 'prompt', () => 'n')
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock(mockedNewVersionTag)))
+        .stub(ux, 'prompt', (stub) => stub.returns('n'))
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock(mockedNewVersionTag)))
         .command(['upgrade'])
         .it('checking for upgrades - can be updated - do nothing', (ctx) => {
             expect(ctx.stdout).to.contain('Checking for updates!');

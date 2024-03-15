@@ -13,33 +13,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Command, Flags } from '@oclif/core';
-import { ProjectConfig } from '../../modules/project-config';
-import { packageDownloader } from '../../modules/package-downloader';
+import { ProjectConfig } from '../../modules/project-config.js';
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import Exec from '../exec';
+import Exec from '../exec/index.js';
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import Init from '../init';
+import Init from '../init/index.js';
 // eslint-disable-next-line @typescript-eslint/naming-convention
-import Sync from '../sync';
-import {
-    PackageIndex,
-    CoreComponent,
-    ExtensionComponent,
-    CoreOptions,
-    DescribedId,
-    Parameter,
-    PackageAttributes,
-} from '../../modules/package-index';
-import { AppManifest, AppManifestInterfaceAttributes } from '../../modules/app-manifest';
-import { InteractiveMode } from '../../modules/create-interactive';
-import { PackageConfig } from '../../modules/package';
-
-// inquirer >= v9 is an ESM package.
-// We are not using ESM in our CLI,
-// We need to set moduleResolution to node16 in tsconfig.json
-// and import inquirer using "await import"
-// @ts-ignore: declaration file not found
-const inquirer = require('inquirer');
+import Sync from '../sync/index.js';
+import { PackageIndex, CoreComponent, ExtensionComponent, CoreOptions, DescribedId, Parameter } from '../../modules/package-index.js';
+import { AppManifest, AppManifestInterfaceAttributes } from '../../modules/app-manifest.js';
+import { InteractiveMode } from '../../modules/create-interactive.js';
+import { input, select, checkbox } from '@inquirer/prompts';
 
 /**
  * Represents the data needed for creating a new project.
@@ -108,53 +92,38 @@ export default class Create extends Command {
     };
 
     static prompts = {
-        core: (availableCores: CoreComponent[]) => {
-            return {
-                name: 'core',
-                prefix: '>',
+        core: async (availableCores: CoreComponent[]) =>
+            await select({
                 message: 'What kind of project would you like to create?',
-                type: 'list',
-                choices: () => availableCores.map((core: CoreComponent) => ({ name: core.name, value: core })),
-            };
-        },
-        coreOptions: (coreOptions: CoreOptions[]) => {
-            return {
-                name: 'coreOptions',
-                prefix: '>',
+                choices: availableCores.map((core: CoreComponent) => ({ name: core.name, value: core })),
+                theme: { prefix: '>' },
+            }),
+        coreOptions: async (coreOptions: CoreOptions[]) =>
+            await select({
                 message: 'Which option?',
-                type: 'list',
-                choices: () =>
-                    coreOptions.map((coreOption: CoreOptions) => ({ name: coreOption.name, value: coreOptions.indexOf(coreOption) })),
-            };
-        },
-        coreParameters: (parameter: Parameter) => {
-            return {
-                name: 'coreParameter',
-                prefix: '>',
+                choices: coreOptions.map((coreOption: CoreOptions) => ({ name: coreOption.name, value: coreOptions.indexOf(coreOption) })),
+                theme: { prefix: '>' },
+            }),
+        coreParameters: async (parameter: Parameter) =>
+            await select({
                 message: parameter.description,
                 default: parameter.default,
-                type: parameter.type,
-                choices: () => (parameter.values || []).map((value: DescribedId) => ({ name: value.description, value: value.id })),
-            };
-        },
-        extensions: (availableExtensions: ExtensionComponent[]) => {
-            return {
-                name: 'extensions',
-                prefix: '>',
+                choices: (parameter.values || []).map((value: DescribedId) => ({ name: value.description, value: value.id })),
+                theme: { prefix: '>' },
+            }),
+        extensions: async (availableExtensions: ExtensionComponent[]) =>
+            await checkbox({
                 message: 'Which extensions do you want to use?',
-                type: 'checkbox',
-                choices: () => availableExtensions.map((ext: ExtensionComponent) => ({ name: ext.name, value: ext })),
-            };
-        },
-        extensionParameters: (parameter: Parameter) => {
-            return {
-                name: 'extensionParameter',
-                prefix: '>',
+                choices: availableExtensions.map((ext: ExtensionComponent) => ({ name: ext.name, value: ext })),
+                theme: { prefix: '>' },
+                // type: parameter.type,
+            }),
+        extensionParameters: async (parameter: Parameter) =>
+            await input({
                 message: parameter.description,
                 default: parameter.default,
-                type: parameter.type,
-            };
-        },
+                theme: { prefix: '>' },
+            }),
     };
 
     static async createAppManifestInterfaceAttributes(
@@ -164,8 +133,8 @@ export default class Create extends Command {
         console.log(`Configure extension '${extensionId}'`);
         const appManifestInterfaceEntry: AppManifestInterfaceAttributes = { type: extensionId, config: {} };
         for (const parameter of parameters) {
-            const extensionPromptResult = await inquirer.prompt(Create.prompts.extensionParameters(parameter));
-            appManifestInterfaceEntry.config[parameter.id] = extensionPromptResult.extensionParameter;
+            const extensionPromptResult = await Create.prompts.extensionParameters(parameter);
+            appManifestInterfaceEntry.config[parameter.id] = extensionPromptResult;
         }
         return appManifestInterfaceEntry;
     }

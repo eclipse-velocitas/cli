@@ -38,8 +38,8 @@ sudo apt-get -y install build-essential
 npm ci
 
 # Create alias to development CLI binary for testing inside devContainer
-echo "alias velocitas=$REPO/bin/dev" >> ~/.zshrc
-echo "alias velocitas=$REPO/bin/dev" >> ~/.bashrc
+echo "alias velocitas=$REPO/bin/dev.js" >> ~/.zshrc
+echo "alias velocitas=$REPO/bin/dev.js" >> ~/.bashrc
 
 # Don't let container creation fail if lifecycle management fails
 echo "Done!"

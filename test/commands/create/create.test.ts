@@ -17,12 +17,10 @@ import { packageIndexMock, velocitasConfigMock } from '../../utils/mockConfig';
 import { mockFolders, mockRestore } from '../../utils/mockfs';
 import * as gitModule from 'simple-git';
 import * as exec from '../../../src/modules/exec';
-import sinon from 'sinon';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
 import { ProjectConfig } from '../../../src/modules/project-config';
 import { AppManifest } from '../../../src/modules/app-manifest';
 import { CoreComponent, ExtensionComponent } from '../../../src/modules/package-index';
-const inquirer = require('inquirer');
 
 const TEST_APP_NAME = 'TestApp';
 
@@ -77,11 +75,9 @@ describe('create', () => {
             mockRestore();
         })
         .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
-        .stub(exec, 'runExecSpec', () => {})
-        .stub(exec, 'awaitSpawn', () => {
-            return { exitCode: 0 };
-        })
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
+        .stub(exec, 'awaitSpawn', (stub) => stub.returns({ exitCode: 0 }))
         .command(['create', '-n', TEST_APP_NAME, '-c', TEST_COMPONENT_CORE_ID])
         .it('creates a project with provided flags and generates .velocitas.json and AppManifest', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_NON_INTERACTIVE_STDOUT);
@@ -106,10 +102,8 @@ describe('create', () => {
             mockRestore();
         })
         .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
-        .stub(exec, 'awaitSpawn', () => {
-            return { exitCode: -1 };
-        })
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'awaitSpawn', (stub) => stub.returns({ exitCode: -1 }))
         .command(['create', '-n', TEST_APP_NAME, '-c', TEST_COMPONENT_CORE_ID])
         .catch('Unable to execute create script!')
         .it('throws error when project-creation script cannot be executed');
@@ -154,21 +148,19 @@ describe('create', () => {
             mockRestore();
         })
         .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
-        .stub(exec, 'runExecSpec', () => {})
-        .stub(exec, 'awaitSpawn', () => {
-            return { exitCode: 0 };
-        })
-        .stub(inquirer, 'prompt', () => {
-            return {
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
+        .stub(exec, 'awaitSpawn', (stub) => stub.returns({ exitCode: 0 }))
+        .stub(exec, 'prompt', (stub) =>
+            stub.returns({
                 name: TEST_APP_NAME,
                 core: TEST_COMPONENT_CORE,
                 coreOptions: CoreOption.fromScratch,
                 coreParameter: TEST_APP_NAME,
                 extensions: [TEST_COMPONENT_EXTENSION],
                 extensionParameter: TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_2,
-            };
-        })
+            }),
+        )
         .command(['create'])
         .it(
             'creates a project in interactive mode without example and generates .velocitas.json and AppManifest without defaults',
@@ -202,20 +194,18 @@ describe('create', () => {
             mockRestore();
         })
         .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
-        .stub(exec, 'runExecSpec', () => {})
-        .stub(exec, 'awaitSpawn', () => {
-            return { exitCode: 0 };
-        })
-        .stub(inquirer, 'prompt', () => {
-            return {
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
+        .stub(exec, 'awaitSpawn', (stub) => stub.returns({ exitCode: 0 }))
+        .stub(exec, 'prompt', (stub) =>
+            stub.returns({
                 name: TEST_APP_NAME,
                 core: TEST_COMPONENT_CORE,
                 coreOptions: CoreOption.fromScratch,
                 coreParameter: TEST_APP_NAME,
                 extensions: [],
-            };
-        })
+            }),
+        )
         .command(['create'])
         .it('creates a project in interactive mode without example and generates .velocitas.json and AppManifest correctly', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT(TEST_APP_NAME));
@@ -251,19 +241,17 @@ describe('create', () => {
             mockRestore();
         })
         .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
-        .stub(exec, 'runExecSpec', () => {})
-        .stub(exec, 'awaitSpawn', () => {
-            return { exitCode: 0 };
-        })
-        .stub(inquirer, 'prompt', () => {
-            return {
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
+        .stub(exec, 'awaitSpawn', (stub) => stub.returns({ exitCode: 0 }))
+        .stub(exec, 'prompt', (stub) =>
+            stub.returns({
                 core: TEST_COMPONENT_CORE,
                 coreOptions: CoreOption.fromExample,
                 coreParameter: TEST_COMPONENT_CORE_EXAMPLE,
                 extensions: [],
-            };
-        })
+            }),
+        )
         .command(['create'])
         .it('creates a project in interactive mode with example and generates .velocitas.json and AppManifest correctly', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT(TEST_COMPONENT_CORE_EXAMPLE));

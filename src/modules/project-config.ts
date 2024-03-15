@@ -12,18 +12,17 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { existsSync, PathLike, readFileSync, writeFileSync } from 'fs';
-import { resolve } from 'path';
-import { cwd } from 'process';
-import { DEFAULT_BUFFER_ENCODING } from './constants';
-import { mapReplacer } from './helpers';
-import { PackageConfig } from './package';
-import { getLatestVersion } from './semver';
-import { PackageIndex } from './package-index';
-import { DEFAULT_APP_MANIFEST_PATH } from './app-manifest';
-import { ComponentConfig, ComponentContext } from './component';
-import { VariableCollection } from './variables';
-
+import { existsSync, PathLike, readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { cwd } from 'node:process';
+import { DEFAULT_BUFFER_ENCODING } from './constants.js';
+import { mapReplacer } from './helpers.js';
+import { PackageConfig } from './package.js';
+import { getLatestVersion } from './semver.js';
+import { PackageIndex } from './package-index.js';
+import { DEFAULT_APP_MANIFEST_PATH } from './app-manifest.js';
+import { ComponentConfig, ComponentContext } from './component.js';
+import { VariableCollection } from './variables.js';
 export const DEFAULT_CONFIG_FILE_NAME = '.velocitas.json';
 export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), DEFAULT_CONFIG_FILE_NAME);
 

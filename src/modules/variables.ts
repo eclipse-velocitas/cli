@@ -14,9 +14,9 @@
 
 import { realpathSync } from 'node:fs';
 import { cwd } from 'node:process';
-import { ComponentContext } from './component';
-import { mapReplacer } from './helpers';
-import { ProjectCache } from './project-cache';
+import { ComponentContext } from './component.js';
+import { mapReplacer } from './helpers.js';
+import { ProjectCache } from './project-cache.js';
 
 export enum ScopeIdentifier {
     package = 'package',

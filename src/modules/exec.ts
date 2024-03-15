@@ -12,12 +12,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { exec } from 'child_process';
+import { exec } from 'node:child_process';
 import { IPty, spawn } from 'node-pty';
 import { join, resolve } from 'node:path';
-import { ExecSpec, ProgramSpec } from './component';
-import { ProjectCache } from './project-cache';
-import { ProjectConfig } from './project-config';
+import { ExecSpec, ProgramSpec } from './component.js';
+import { ProjectCache } from './project-cache.js';
+import { ProjectConfig } from './project-config.js';
 
 const CACHE_OUTPUT_REGEX: RegExp = /(\w+)\s*=\s*(\'.*?\'|\".*?\"|\w+)\s+\>\>\s+VELOCITAS_CACHE/;
 

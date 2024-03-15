@@ -13,11 +13,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, PathLike, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, PathLike, readFileSync, writeFileSync } from 'node:fs';
+import fse from 'fs-extra/esm';
 import { join, parse } from 'node:path';
-import { DEFAULT_BUFFER_ENCODING } from './constants';
-import { mapReplacer } from './helpers';
-import { getVelocitasRoot } from './package';
+import { DEFAULT_BUFFER_ENCODING } from './constants.js';
+import { mapReplacer } from './helpers.js';
+import { getVelocitasRoot } from './package.js';
 
 const FILE_NAME = 'cache.json';
 
@@ -64,7 +65,7 @@ export class ProjectCache {
 
     write(path: string = join(ProjectCache.getCacheDir(), FILE_NAME)) {
         const parsedPath = parse(path);
-        if (!existsSync(parsedPath.base)) {
+        if (!fse.pathExistsSync(parsedPath.base)) {
             mkdirSync(parsedPath.dir, { recursive: true });
         }
         writeFileSync(path, JSON.stringify(this._data, mapReplacer));

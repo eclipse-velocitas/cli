@@ -12,11 +12,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { existsSync, readFileSync } from 'fs';
-import { resolve } from 'path';
-import { cwd } from 'process';
-import { DEFAULT_BUFFER_ENCODING } from './constants';
-import { outputFileSync } from 'fs-extra';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { cwd } from 'node:process';
+import { DEFAULT_BUFFER_ENCODING } from './constants.js';
+import fse from 'fs-extra/esm';
 
 export const DEFAULT_APP_MANIFEST_PATH = './app/AppManifest.json';
 export const APP_MANIFEST_PATH_VARIABLE = 'appManifestPath';
@@ -114,6 +114,6 @@ export class AppManifest implements AppManifestAttributes {
     }
 
     write() {
-        outputFileSync(DEFAULT_APP_MANIFEST_PATH, JSON.stringify(this, null, 4));
+        fse.outputFileSync(DEFAULT_APP_MANIFEST_PATH, JSON.stringify(this, null, 4));
     }
 }

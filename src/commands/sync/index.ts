@@ -13,8 +13,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Command } from '@oclif/core';
-import { ProjectConfig } from '../../modules/project-config';
-import { installComponent } from '../../modules/setup';
+import { ProjectConfig } from '../../modules/project-config.js';
+import { installComponent } from '../../modules/setup.js';
 
 export default class Sync extends Command {
     static description = 'Syncs Velocitas components into your repo.';

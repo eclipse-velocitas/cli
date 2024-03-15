@@ -12,8 +12,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { PackageConfig } from './package';
-import { VariableDefinition } from './variables';
+import { PackageConfig } from './package.js';
+import { VariableDefinition } from './variables.js';
 
 /**
  * Specification of a program that is exported by a component to be used via `velocitas exec`.

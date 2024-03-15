@@ -14,8 +14,8 @@
 
 import { Command, Flags, Args } from '@oclif/core';
 import { join } from 'node:path';
-import { PackageConfig } from '../../modules/package';
-import { ProjectConfig } from '../../modules/project-config';
+import { PackageConfig } from '../../modules/package.js';
+import { ProjectConfig } from '../../modules/project-config.js';
 
 export default class Package extends Command {
     static description = 'Prints information about packages';
