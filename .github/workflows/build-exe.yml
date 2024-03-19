@@ -17,6 +17,9 @@ concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
 on:
+  push:
+    branches:
+      - update-to-node20-lts
   workflow_call:
     inputs:
       ref:
@@ -39,7 +42,7 @@ on:
         type: string
 
 env:
-  NODE_VERSION: 18
+  NODE_VERSION: 20
 
 jobs:
   compile:
@@ -77,13 +80,11 @@ jobs:
         with:
           base_image: arm64v8/node:${{ env.NODE_VERSION }}-bullseye
           run: |
-            npm install -g npm@9.9.3
             npm install .
 
       - name: Install dependencies for AMD64
         if: ${{ matrix.arch == 'x64' }}
         run: |
-          npm install -g npm@9.9.3
           npm install .
 
       - name: Compile EXE for ${{ matrix.arch }}
