@@ -151,7 +151,6 @@ export class PackageIndex {
             const packageIndex: PackageAttributes[] = JSON.parse(packageIndexFile);
             return new PackageIndex(packageIndex);
         } catch (error) {
-            console.log(error);
             throw new Error('No package-index.json found.');
         }
     }
