@@ -17,9 +17,6 @@ concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
 on:
-  push:
-    branches:
-      - update-to-node20-lts
   workflow_call:
     inputs:
       ref:
@@ -73,7 +70,6 @@ jobs:
           echo "$(jq --arg VERSION $VERSION '.version=$VERSION' package.json)" > package.json
 
       # This step is needed to install needed dependencies (node-pty) for arm based architecture
-      # npm 9.9.3 because of http ECONNRESET issue during installation
       - name: Install dependencies for ARM64
         if: ${{ matrix.arch == 'arm64' }}
         uses: uraimo/run-on-arch-action@v2
