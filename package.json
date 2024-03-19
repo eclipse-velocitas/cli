@@ -17,9 +17,7 @@
   ],
   "repository": "eclipse-velocitas/cli",
   "dependencies": {
-    "@oclif/core": "2.15.0",
-    "@oclif/plugin-help": "5.2.20",
-    "@oclif/plugin-not-found": "2.4.3",
+    "@oclif/core": "3.25.3",
     "fs-extra": "11.2.0",
     "inquirer": "8.2.6",
     "node-pty": "1.0.0",
@@ -40,7 +38,6 @@
     "eslint": "8.57.0",
     "mocha": "10.3.0",
     "nyc": "15.1.0",
-    "oclif": "3.17.2",
     "prettier": "3.2.5",
     "prettier-plugin-organize-imports": "3.2.4",
     "shx": "0.3.4",
@@ -53,10 +50,7 @@
     "bin": "velocitas",
     "dirname": "velocitas",
     "commands": "./dist/commands",
-    "plugins": [
-      "@oclif/plugin-help",
-      "@oclif/plugin-not-found"
-    ],
+    "plugins": [],
     "topicSeparator": " ",
     "topics": {
       "cache": {
