@@ -13,10 +13,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { cwd } from 'node:process';
+import { CliFileSystem } from '../utils/fs-bridge';
 import { ComponentContext } from './component';
 import { mapReplacer } from './helpers';
 import { ProjectCache } from './project-cache';
-import { CliFileSystem } from '../utils/fs-bridge';
 
 export enum ScopeIdentifier {
     package = 'package',

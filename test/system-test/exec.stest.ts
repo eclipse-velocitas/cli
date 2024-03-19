@@ -13,11 +13,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect } from 'chai';
-import { spawn, spawnSync } from 'child_process';
-import { readFileSync } from 'node:fs';
 import { copySync } from 'fs-extra';
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import YAML from 'yaml';
+import { spawn, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import * as yaml from 'yaml';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
 import { TEST_ROOT, VELOCITAS_HOME, VELOCITAS_PROCESS } from '../utils/systemTestConfig';
 
@@ -31,7 +30,7 @@ describe('CLI command', () => {
 
         it('should be able to exec all exposed program specs of runtime-local', async () => {
             const packageOutput = spawnSync(VELOCITAS_PROCESS, ['package', 'devenv-runtime-local'], { encoding: DEFAULT_BUFFER_ENCODING });
-            const parsedPackageOutput = YAML.parse(packageOutput.stdout.toString());
+            const parsedPackageOutput = yaml.parse(packageOutput.stdout.toString());
             const runtimeLocalComponent = parsedPackageOutput['devenv-runtime-local'].components.find(
                 (component: any) => component.id === 'runtime-local',
             );

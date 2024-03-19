@@ -12,8 +12,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { PackageIndex, CoreComponent, ExtensionComponent } from './package-index';
 import { AppManifestInterfaceAttributes } from './app-manifest';
+import { CoreComponent, ExtensionComponent, PackageIndex } from './package-index';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import Create from '../commands/create';
 // inquirer >= v9 is an ESM package.

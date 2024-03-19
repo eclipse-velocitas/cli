@@ -12,11 +12,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import 'mocha';
-import { CoreComponent, ExtensionComponent, PackageIndex, PackageAttributes, Parameter } from '../../src/modules/package-index';
 import { expect } from 'chai';
-import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/utils/fs-bridge';
+import 'mocha';
 import { cwd } from 'node:process';
+import { CoreComponent, ExtensionComponent, PackageAttributes, PackageIndex, Parameter } from '../../src/modules/package-index';
+import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/utils/fs-bridge';
 
 const validPackageIndexMock: PackageAttributes[] = [
     {

@@ -12,11 +12,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import 'mocha';
-import { ProjectConfig } from '../../src/modules/project-config';
 import { expect } from 'chai';
+import 'mocha';
 import { homedir } from 'node:os';
 import { cwd } from 'node:process';
+import { ProjectConfig } from '../../src/modules/project-config';
 import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/utils/fs-bridge';
 
 describe('project-config - module', () => {

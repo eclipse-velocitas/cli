@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { ux, Command, Flags } from '@oclif/core';
+import { Command, Flags, ux } from '@oclif/core';
 import { ProjectConfig } from '../../modules/project-config';
 import { getLatestVersion } from '../../modules/semver';
 

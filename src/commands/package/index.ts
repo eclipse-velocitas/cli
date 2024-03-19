@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { Command, Flags, Args } from '@oclif/core';
+import { Args, Command, Flags } from '@oclif/core';
 import { join } from 'node:path';
 import { PackageConfig } from '../../modules/package';
 import { ProjectConfig } from '../../modules/project-config';

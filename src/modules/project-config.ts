@@ -13,16 +13,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PathLike } from 'node:fs';
-import { resolve } from 'path';
-import { cwd } from 'process';
-import { mapReplacer } from './helpers';
-import { PackageConfig } from './package';
-import { getLatestVersion } from './semver';
-import { PackageIndex } from './package-index';
+import { resolve } from 'node:path';
+import { cwd } from 'node:process';
+import { CliFileSystem } from '../utils/fs-bridge';
 import { DEFAULT_APP_MANIFEST_PATH } from './app-manifest';
 import { ComponentConfig, ComponentContext } from './component';
+import { mapReplacer } from './helpers';
+import { PackageConfig } from './package';
+import { PackageIndex } from './package-index';
+import { getLatestVersion } from './semver';
 import { VariableCollection } from './variables';
-import { CliFileSystem } from '../utils/fs-bridge';
 
 export const DEFAULT_CONFIG_FILE_NAME = '.velocitas.json';
 export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), DEFAULT_CONFIG_FILE_NAME);

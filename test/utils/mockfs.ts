@@ -12,8 +12,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import * as os from 'os';
+import * as os from 'node:os';
+import { cwd } from 'node:process';
 import { ProjectCache } from '../../src/modules/project-cache';
+import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/utils/fs-bridge';
 import {
     appManifestMock,
     corePackageManifestMock,
@@ -23,8 +25,6 @@ import {
     setupPackageManifestMock,
     velocitasConfigMock,
 } from './mockConfig';
-import { cwd } from 'node:process';
-import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/utils/fs-bridge';
 
 export const userHomeDir = os.homedir();
 const runtimePackagePath = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}/${velocitasConfigMock.packages[0].version}`;

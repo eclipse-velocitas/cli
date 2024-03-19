@@ -3,38 +3,29 @@
 ## JavaScript
 | Dependency | Version | License |
 |:-----------|:-------:|--------:|
-|@oclif/core|2.15.0|MIT|
-|@oclif/plugin-help|5.2.20|MIT|
-|@oclif/plugin-not-found|2.4.3|MIT|
-|@oclif/plugin-plugins|3.9.4|MIT|
-|@oclif/test|2.5.6|MIT|
-|@types/archiver|5.3.4|MIT|
-|@types/chai|4.3.12|MIT|
-|@types/decompress|4.2.7|MIT|
+|@oclif/core|3.25.3|MIT|
+|@oclif/test|3.2.6|MIT|
+|@types/chai|4.3.13|MIT|
 |@types/fs-extra|11.0.4|MIT|
 |@types/mocha|10.0.6|MIT|
-|@types/node|20.11.29|MIT|
-|@typescript-eslint/eslint-plugin|7.1.1|MIT|
-|@typescript-eslint/parser|7.1.1|unknown|
+|@types/node|20.11.30|MIT|
+|@typescript-eslint/eslint-plugin|7.3.1|MIT|
+|@typescript-eslint/parser|7.3.1|unknown|
 |@yao-pkg/pkg|5.11.5|MIT|
-|archiver|5.3.2|MIT|
 |chai|4.4.1|MIT|
-|decompress|4.2.1|MIT|
 |eslint|8.57.0|ISC<br/>MIT|
+|fs-extra|11.2.0|MIT|
 |inquirer|8.2.6|MIT|
 |mocha|10.3.0|ISC<br/>MIT|
 |node-pty|1.0.0|MIT|
 |nyc|15.1.0|ISC<br/>MIT|
-|oclif|3.17.2|MIT|
 |prettier|3.2.5|Apache 2.0|
 |prettier-plugin-organize-imports|3.2.4|MIT|
-|recursive-copy|2.0.14|ISC|
+|recursive-copy|2.0.14|ISC<br/>MIT|
 |semver|7.6.0|ISC|
 |shx|0.3.4|MIT|
-|simple-git|3.22.0|unknown|
-|sinon|15.2.0|MIT<br/>New BSD|
+|simple-git|3.23.0|unknown|
 |ts-node|10.9.2|MIT|
-|tslib|2.6.2|BSD Zero Clause License|
 |typescript|5.4.2|Apache 2.0|
 |velocitas-cli|0.0.0|Apache 2.0|
 |yaml|2.4.1|ISC|

@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { Command, Args } from '@oclif/core';
+import { Args, Command } from '@oclif/core';
 import { mapReplacer } from '../../modules/helpers';
 import { ProjectCache } from '../../modules/project-cache';
 import { ProjectConfig } from '../../modules/project-config';

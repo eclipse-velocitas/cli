@@ -15,9 +15,9 @@
 import { createHash } from 'node:crypto';
 import { PathLike } from 'node:fs';
 import { join, parse } from 'node:path';
+import { CliFileSystem } from '../utils/fs-bridge';
 import { mapReplacer } from './helpers';
 import { getVelocitasRoot } from './package';
-import { CliFileSystem } from '../utils/fs-bridge';
 
 const FILE_NAME = 'cache.json';
 

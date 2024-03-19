@@ -13,10 +13,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect } from 'chai';
-import { spawnSync } from 'child_process';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { removeSync } from 'fs-extra';
-import path from 'path';
+import { spawnSync } from 'node:child_process';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import path from 'node:path';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
 import { PackageConfig } from '../../src/modules/package';
 import { packageDownloader } from '../../src/modules/package-downloader';

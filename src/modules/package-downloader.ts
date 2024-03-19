@@ -12,11 +12,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { posix as pathPosix } from 'path';
+import { posix as pathPosix } from 'node:path';
 import { CheckRepoActions, SimpleGit, simpleGit } from 'simple-git';
+import { CliFileSystem } from '../utils/fs-bridge';
 import { PackageConfig } from './package';
 import { getLatestVersion } from './semver';
-import { CliFileSystem } from '../utils/fs-bridge';
 
 export class PackageDownloader {
     packageConfig: PackageConfig;

@@ -13,21 +13,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
-import { velocitasConfigMock } from '../../utils/mockConfig';
-import { mockFolders, userHomeDir } from '../../utils/mockfs';
 import * as gitModule from 'simple-git';
 import * as exec from '../../../src/modules/exec';
-import sinon from 'sinon';
-import { simpleGitInstanceMock } from '../../helpers/simpleGit';
 import { CliFileSystem } from '../../../src/utils/fs-bridge';
+import { simpleGitInstanceMock } from '../../helpers/simpleGit';
+import { velocitasConfigMock } from '../../utils/mockConfig';
+import { mockFolders, userHomeDir } from '../../utils/mockfs';
 
 describe('init', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true });
     })
         .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
-        .stub(exec, 'runExecSpec', () => {})
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
         .command(['init'])
         .it('downloads packages from preconfigured velocitas.json', (ctx) => {
             expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
@@ -53,8 +52,8 @@ describe('init', () => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
     })
         .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
-        .stub(exec, 'runExecSpec', () => {})
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
         .command(['init', '-v'])
         .it('skips downloading because package is already installed', (ctx) => {
             console.error(ctx.stdout);
@@ -104,8 +103,8 @@ describe('init', () => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
     })
         .stdout()
-        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
-        .stub(exec, 'runExecSpec', () => {})
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
         .command(['init'])
         .it('runs post-init hooks', (ctx) => {
             expect(ctx.stdout).to.contain(`... > Running post init hook for 'test-runtime-local'`);

@@ -14,10 +14,10 @@
 
 import { expect } from 'chai';
 import 'mocha';
+import { ComponentConfig, ComponentContext, ComponentManifest } from '../../src/modules/component';
 import { PackageConfig } from '../../src/modules/package';
 import { ProjectConfig } from '../../src/modules/project-config';
 import { ScopeIdentifier, VariableCollection } from '../../src/modules/variables';
-import { ComponentConfig, ComponentContext, ComponentManifest } from '../../src/modules/component';
 
 let projectConfig: ProjectConfig;
 let pkg1Config: PackageConfig;
