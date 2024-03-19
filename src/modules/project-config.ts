@@ -174,7 +174,7 @@ export class ProjectConfig {
      * @param id ID of the component to remove from the project.
      */
     removeComponent(id: string): void {
-        this._components = this._components.filter((p) => p.id !== id);
+        this._components = this._components.filter((componentConfig) => componentConfig.id !== id);
     }
 
     /**
