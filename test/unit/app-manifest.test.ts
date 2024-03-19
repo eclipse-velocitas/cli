@@ -13,18 +13,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import 'mocha';
-import mockfs from 'mock-fs';
 import { AppManifest } from '../../src/modules/app-manifest';
 import { expect } from 'chai';
+import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/utils/fs-bridge';
 
 describe('app-manifest - module', () => {
     before(() => {
-        const mockfsConf: any = {
+        const mockFilesystem: MockFileSystemObj = {
             '/AppManifestInvalid.json': 'foo',
             '/AppManifestValid.json': '{ "name": "AppName", "manifestVersion": "v3" }',
             '/AppManifestArray.json': '[ { "name": "AppName", "manifestVersion": "v3" } ]',
         };
-        mockfs(mockfsConf, { createCwd: false });
+        CliFileSystem.setImpl(new MockFileSystem(mockFilesystem));
     });
     describe('AppManifest reading', () => {
         it('should silently continue if the file does not exist.', () => {
@@ -48,8 +48,5 @@ describe('app-manifest - module', () => {
             expect(appManifest!['name']).to.be.eq('AppName');
             expect(appManifest!['manifestVersion']).to.be.eq('v3');
         });
-    });
-    after(() => {
-        mockfs.restore();
     });
 });

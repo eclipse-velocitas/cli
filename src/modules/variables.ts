@@ -12,11 +12,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { realpathSync } from 'node:fs';
 import { cwd } from 'node:process';
 import { ComponentContext } from './component';
 import { mapReplacer } from './helpers';
 import { ProjectCache } from './project-cache';
+import { CliFileSystem } from '../utils/fs-bridge';
 
 export enum ScopeIdentifier {
     package = 'package',
@@ -263,7 +263,7 @@ export function createEnvVars(packagePath: string, variables: VariableCollection
     const envVars = Object.assign({}, process.env, {
         VELOCITAS_WORKSPACE_DIR: cwd(),
         VELOCITAS_CACHE_DATA: JSON.stringify(projectCache.raw(), mapReplacer),
-        VELOCITAS_CACHE_DIR: ProjectCache.getCacheDir(realpathSync(process.cwd())),
+        VELOCITAS_CACHE_DIR: ProjectCache.getCacheDir(CliFileSystem.realpathSync(process.cwd())),
         VELOCITAS_PACKAGE_DIR: packagePath,
     });
 

@@ -13,24 +13,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import 'mocha';
-import mockfs from 'mock-fs';
 import { PackageConfig } from '../../src/modules/package';
 import { expect } from 'chai';
+import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/utils/fs-bridge';
 
 describe('package - module', () => {
     let envCache: any;
     before(() => {
         envCache = process.env;
-        const mockfsConf: any = {
-            '/my/custom/path/.velocitas/packages': {
-                TestPackage: {
-                    'v1.2.3': {
-                        'manifest.json': '{}',
-                    },
-                },
-            },
+        const testpackage = '/my/custom/path/.velocitas/packages/TestPackage/v1.2.3/manifest.json';
+
+        let mockFilesystem: MockFileSystemObj = {
+            [testpackage]: '{}',
         };
-        mockfs(mockfsConf, { createCwd: false });
+        CliFileSystem.setImpl(new MockFileSystem(mockFilesystem));
     });
     describe('Package manifest', () => {
         it('should be loaded from VELOCITAS_HOME', () => {
@@ -63,6 +59,5 @@ describe('package - module', () => {
     });
     after(() => {
         process.env = envCache;
-        mockfs.restore();
     });
 });

@@ -12,11 +12,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { existsSync } from 'fs-extra';
 import { posix as pathPosix } from 'path';
 import { CheckRepoActions, SimpleGit, simpleGit } from 'simple-git';
 import { PackageConfig } from './package';
 import { getLatestVersion } from './semver';
+import { CliFileSystem } from '../utils/fs-bridge';
 
 export class PackageDownloader {
     packageConfig: PackageConfig;
@@ -62,7 +62,7 @@ export class PackageDownloader {
             checkRepoAction = CheckRepoActions.IS_REPO_ROOT;
         }
 
-        if (!existsSync(packageDir)) {
+        if (!CliFileSystem.existsSync(packageDir)) {
             await this.cloneRepository(packageDir, cloneOpts);
         }
 

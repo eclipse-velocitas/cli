@@ -14,14 +14,14 @@
 
 import { ux } from '@oclif/core';
 import { expect, test } from '@oclif/test';
-import * as fs from 'fs';
 import * as packageModule from '../../../src/modules/package';
 import { ProjectConfigOptions } from '../../../src/modules/project-config';
 import { velocitasConfigMock } from '../../utils/mockConfig';
-import { mockFolders, mockRestore, userHomeDir } from '../../utils/mockfs';
+import { mockFolders, userHomeDir } from '../../utils/mockfs';
 import * as gitModule from 'simple-git';
 import sinon from 'sinon';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
+import { CliFileSystem } from '../../../src/utils/fs-bridge';
 
 const mockedNewVersionTag = 'v2.0.0';
 
@@ -29,9 +29,6 @@ describe('upgrade', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .command(['upgrade', '--dry-run'])
@@ -48,9 +45,6 @@ describe('upgrade', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .command(['upgrade', '--dry-run'])
@@ -63,9 +57,6 @@ describe('upgrade', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock(mockedNewVersionTag)))
         .command(['upgrade', '--dry-run'])
@@ -82,9 +73,6 @@ describe('upgrade', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stub(ux, 'prompt', () => 'y')
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
@@ -97,16 +85,13 @@ describe('upgrade', () => {
             expect(ctx.stdout).to.contain(
                 `... No installed sources for ${velocitasConfigMock.packages[1].repo}:${velocitasConfigMock.packages[1].version} found`,
             );
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}`)).to.be.true;
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}`)).to.be.true;
+            expect(CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}`)).to.be.true;
+            expect(CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}`)).to.be.true;
         });
 
     test.do(() => {
         mockFolders({ velocitasConfig: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stderr()
         .stdout()
         .stub(ux, 'prompt', () => 'y')
@@ -126,9 +111,6 @@ describe('upgrade', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stub(ux, 'prompt', () => 'n')
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
@@ -141,15 +123,17 @@ describe('upgrade', () => {
             expect(ctx.stdout).to.contain(
                 `... No installed sources for ${velocitasConfigMock.packages[1].repo}:${velocitasConfigMock.packages[1].version} found`,
             );
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}/_cache`)).to.be.true;
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}/_cache`)).to.be.true;
+            expect(CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}/_cache`)).to.be
+                .true;
+            expect(CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}/_cache`)).to.be
+                .true;
             expect(
-                fs.existsSync(
+                CliFileSystem.existsSync(
                     `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}/${velocitasConfigMock.packages[0].version}`,
                 ),
             ).to.be.false;
             expect(
-                fs.existsSync(
+                CliFileSystem.existsSync(
                     `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}/${velocitasConfigMock.packages[1].version}`,
                 ),
             ).to.be.false;
@@ -158,9 +142,6 @@ describe('upgrade', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .command(['upgrade'])
@@ -173,9 +154,6 @@ describe('upgrade', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stub(ux, 'prompt', () => 'y')
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock(mockedNewVersionTag)))
@@ -188,11 +166,9 @@ describe('upgrade', () => {
             expect(ctx.stdout).to.contain(
                 `... '${velocitasConfigMock.packages[1].repo}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersionTag}`,
             );
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}`)).to.be.true;
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}`)).to.be.true;
-            const newVelocitasConfig: ProjectConfigOptions = JSON.parse(
-                fs.readFileSync(`${process.cwd()}/.velocitas.json`, { encoding: 'utf8', flag: 'r' }),
-            );
+            expect(CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}`)).to.be.true;
+            expect(CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}`)).to.be.true;
+            const newVelocitasConfig: ProjectConfigOptions = JSON.parse(CliFileSystem.readFileSync(`${process.cwd()}/.velocitas.json`));
             expect(newVelocitasConfig.packages[0].version).to.be.equal(mockedNewVersionTag);
             expect(newVelocitasConfig.packages[1].version).to.be.equal(mockedNewVersionTag);
         });
@@ -200,9 +176,6 @@ describe('upgrade', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stub(ux, 'prompt', () => 'n')
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock(mockedNewVersionTag)))
@@ -215,7 +188,7 @@ describe('upgrade', () => {
             expect(ctx.stdout).to.contain(
                 `... '${velocitasConfigMock.packages[1].repo}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersionTag}`,
             );
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}`)).to.be.true;
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}`)).to.be.true;
+            expect(CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}`)).to.be.true;
+            expect(CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}`)).to.be.true;
         });
 });

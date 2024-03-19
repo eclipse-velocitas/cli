@@ -14,7 +14,8 @@
 
 import { expect } from 'chai';
 import { spawnSync } from 'child_process';
-import { copySync, removeSync, existsSync, readFileSync, readdirSync } from 'fs-extra';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { removeSync, copySync } from 'fs-extra';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
 import { TEST_ROOT, VELOCITAS_HOME, VELOCITAS_PROCESS } from '../utils/systemTestConfig';
@@ -42,7 +43,7 @@ describe('CLI command', () => {
             const initOutput = spawnSync(VELOCITAS_PROCESS, ['init'], { encoding: DEFAULT_BUFFER_ENCODING });
             expect(initOutput.status).to.equal(0);
 
-            const packageIndex = JSON.parse(readFileSync('./.velocitas.json', 'utf8'));
+            const packageIndex = JSON.parse(readFileSync('./.velocitas.json', DEFAULT_BUFFER_ENCODING));
             const projectConfig = ProjectConfig.read(packageIndex.cliVersion, './.velocitas.json');
 
             expect(existsSync(join(ProjectCache.getCacheDir(), 'vehicle_model'))).to.be.true;
@@ -58,7 +59,7 @@ describe('CLI command', () => {
             const initOutput = spawnSync(VELOCITAS_PROCESS, ['init'], { encoding: DEFAULT_BUFFER_ENCODING });
             expect(initOutput.status).to.equal(0);
 
-            const packageIndex = JSON.parse(readFileSync('./.velocitas.json', 'utf8'));
+            const packageIndex = JSON.parse(readFileSync('./.velocitas.json', DEFAULT_BUFFER_ENCODING));
             const projectConfig = ProjectConfig.read(packageIndex.cliVersion, './.velocitas.json');
             expect(existsSync('./gen')).to.be.true;
             expect(isDirectoryEmpty('./gen')).to.be.false;

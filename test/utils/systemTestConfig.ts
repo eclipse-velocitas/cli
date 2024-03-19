@@ -13,7 +13,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { cwd } from 'process';
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
+import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
 import { homedir } from 'os';
 import { resolve } from 'path';
 
@@ -22,4 +23,4 @@ export const TEST_ROOT = cwd();
 export const VELOCITAS_HOME = `${homedir()}/.velocitas`;
 
 const packageIndexPath = resolve(__dirname, '../../testbench/test-create/vehicle-app-template/package-index.json');
-export const packageIndex = JSON.parse(readFileSync(packageIndexPath, 'utf8'));
+export const packageIndex = JSON.parse(readFileSync(packageIndexPath, DEFAULT_BUFFER_ENCODING));

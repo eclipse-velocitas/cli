@@ -14,15 +14,12 @@
 
 import { expect, test } from '@oclif/test';
 import { velocitasConfigMock } from '../../utils/mockConfig';
-import { mockFolders, mockRestore, userHomeDir } from '../../utils/mockfs';
+import { mockFolders, userHomeDir } from '../../utils/mockfs';
 
 describe('package', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .command(['package'])
         .it('prints information about all installed packages', (ctx) => {
@@ -33,9 +30,6 @@ describe('package', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .command(['package', '-p', `${velocitasConfigMock.packages[0].repo}`])
         .it('prints the path of specified package', (ctx) => {
@@ -47,9 +41,6 @@ describe('package', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .command(['package'])
         .catch(`Cannot find package ${velocitasConfigMock.packages[0].repo}:${velocitasConfigMock.packages[0].version}`)
@@ -58,9 +49,6 @@ describe('package', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .command(['package', '-p'])
         .catch('Path can be only printed for a single package, please specify <name>!')

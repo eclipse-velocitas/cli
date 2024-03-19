@@ -14,7 +14,8 @@
 
 import { expect } from 'chai';
 import { spawnSync } from 'child_process';
-import { existsSync, readFileSync, readdirSync, removeSync } from 'fs-extra';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { removeSync } from 'fs-extra';
 import path from 'path';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
 import { PackageConfig } from '../../src/modules/package';

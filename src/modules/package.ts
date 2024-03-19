@@ -12,12 +12,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { existsSync, readFileSync } from 'fs-extra';
 import { homedir } from 'os';
 import { join } from 'path';
 import { ComponentManifest } from './component';
-import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { packageDownloader } from './package-downloader';
+import { CliFileSystem } from '../utils/fs-bridge';
 
 export const MANIFEST_FILE_NAME = 'manifest.json';
 
@@ -116,7 +115,7 @@ export class PackageConfig {
     }
 
     isPackageInstalled(): boolean {
-        if (!existsSync(this.getPackageDirectoryWithVersion())) {
+        if (!CliFileSystem.existsSync(this.getPackageDirectoryWithVersion())) {
             return false;
         }
         return true;
@@ -125,7 +124,7 @@ export class PackageConfig {
     readPackageManifest(): PackageManifest {
         try {
             const path = this.getManifestFilePath();
-            const config: PackageManifest = deserializePackageJSON(readFileSync(path, DEFAULT_BUFFER_ENCODING));
+            const config: PackageManifest = deserializePackageJSON(CliFileSystem.readFileSync(path));
             return config;
         } catch (error) {
             console.log(`Cannot find package ${this.getPackageName()}:${this.version}. Please upgrade or init first!`);

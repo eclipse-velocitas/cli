@@ -13,11 +13,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, PathLike, readFileSync, writeFileSync } from 'node:fs';
+import { PathLike } from 'node:fs';
 import { join, parse } from 'node:path';
-import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { mapReplacer } from './helpers';
 import { getVelocitasRoot } from './package';
+import { CliFileSystem } from '../utils/fs-bridge';
 
 const FILE_NAME = 'cache.json';
 
@@ -47,7 +47,7 @@ export class ProjectCache {
     static read(path: string = join(ProjectCache.getCacheDir(), FILE_NAME)): ProjectCache {
         const cache = new ProjectCache();
         try {
-            const data: any = JSON.parse(readFileSync(path, DEFAULT_BUFFER_ENCODING));
+            const data: any = JSON.parse(CliFileSystem.readFileSync(path));
             cache._data = new Map(Object.entries(data));
         } catch (e: any) {
             if (e.code !== 'ENOENT') {
@@ -64,9 +64,9 @@ export class ProjectCache {
 
     write(path: string = join(ProjectCache.getCacheDir(), FILE_NAME)) {
         const parsedPath = parse(path);
-        if (!existsSync(parsedPath.base)) {
-            mkdirSync(parsedPath.dir, { recursive: true });
+        if (!CliFileSystem.existsSync(parsedPath.base)) {
+            CliFileSystem.mkdirSync(parsedPath.dir);
         }
-        writeFileSync(path, JSON.stringify(this._data, mapReplacer));
+        CliFileSystem.writeFileSync(path, JSON.stringify(this._data, mapReplacer));
     }
 }

@@ -14,15 +14,12 @@
 
 import { expect, test } from '@oclif/test';
 import { runtimePackageManifestMock, setupPackageManifestMock } from '../../utils/mockConfig';
-import { mockFolders, mockRestore } from '../../utils/mockfs';
+import { mockFolders } from '../../utils/mockfs';
 
 describe('sync', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .command(['sync'])
         .it('syncing components into project directory', (ctx) => {
