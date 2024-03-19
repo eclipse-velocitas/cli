@@ -12,18 +12,17 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'node:path';
-import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
 import { ProjectCache } from '../../src/modules/project-cache';
+import { CliFileSystem } from '../../src/utils/fs-bridge';
 
 export const getCacheData = () => {
-    return JSON.parse(readFileSync(`${ProjectCache.getCacheDir()}/cache.json`, DEFAULT_BUFFER_ENCODING));
+    return JSON.parse(CliFileSystem.readFileSync(`${ProjectCache.getCacheDir()}/cache.json`));
 };
 
 export function writeCacheData(cacheData: any) {
-    if (!existsSync(ProjectCache.getCacheDir())) {
-        mkdirSync(ProjectCache.getCacheDir(), { recursive: true });
+    if (!CliFileSystem.existsSync(ProjectCache.getCacheDir())) {
+        CliFileSystem.mkdirSync(ProjectCache.getCacheDir());
     }
-    return writeFileSync(join(ProjectCache.getCacheDir(), 'cache.json'), JSON.stringify(cacheData), { encoding: DEFAULT_BUFFER_ENCODING });
+    return CliFileSystem.writeFileSync(join(ProjectCache.getCacheDir(), 'cache.json'), JSON.stringify(cacheData));
 }

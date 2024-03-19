@@ -12,11 +12,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { cwd } from 'process';
-import { DEFAULT_BUFFER_ENCODING } from './constants';
-import { outputFileSync } from 'fs-extra';
+import { CliFileSystem } from '../utils/fs-bridge';
 
 export const DEFAULT_APP_MANIFEST_PATH = './app/AppManifest.json';
 export const APP_MANIFEST_PATH_VARIABLE = 'appManifestPath';
@@ -95,12 +93,12 @@ export class AppManifest implements AppManifestAttributes {
      * @throws {Error} Throws an error if there is an issue reading the AppManifest file.
      */
     static read(appManifestPath: string = APP_MANIFEST_PATH): AppManifest | undefined {
-        if (!existsSync(appManifestPath)) {
+        if (!CliFileSystem.existsSync(appManifestPath)) {
             console.info('*** Info ***: No AppManifest found');
             return undefined;
         }
         try {
-            const file = readFileSync(appManifestPath, DEFAULT_BUFFER_ENCODING);
+            const file = CliFileSystem.readFileSync(appManifestPath);
             const manifest = JSON.parse(file);
             if (Array.isArray(manifest)) {
                 // for backwards compatibility, use the first entry from the array
@@ -114,6 +112,6 @@ export class AppManifest implements AppManifestAttributes {
     }
 
     write() {
-        outputFileSync(DEFAULT_APP_MANIFEST_PATH, JSON.stringify(this, null, 4));
+        CliFileSystem.outputFileSync(DEFAULT_APP_MANIFEST_PATH, JSON.stringify(this, null, 4));
     }
 }

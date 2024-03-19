@@ -13,7 +13,6 @@
 |@types/decompress|4.2.7|MIT|
 |@types/fs-extra|11.0.4|MIT|
 |@types/mocha|10.0.6|MIT|
-|@types/mock-fs|4.13.4|MIT|
 |@types/node|18.19.22|MIT|
 |@typescript-eslint/eslint-plugin|7.1.1|MIT|
 |@typescript-eslint/parser|7.1.1|unknown|
@@ -23,7 +22,6 @@
 |eslint|8.57.0|ISC<br/>MIT|
 |inquirer|8.2.6|MIT|
 |mocha|10.3.0|ISC<br/>MIT|
-|mock-fs|5.2.0|MIT|
 |node-pty|1.0.0|MIT|
 |nyc|15.1.0|ISC<br/>MIT|
 |oclif|3.17.2|MIT|

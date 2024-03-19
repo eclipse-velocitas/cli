@@ -12,19 +12,19 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import * as fs from 'fs';
 import { corePackageManifestMock, runtimePackageManifestMock } from '../utils/mockConfig';
+import { CliFileSystem } from '../../src/utils/fs-bridge';
 
 export const simpleGitInstanceMock = (mockedNewVersionTag?: string) => {
     return {
         clone: async (repoPath: string, localPath: string, options?: any) => {
-            await fs.promises.mkdir(localPath, { recursive: true });
-            await fs.promises.writeFile(`${localPath}/.git`, 'This is a git repo');
+            await CliFileSystem.promisesMkdir(localPath);
+            await CliFileSystem.promisesWriteFile(`${localPath}/.git`, 'This is a git repo');
 
             if (repoPath.indexOf('package-main') !== -1) {
-                await fs.promises.writeFile(`${localPath}/manifest.json`, JSON.stringify(corePackageManifestMock));
+                await CliFileSystem.promisesWriteFile(`${localPath}/manifest.json`, JSON.stringify(corePackageManifestMock));
             } else {
-                await fs.promises.writeFile(`${localPath}/manifest.json`, JSON.stringify(runtimePackageManifestMock));
+                await CliFileSystem.promisesWriteFile(`${localPath}/manifest.json`, JSON.stringify(runtimePackageManifestMock));
             }
         },
         checkIsRepo: () => {

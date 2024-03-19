@@ -14,7 +14,7 @@
 
 import { expect, test } from '@oclif/test';
 import { packageIndexMock, velocitasConfigMock } from '../../utils/mockConfig';
-import { mockFolders, mockRestore } from '../../utils/mockfs';
+import { mockFolders } from '../../utils/mockfs';
 import * as gitModule from 'simple-git';
 import * as exec from '../../../src/modules/exec';
 import sinon from 'sinon';
@@ -22,6 +22,7 @@ import { simpleGitInstanceMock } from '../../helpers/simpleGit';
 import { ProjectConfig } from '../../../src/modules/project-config';
 import { AppManifest } from '../../../src/modules/app-manifest';
 import { CoreComponent, ExtensionComponent } from '../../../src/modules/package-index';
+
 const inquirer = require('inquirer');
 
 const TEST_APP_NAME = 'TestApp';
@@ -73,9 +74,6 @@ describe('create', () => {
     test.do(() => {
         mockFolders({ packageIndex: true, installedComponents: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})
@@ -102,9 +100,6 @@ describe('create', () => {
     test.do(() => {
         mockFolders({ packageIndex: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'awaitSpawn', () => {
@@ -117,9 +112,6 @@ describe('create', () => {
     test.do(() => {
         mockFolders();
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .command(['create'])
         .catch(`No package-index.json found.`)
@@ -128,9 +120,6 @@ describe('create', () => {
     test.do(() => {
         mockFolders({ packageIndex: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .command(['create', '-c', TEST_COMPONENT_CORE_ID])
         .catch(`Missing required flag 'name'`)
@@ -139,9 +128,6 @@ describe('create', () => {
     test.do(() => {
         mockFolders({ packageIndex: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .command(['create', '-n', TEST_APP_NAME])
         .catch(`Missing required flag 'core'`)
@@ -150,9 +136,6 @@ describe('create', () => {
     test.do(() => {
         mockFolders({ packageIndex: true, installedComponents: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})
@@ -198,9 +181,6 @@ describe('create', () => {
     test.do(() => {
         mockFolders({ packageIndex: true, installedComponents: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})
@@ -236,9 +216,6 @@ describe('create', () => {
     test.do(() => {
         mockFolders({ packageIndex: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .command(['create', '-n', 'test', '-e', 'example'])
         .catch(`Flags 'name' and 'example' are mutually exclusive!`)
@@ -247,9 +224,6 @@ describe('create', () => {
     test.do(() => {
         mockFolders({ packageIndex: true, installedComponents: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})

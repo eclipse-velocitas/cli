@@ -13,9 +13,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import 'mocha';
-import mockfs from 'mock-fs';
 import { CoreComponent, ExtensionComponent, PackageIndex, PackageAttributes, Parameter } from '../../src/modules/package-index';
 import { expect } from 'chai';
+import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/utils/fs-bridge';
+import { cwd } from 'node:process';
 
 const validPackageIndexMock: PackageAttributes[] = [
     {
@@ -182,11 +183,14 @@ const EXPECTED_MANDATORY_EXTENSION_IDS: string[] = ['test-extension'];
 
 describe('package-index - module', () => {
     before(() => {
-        const mockfsConf: any = {
-            'package-index.json': JSON.stringify(validPackageIndexMock),
-            'invalidPackage-index.json': JSON.stringify(invalidPackageIndexMock),
+        const validPackageIndexPath = `${cwd()}/package-index.json`;
+        const invalidPackageIndexPath = `${cwd()}/invalidPackage-index.json`;
+
+        const mockFilesystem: MockFileSystemObj = {
+            [validPackageIndexPath]: JSON.stringify(validPackageIndexMock),
+            [invalidPackageIndexPath]: JSON.stringify(invalidPackageIndexMock),
         };
-        mockfs(mockfsConf, { createCwd: true });
+        CliFileSystem.setImpl(new MockFileSystem(mockFilesystem));
     });
     describe('Package Index', () => {
         it('should be able to read the package-index.json on root path.', () => {
@@ -230,8 +234,5 @@ describe('package-index - module', () => {
             const mandatoryExtensions = packageIndex.getMandatoryExtensionsByCoreId('core-test');
             expect(mandatoryExtensions).to.be.empty;
         });
-    });
-    after(() => {
-        mockfs.restore();
     });
 });

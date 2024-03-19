@@ -14,15 +14,12 @@
 
 import { expect, test } from '@oclif/test';
 import { getCacheData } from '../../helpers/cache';
-import { mockFolders, mockRestore } from '../../utils/mockfs';
+import { mockFolders } from '../../utils/mockfs';
 
 describe('cache', () => {
     test.do(() => {
-        mockFolders({ velocitasConfig: true, mockCache: true });
+        mockFolders({ velocitasConfig: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .command('cache get')
         .it('returns the entire cache content', (ctx) => {
@@ -30,11 +27,8 @@ describe('cache', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, mockCache: true });
+        mockFolders({ velocitasConfig: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .command(['cache get', 'myField'])
         .it('returns the value of a single cache key', (ctx) => {
@@ -42,11 +36,8 @@ describe('cache', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, mockCache: true });
+        mockFolders({ velocitasConfig: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .command(['cache set', 'foo', 'bar'])
         .it('sets a cache field', (ctx) => {
@@ -54,11 +45,8 @@ describe('cache', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, mockCache: true });
+        mockFolders({ velocitasConfig: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .command('cache clear')
         .it('clears all cache contents', (ctx) => {

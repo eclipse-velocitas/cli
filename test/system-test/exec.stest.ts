@@ -14,11 +14,11 @@
 
 import { expect } from 'chai';
 import { spawn, spawnSync } from 'child_process';
+import { readFileSync } from 'node:fs';
 import { copySync } from 'fs-extra';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import YAML from 'yaml';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
-import { readFileSync } from 'fs';
 import { TEST_ROOT, VELOCITAS_HOME, VELOCITAS_PROCESS } from '../utils/systemTestConfig';
 
 describe('CLI command', () => {
@@ -47,7 +47,7 @@ describe('CLI command', () => {
         it('should pass environment variables to the spawned process', async () => {
             const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'echo-env'], { encoding: DEFAULT_BUFFER_ENCODING });
 
-            const expectedString = JSON.stringify(JSON.parse(readFileSync('./app/AppManifest.json', 'utf-8')));
+            const expectedString = JSON.stringify(JSON.parse(readFileSync('./app/AppManifest.json', DEFAULT_BUFFER_ENCODING)));
             expect(result.stdout).to.contain('VELOCITAS_WORKSPACE_DIR=');
             expect(result.stdout).to.contain('VELOCITAS_CACHE_DATA=');
             expect(result.stdout).to.contain('VELOCITAS_CACHE_DIR=');

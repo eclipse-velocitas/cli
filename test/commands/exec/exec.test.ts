@@ -16,7 +16,8 @@ import { expect, test } from '@oclif/test';
 import { IEvent, IPty } from 'node-pty';
 import { setSpawnImplementation } from '../../../src/modules/exec';
 import { runtimePackageManifestMock } from '../../utils/mockConfig';
-import { mockFolders, mockRestore } from '../../utils/mockfs';
+import * as exec from '../../../src/modules/exec';
+import { mockFolders } from '../../utils/mockfs';
 
 type ExitType = {
     exitCode: number;
@@ -68,9 +69,6 @@ describe('exec', () => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stderr()
         .command(['exec', `${runtimePackageManifestMock.components[0].id}`, `${runtimePackageManifestMock.components[0].programs[0].id}`])
@@ -82,9 +80,6 @@ describe('exec', () => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stderr()
         .command([
@@ -103,9 +98,6 @@ describe('exec', () => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stderr()
         .command(['exec', `${runtimePackageManifestMock.components[1].id}`, `${runtimePackageManifestMock.components[1].programs[0].id}`])
@@ -116,9 +108,7 @@ describe('exec', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true, installedComponents: true, appManifest: false });
     })
-        .finally(() => {
-            mockRestore();
-        })
+        .stub(exec, 'runExecSpec', () => {})
         .stdout()
         .command(['exec', `${runtimePackageManifestMock.components[1].id}`, `${runtimePackageManifestMock.components[1].programs[0].id}`])
         .it('should log warning when no AppManifest.json is found', (ctx) => {
@@ -130,9 +120,6 @@ describe('exec', () => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .command(['exec', `${runtimePackageManifestMock.components[0].id}`, 'unknown-script'])
         .catch(`No program found for item 'unknown-script' referenced in program list of '${runtimePackageManifestMock.components[0].id}'`)
@@ -142,9 +129,6 @@ describe('exec', () => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .command(['exec', `${runtimePackageManifestMock.components[1].id}`, 'unknown-script'])
         .catch(`No program found for item 'unknown-script' referenced in program list of '${runtimePackageManifestMock.components[1].id}'`)

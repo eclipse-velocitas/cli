@@ -12,8 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { readFileSync } from 'fs-extra';
-import { DEFAULT_BUFFER_ENCODING } from './constants';
+import { CliFileSystem } from '../utils/fs-bridge';
 
 /**
  * Additional argument for exposed interface
@@ -148,7 +147,7 @@ export class PackageIndex {
      */
     static read(path: string = './package-index.json'): PackageIndex {
         try {
-            const packageIndexFile = readFileSync(path, DEFAULT_BUFFER_ENCODING);
+            const packageIndexFile = CliFileSystem.readFileSync(path);
             const packageIndex: PackageAttributes[] = JSON.parse(packageIndexFile);
             return new PackageIndex(packageIndex);
         } catch (error) {

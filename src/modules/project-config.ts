@@ -12,10 +12,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { existsSync, PathLike, readFileSync, writeFileSync } from 'fs';
+import { PathLike } from 'node:fs';
 import { resolve } from 'path';
 import { cwd } from 'process';
-import { DEFAULT_BUFFER_ENCODING } from './constants';
 import { mapReplacer } from './helpers';
 import { PackageConfig } from './package';
 import { getLatestVersion } from './semver';
@@ -23,6 +22,7 @@ import { PackageIndex } from './package-index';
 import { DEFAULT_APP_MANIFEST_PATH } from './app-manifest';
 import { ComponentConfig, ComponentContext } from './component';
 import { VariableCollection } from './variables';
+import { CliFileSystem } from '../utils/fs-bridge';
 
 export const DEFAULT_CONFIG_FILE_NAME = '.velocitas.json';
 export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), DEFAULT_CONFIG_FILE_NAME);
@@ -66,9 +66,8 @@ export class ProjectConfig {
 
     static read(cliVersion: string, path: PathLike = DEFAULT_CONFIG_FILE_PATH): ProjectConfig {
         let config: ProjectConfig;
-
         try {
-            config = new ProjectConfig(cliVersion, JSON.parse(readFileSync(path, DEFAULT_BUFFER_ENCODING)));
+            config = new ProjectConfig(cliVersion, JSON.parse(CliFileSystem.readFileSync(path as string)));
         } catch (error) {
             throw new Error(`Error in parsing ${DEFAULT_CONFIG_FILE_NAME}: ${(error as Error).message}`);
         }
@@ -94,7 +93,7 @@ export class ProjectConfig {
         return config;
     }
 
-    static isAvailable = (path: PathLike = DEFAULT_CONFIG_FILE_PATH) => existsSync(path);
+    static isAvailable = (path: PathLike = DEFAULT_CONFIG_FILE_PATH) => CliFileSystem.existsSync(path);
 
     static async create(usedComponents: Set<string>, packageIndex: PackageIndex, cliVersion: string) {
         const projectConfig = new ProjectConfig(`v${cliVersion}`);
@@ -140,7 +139,7 @@ export class ProjectConfig {
             cliVersion: this.cliVersion,
         };
         const configString = `${JSON.stringify(projectConfigOptions, mapReplacer, 4)}\n`;
-        writeFileSync(path, configString, DEFAULT_BUFFER_ENCODING);
+        CliFileSystem.writeFileSync(path, configString);
     }
 
     /**

@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { existsSync, Stats } from 'fs';
+import { Stats } from 'node:fs';
 import { Transform } from 'node:stream';
 import path, { join } from 'path';
 import { cwd } from 'process';
@@ -21,6 +21,7 @@ import { TransformCallback, TransformOptions } from 'stream';
 import { PackageConfig } from './package';
 import { VariableCollection } from './variables';
 import { ComponentManifest } from './component';
+import { CliFileSystem } from '../utils/fs-bridge';
 
 const SUPPORTED_TEXT_FILES_ARRAY = ['.md', '.yaml', '.yml', '.txt', '.json', '.sh', '.html', '.htm', '.xml', '.tpl'];
 
@@ -91,7 +92,7 @@ export function installComponent(packageConfig: PackageConfig, component: Compon
                 const sourceFileOrDir = join(packageConfig.getPackageDirectory(), packageConfig.version, src);
                 const destFileOrDir = join(cwd(), dst);
                 try {
-                    if (existsSync(sourceFileOrDir)) {
+                    if (CliFileSystem.existsSync(sourceFileOrDir)) {
                         copy(sourceFileOrDir, destFileOrDir, {
                             dot: true,
                             overwrite: true,

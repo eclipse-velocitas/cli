@@ -13,21 +13,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
-import * as fs from 'fs';
 import { velocitasConfigMock } from '../../utils/mockConfig';
-import { mockFolders, mockRestore, userHomeDir } from '../../utils/mockfs';
+import { mockFolders, userHomeDir } from '../../utils/mockfs';
 import * as gitModule from 'simple-git';
 import * as exec from '../../../src/modules/exec';
 import sinon from 'sinon';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
+import { CliFileSystem } from '../../../src/utils/fs-bridge';
 
 describe('init', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})
@@ -40,17 +37,24 @@ describe('init', () => {
             expect(ctx.stdout).to.contain(
                 `... Downloading package: '${velocitasConfigMock.packages[1].repo}:${velocitasConfigMock.packages[1].version}'`,
             );
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}`)).to.be.true;
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}`)).to.be.true;
+            expect(
+                CliFileSystem.existsSync(
+                    `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}/${velocitasConfigMock.packages[0].version}`,
+                ),
+            ).to.be.true;
+            expect(
+                CliFileSystem.existsSync(
+                    `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}/${velocitasConfigMock.packages[1].version}`,
+                ),
+            ).to.be.true;
         });
 
     test.do(() => {
         mockFolders({ velocitasConfig: true, installedComponents: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
+        .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', () => {})
         .command(['init', '-v'])
         .it('skips downloading because package is already installed', (ctx) => {
             console.error(ctx.stdout);
@@ -61,18 +65,23 @@ describe('init', () => {
             expect(ctx.stdout).to.contain(
                 `... '${velocitasConfigMock.packages[1].repo}:${velocitasConfigMock.packages[1].version}' already initialized.`,
             );
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}`)).to.be.true;
-            expect(fs.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}`)).to.be.true;
+            expect(
+                CliFileSystem.existsSync(
+                    `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}/${velocitasConfigMock.packages[0].version}`,
+                ),
+            ).to.be.true;
+            expect(
+                CliFileSystem.existsSync(
+                    `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}/${velocitasConfigMock.packages[1].version}`,
+                ),
+            ).to.be.true;
         });
 
     test.do(() => {
         mockFolders({ velocitasConfig: true, installedComponents: true, appManifest: false });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
-        .command(['init', '-v'])
+        .command(['init', '-v', '--no-hooks'])
         .it('should log warning when no AppManifest.json is found', (ctx) => {
             console.error(ctx.stdout);
             expect(ctx.stdout).to.contain('*** Info ***: No AppManifest found');
@@ -81,9 +90,6 @@ describe('init', () => {
     test.do(() => {
         mockFolders();
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .command(['init'])
         .it('creates config file from default velocitas.json', (ctx) => {
@@ -91,15 +97,12 @@ describe('init', () => {
             expect(ctx.stdout).to.contain(
                 '... Directory is no velocitas project. Creating .velocitas.json at the root of your repository.',
             );
-            expect(fs.existsSync(`${process.cwd()}/.velocitas.json`)).to.be.true;
+            expect(CliFileSystem.existsSync(`${process.cwd()}/.velocitas.json`)).to.be.true;
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true });
+        mockFolders({ velocitasConfig: true, installedComponents: true });
     })
-        .finally(() => {
-            mockRestore();
-        })
         .stdout()
         .stub(gitModule, 'simpleGit', sinon.stub().returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', () => {})
