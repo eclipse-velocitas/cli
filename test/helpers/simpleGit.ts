@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { corePackageManifestMock, runtimePackageManifestMock } from '../utils/mockConfig';
+import { corePackageManifestMock, runtimePackageManifestMock, setupPackageManifestMock } from '../utils/mockConfig';
 import { CliFileSystem } from '../../src/utils/fs-bridge';
 
 export const simpleGitInstanceMock = (mockedNewVersionTag?: string) => {
@@ -23,6 +23,8 @@ export const simpleGitInstanceMock = (mockedNewVersionTag?: string) => {
 
             if (repoPath.indexOf('package-main') !== -1) {
                 await CliFileSystem.promisesWriteFile(`${localPath}/manifest.json`, JSON.stringify(corePackageManifestMock));
+            } else if (repoPath.indexOf('test-setup') !== -1) {
+                await CliFileSystem.promisesWriteFile(`${localPath}/manifest.json`, JSON.stringify(setupPackageManifestMock));
             } else {
                 await CliFileSystem.promisesWriteFile(`${localPath}/manifest.json`, JSON.stringify(runtimePackageManifestMock));
             }

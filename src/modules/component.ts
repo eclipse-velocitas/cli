@@ -72,6 +72,9 @@ export interface ComponentManifest {
     // Unique ID of the component. Needs to be unique over all installed components.
     id: string;
 
+    // Human readable description of the component, if any.
+    description?: string;
+
     // A list of files that need to be copied from source to target when running `velocitas sync`.
     files?: FileSpec[];
 
@@ -103,10 +106,12 @@ export class ComponentContext {
     public packageConfig: PackageConfig;
     public manifest: ComponentManifest;
     public config: ComponentConfig;
+    public usedInProject: boolean;
 
-    constructor(packageReference: PackageConfig, manifest: ComponentManifest, config: ComponentConfig) {
+    constructor(packageReference: PackageConfig, manifest: ComponentManifest, config: ComponentConfig, usedInProject: boolean) {
         this.packageConfig = packageReference;
         this.manifest = manifest;
         this.config = config;
+        this.usedInProject = usedInProject;
     }
 }
