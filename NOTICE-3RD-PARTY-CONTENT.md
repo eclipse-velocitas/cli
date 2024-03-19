@@ -13,9 +13,10 @@
 |@types/decompress|4.2.7|MIT|
 |@types/fs-extra|11.0.4|MIT|
 |@types/mocha|10.0.6|MIT|
-|@types/node|18.19.22|MIT|
+|@types/node|20.11.29|MIT|
 |@typescript-eslint/eslint-plugin|7.1.1|MIT|
 |@typescript-eslint/parser|7.1.1|unknown|
+|@yao-pkg/pkg|5.11.5|MIT|
 |archiver|5.3.2|MIT|
 |chai|4.4.1|MIT|
 |decompress|4.2.1|MIT|
@@ -25,7 +26,6 @@
 |node-pty|1.0.0|MIT|
 |nyc|15.1.0|ISC<br/>MIT|
 |oclif|3.17.2|MIT|
-|pkg|5.8.1|MIT|
 |prettier|3.2.5|Apache 2.0|
 |prettier-plugin-organize-imports|3.2.4|MIT|
 |recursive-copy|2.0.14|ISC|

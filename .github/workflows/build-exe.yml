@@ -39,7 +39,7 @@ on:
         type: string
 
 env:
-  NODE_VERSION: 18
+  NODE_VERSION: 20
 
 jobs:
   compile:
@@ -70,20 +70,17 @@ jobs:
           echo "$(jq --arg VERSION $VERSION '.version=$VERSION' package.json)" > package.json
 
       # This step is needed to install needed dependencies (node-pty) for arm based architecture
-      # npm 9.9.3 because of http ECONNRESET issue during installation
       - name: Install dependencies for ARM64
         if: ${{ matrix.arch == 'arm64' }}
         uses: uraimo/run-on-arch-action@v2
         with:
           base_image: arm64v8/node:${{ env.NODE_VERSION }}-bullseye
           run: |
-            npm install -g npm@9.9.3
             npm install .
 
       - name: Install dependencies for AMD64
         if: ${{ matrix.arch == 'x64' }}
         run: |
-          npm install -g npm@9.9.3
           npm install .
 
       - name: Compile EXE for ${{ matrix.arch }}

@@ -342,7 +342,7 @@ _See code: [dist/commands/upgrade/index.ts](dist/commands/upgrade/index.ts)_
 # Installation
 
 **Prerequisites**
-* NodeJS >= 18
+* NodeJS >= 20
 * NPM
 * Linux environment (others may work, but are untested)
 
