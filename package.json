@@ -66,6 +66,9 @@
     "topics": {
       "cache": {
         "description": "Interact with the project cache"
+      },
+      "component": {
+        "description": "Interact with project components"
       }
     },
     "repositoryPrefix": "<%- commandPath %>"

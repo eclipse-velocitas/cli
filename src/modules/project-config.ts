@@ -43,6 +43,8 @@ export class ProjectConfig {
 
     // project-wide variable configuration
     private _variables: Map<string, any> = new Map<string, any>();
+
+    // version of the CLI used by the project
     cliVersion: string;
 
     private static _parsePackageConfig(packages: PackageConfig[]): PackageConfig[] {
@@ -158,12 +160,31 @@ export class ProjectConfig {
     }
 
     /**
+     * Add a component from a referenced package to the project.
+     *
+     * @param id ID of the component to add to the project.
+     */
+    addComponent(id: string): void {
+        this._components.push(new ComponentConfig(id));
+    }
+
+    /**
+     * Remove a used component from the project.
+     *
+     * @param id ID of the component to remove from the project.
+     */
+    removeComponent(id: string): void {
+        this._components = this._components.filter((componentConfig) => componentConfig.id !== id);
+    }
+
+    /**
      * Return all components used by the project. If the project specifies no components explicitly,
      * all components are used by default.
      *
+     * @param onlyUsed Only include components used by the project. Default: true.
      * @returns A list of all components used by the project.
      */
-    getComponents(): ComponentContext[] {
+    getComponents(onlyUsed: boolean = true): ComponentContext[] {
         const componentContexts: ComponentContext[] = [];
         const usedComponents = this._components;
 
@@ -171,9 +192,17 @@ export class ProjectConfig {
             const packageManifest = packageConfig.readPackageManifest();
 
             for (const componentManifest of packageManifest.components) {
-                if (usedComponents.length === 0 || usedComponents.find((compCfg: ComponentConfig) => compCfg.id === componentManifest.id)) {
+                const isComponentUsedByProject =
+                    usedComponents.length === 0 ||
+                    usedComponents.find((compCfg: ComponentConfig) => compCfg.id === componentManifest.id) !== undefined;
+                if (!onlyUsed || isComponentUsedByProject) {
                     componentContexts.push(
-                        new ComponentContext(packageConfig, componentManifest, this.getComponentConfig(componentManifest.id)),
+                        new ComponentContext(
+                            packageConfig,
+                            componentManifest,
+                            this.getComponentConfig(componentManifest.id),
+                            isComponentUsedByProject,
+                        ),
                     );
                 }
             }
@@ -189,7 +218,7 @@ export class ProjectConfig {
                 packageConfig.readPackageManifest().components.some((componentManifest) => componentManifest.id === compCfg.id),
             );
             if (!foundInManifest) {
-                throw Error(`Component with ID ${compCfg.id} not found in any component manifest.`);
+                throw Error(`Component with ID '${compCfg.id}' not found in any package manifest!`);
             }
         });
     }
