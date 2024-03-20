@@ -96,7 +96,10 @@ Click [here](./docs/PROJECT-CONFIG.md) for an in-depth overview of the project c
 * [`velocitas cache clear`](#velocitas-cache-clear)
 * [`velocitas cache get [KEY]`](#velocitas-cache-get-key)
 * [`velocitas cache set KEY VALUE`](#velocitas-cache-set-key-value)
-* [`velocitas create [FLAGS...]`](#velocitas-create)
+* [`velocitas component add ID`](#velocitas-component-add-id)
+* [`velocitas component list`](#velocitas-component-list)
+* [`velocitas component remove ID`](#velocitas-component-remove-id)
+* [`velocitas create`](#velocitas-create)
 * [`velocitas exec COMPONENT REF [ARGS...]`](#velocitas-exec-component-ref-args)
 * [`velocitas help [COMMANDS]`](#velocitas-help-commands)
 * [`velocitas init`](#velocitas-init)
@@ -118,6 +121,8 @@ DESCRIPTION
 EXAMPLES
   $ velocitas cache clear
 ```
+
+_See code: [src/commands/cache/clear.ts](src/commands/cache/clear.ts)_
 
 ## `velocitas cache get [KEY]`
 
@@ -141,6 +146,8 @@ EXAMPLES
   bar
 ```
 
+_See code: [src/commands/cache/get.ts](src/commands/cache/get.ts)_
+
 ## `velocitas cache set KEY VALUE`
 
 Set the cache value of an entry.
@@ -160,27 +167,92 @@ EXAMPLES
   $ velocitas cache set <key> <value>
 ```
 
+_See code: [src/commands/cache/set.ts](src/commands/cache/set.ts)_
+
+## `velocitas component add ID`
+
+Add project components.
+
+```
+USAGE
+  $ velocitas component add ID
+
+ARGUMENTS
+  ID  ID of the component to add
+
+DESCRIPTION
+  Add project components.
+
+EXAMPLES
+  $ velocitas component add <id>
+```
+
+_See code: [src/commands/component/add.ts](src/commands/component/add.ts)_
+
+## `velocitas component list`
+
+List project components.
+
+```
+USAGE
+  $ velocitas component list [-a | -u]
+
+FLAGS
+  -a, --all     Shows all components
+  -u, --unused  Shows unused components
+
+DESCRIPTION
+  List project components.
+
+EXAMPLES
+  $ velocitas component list
+```
+
+_See code: [src/commands/component/list.ts](src/commands/component/list.ts)_
+
+## `velocitas component remove ID`
+
+Remove project components.
+
+```
+USAGE
+  $ velocitas component remove ID
+
+ARGUMENTS
+  ID  ID of the component to add
+
+DESCRIPTION
+  Remove project components.
+
+EXAMPLES
+  $ velocitas component remove <id>
+```
+
+_See code: [src/commands/component/remove.ts](src/commands/component/remove.ts)_
+
 ## `velocitas create`
 
 Create a new Velocitas Vehicle App project.
 
 ```
 USAGE
-  $ velocitas create -n VApp -l python ...
+  $ velocitas create [-n <value>] [-c <value>] [-e <value>] [-i <value>]
 
 FLAGS
-  -n --name      Name of the Vehicle App
-  -l --language  Programming language of velocitas framework to use
-  -e --example   Use an example upon which to base your Vehicle App
-  -i --interface Functional interface your Vehicle App should use
+  -c, --core=<value>          Which core to use for the project.
+  -e, --example=<value>       Use an example upon which to base your Vehicle App.
+  -i, --interface=<value>...  Functional interface your Vehicle App should use.
+  -n, --name=<value>          Name of the Vehicle App.
 
 DESCRIPTION
   Create a new Velocitas Vehicle App project.
 
 EXAMPLES
-  $ velocitas create -n VApp -l python -e seat-adjuster ...
-  Creating a new Velocitas project ...
+  $ velocitas create -n VApp -c vapp-core-python ...
+          Creating a new Velocitas project ...
 ```
+
+_See code: [src/commands/create/index.ts](src/commands/create/index.ts)_
 
 ## `velocitas exec COMPONENT REF [ARGS...]`
 
@@ -229,7 +301,7 @@ DESCRIPTION
   Display help for velocitas.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.7/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.20/src/commands/help.ts)_
 
 ## `velocitas init`
 
@@ -237,11 +309,12 @@ Initializes Velocitas Vehicle App
 
 ```
 USAGE
-  $ velocitas init [-v] [-f]
+  $ velocitas init [-v] [-f] [--no-hooks]
 
 FLAGS
   -f, --force    Force (re-)download packages
   -v, --verbose  Enable verbose logging
+  --no-hooks     Skip post init hooks
 
 DESCRIPTION
   Initializes Velocitas Vehicle App
@@ -311,6 +384,7 @@ EXAMPLES
   ... syncing 'github-templates'
 ```
 
+_See code: [src/commands/sync/index.ts](src/commands/sync/index.ts)_
 
 ## `velocitas upgrade`
 
@@ -336,7 +410,7 @@ EXAMPLES
   ... 'devenv-github-templates' is up to date!
 ```
 
-_See code: [dist/commands/upgrade/index.ts](dist/commands/upgrade/index.ts)_
+_See code: [src/commands/upgrade/index.ts](src/commands/upgrade/index.ts)_
 <!-- commandsstop -->
 
 # Installation

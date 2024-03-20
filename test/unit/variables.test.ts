@@ -94,9 +94,9 @@ describe('variables - module', () => {
             variables: [],
         };
 
-        componentContext = new ComponentContext(pkg1Config, pkg1Comp1Manifest, pkg1Comp1Cfg);
-        componentContext2 = new ComponentContext(pkg2Config, pkg2Comp1Manifest, new ComponentConfig(pkg2Comp1Manifest.id));
-        componentContext3 = new ComponentContext(pkg2Config, pkg2Comp2Manifest, new ComponentConfig(pkg2Comp2Manifest.id));
+        componentContext = new ComponentContext(pkg1Config, pkg1Comp1Manifest, pkg1Comp1Cfg, true);
+        componentContext2 = new ComponentContext(pkg2Config, pkg2Comp1Manifest, new ComponentConfig(pkg2Comp1Manifest.id), true);
+        componentContext3 = new ComponentContext(pkg2Config, pkg2Comp2Manifest, new ComponentConfig(pkg2Comp2Manifest.id), true);
     });
     describe('VariableCollection', () => {
         it('should build a VariableCollection with given mocks', () => {
@@ -203,7 +203,7 @@ describe('variables - module', () => {
                     description: 'This is a test duplicate',
                 };
                 pkg1Comp1Manifest.variables?.push(alreadyExistingVariableDefName);
-                const componentContextWithMultipleVariableDef = new ComponentContext(pkg1Config, pkg1Comp1Manifest, pkg1Comp1Cfg);
+                const componentContextWithMultipleVariableDef = new ComponentContext(pkg1Config, pkg1Comp1Manifest, pkg1Comp1Cfg, true);
 
                 return VariableCollection.build(
                     [componentContextWithMultipleVariableDef],

@@ -31,6 +31,20 @@ export const velocitasConfigMock = {
             version: 'v1.1.1',
         },
     ],
+    components: [
+        {
+            id: 'test-runtime-local',
+        },
+        {
+            id: 'test-runtime-deploy-local',
+        },
+        {
+            id: 'github-workflows',
+        },
+        {
+            id: 'core-test',
+        },
+    ],
     variables: {
         appManifestPath: './app/AppManifest.json',
         githubRepoId: 'myRepo',
@@ -275,6 +289,9 @@ export const corePackageManifestMock = {
                     default: 'app',
                 },
             ],
+        },
+        {
+            id: 'unused-component',
         },
     ],
 };
