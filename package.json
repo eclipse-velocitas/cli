@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@oclif/test": "3.2.6",
-    "@types/chai": "4.3.13",
+    "@types/chai": "4.3.14",
     "@types/fs-extra": "11.0.4",
     "@types/mocha": "10.0.6",
     "@types/node": "20.11.30",
@@ -42,7 +42,7 @@
     "prettier-plugin-organize-imports": "3.2.4",
     "shx": "0.3.4",
     "ts-node": "10.9.2",
-    "typescript": "5.4.2",
+    "typescript": "5.4.3",
     "yaml": "2.4.1"
   },
   "oclif": {
