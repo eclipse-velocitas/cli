@@ -37,7 +37,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Linters
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
 
   cli-tests:
     strategy:
@@ -57,13 +57,16 @@ jobs:
       - run: npm run build
       - run: npm run coverage
 
-      - uses: 5monkeys/cobertura-action@v13
+      - uses: insightsengineering/coverage-action@v2
         with:
           path: coverage/cobertura-coverage.xml
-          minimum_coverage: 80
-          show_line: true
-          show_branch: true
-          fail_below_threshold: false
+          threshold: 80
+          fail: false
+          publish: true
+          diff: true
+          diff-branch: main
+          diff-storage: _xml_coverage_reports
+          coverage-summary-title: "Code Coverage Summary"
 
   system-tests:
     name: "Run system tests for ${{ matrix.language }}"
