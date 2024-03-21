@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage lines-valid="919" lines-covered="821" line-rate="0.8933" branches-valid="353" branches-covered="267" branch-rate="0.7563" timestamp="1711011900663" complexity="0" version="0.1">
+<coverage lines-valid="919" lines-covered="821" line-rate="0.8933" branches-valid="353" branches-covered="267" branch-rate="0.7563" timestamp="1711011906373" complexity="0" version="0.1">
   <sources>
     <source>/home/runner/work/cli/cli</source>
   </sources>
