@@ -85,7 +85,7 @@ jobs:
 
       - name: Compile EXE for ${{ matrix.arch }}
         run: TARGET=node${{ env.NODE_VERSION }}-${{ matrix.os }}-${{ matrix.arch }} ARCH=${{ matrix.arch }} OS=${{ matrix.os }} npm run compile-exe
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}-${{ matrix.arch }}
           path: velocitas-${{ matrix.os }}-${{ matrix.arch }}
