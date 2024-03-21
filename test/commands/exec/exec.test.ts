@@ -14,9 +14,9 @@
 
 import { expect, test } from '@oclif/test';
 import { IEvent, IPty } from 'node-pty';
+import * as exec from '../../../src/modules/exec';
 import { setSpawnImplementation } from '../../../src/modules/exec';
 import { runtimePackageManifestMock } from '../../utils/mockConfig';
-import * as exec from '../../../src/modules/exec';
 import { mockFolders } from '../../utils/mockfs';
 
 type ExitType = {
@@ -108,7 +108,7 @@ describe('exec', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true, installedComponents: true, appManifest: false });
     })
-        .stub(exec, 'runExecSpec', () => {})
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
         .stdout()
         .command(['exec', `${runtimePackageManifestMock.components[1].id}`, `${runtimePackageManifestMock.components[1].programs[0].id}`])
         .it('should log warning when no AppManifest.json is found', (ctx) => {

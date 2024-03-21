@@ -13,15 +13,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect } from 'chai';
-import { spawnSync } from 'child_process';
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
-import { removeSync, copySync } from 'fs-extra';
-// eslint-disable-next-line @typescript-eslint/naming-convention
+import { copySync, removeSync } from 'fs-extra';
+import { spawnSync } from 'node:child_process';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
-import { TEST_ROOT, VELOCITAS_HOME, VELOCITAS_PROCESS } from '../utils/systemTestConfig';
-import { ProjectConfig } from '../../src/modules/project-config';
 import { ProjectCache } from '../../src/modules/project-cache';
-import { join } from 'path';
+import { ProjectConfig } from '../../src/modules/project-config';
+import { TEST_ROOT, VELOCITAS_HOME, VELOCITAS_PROCESS } from '../utils/systemTestConfig';
 
 const isDirectoryEmpty = (directoryPath: string): boolean => {
     const files = readdirSync(directoryPath);

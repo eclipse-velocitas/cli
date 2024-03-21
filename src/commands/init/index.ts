@@ -12,12 +12,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { ux, Command, Flags } from '@oclif/core';
+import { Command, Flags, ux } from '@oclif/core';
 import { APP_MANIFEST_PATH_VARIABLE, AppManifest } from '../../modules/app-manifest';
+import { ComponentContext } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { ProjectConfig } from '../../modules/project-config';
 import { createEnvVars } from '../../modules/variables';
-import { ComponentContext } from '../../modules/component';
 
 async function runPostInitHook(componentContext: ComponentContext, projectConfig: ProjectConfig, appManifest: any, verbose: boolean) {
     if (!componentContext.manifest.onPostInit || componentContext.manifest.onPostInit.length === 0) {

@@ -14,5 +14,8 @@
             }
         }
     ],
+    "plugins": [
+        "prettier-plugin-organize-imports"
+    ],
     "parser": "typescript"
 }

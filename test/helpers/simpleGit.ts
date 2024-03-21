@@ -12,8 +12,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { corePackageManifestMock, runtimePackageManifestMock, setupPackageManifestMock } from '../utils/mockConfig';
 import { CliFileSystem } from '../../src/utils/fs-bridge';
+import { corePackageManifestMock, runtimePackageManifestMock, setupPackageManifestMock } from '../utils/mockConfig';
 
 export const simpleGitInstanceMock = (mockedNewVersionTag?: string) => {
     return {

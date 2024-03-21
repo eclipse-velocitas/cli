@@ -12,9 +12,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+import { expect } from 'chai';
 import 'mocha';
 import { PackageConfig } from '../../src/modules/package';
-import { expect } from 'chai';
 import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/utils/fs-bridge';
 
 describe('package - module', () => {

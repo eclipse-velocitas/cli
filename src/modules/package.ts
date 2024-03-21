@@ -12,11 +12,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { homedir } from 'os';
-import { join } from 'path';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
+import { CliFileSystem } from '../utils/fs-bridge';
 import { ComponentManifest } from './component';
 import { packageDownloader } from './package-downloader';
-import { CliFileSystem } from '../utils/fs-bridge';
 
 export const MANIFEST_FILE_NAME = 'manifest.json';
 

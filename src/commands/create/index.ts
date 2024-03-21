@@ -13,6 +13,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Command, Flags } from '@oclif/core';
+import { AppManifest, AppManifestInterfaceAttributes } from '../../modules/app-manifest';
+import { InteractiveMode } from '../../modules/create-interactive';
+import { CoreComponent, CoreOptions, DescribedId, ExtensionComponent, PackageIndex, Parameter } from '../../modules/package-index';
 import { ProjectConfig } from '../../modules/project-config';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import Exec from '../exec';
@@ -20,9 +23,6 @@ import Exec from '../exec';
 import Init from '../init';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import Sync from '../sync';
-import { PackageIndex, CoreComponent, ExtensionComponent, CoreOptions, DescribedId, Parameter } from '../../modules/package-index';
-import { AppManifest, AppManifestInterfaceAttributes } from '../../modules/app-manifest';
-import { InteractiveMode } from '../../modules/create-interactive';
 
 // inquirer >= v9 is an ESM package.
 // We are not using ESM in our CLI,

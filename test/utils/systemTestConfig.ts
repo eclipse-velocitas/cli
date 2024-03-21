@@ -12,11 +12,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { cwd } from 'process';
 import { readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { resolve } from 'node:path';
+import { cwd } from 'node:process';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
-import { homedir } from 'os';
-import { resolve } from 'path';
 
 export const VELOCITAS_PROCESS = resolve(__dirname, '..', '..', process.env['VELOCITAS_PROCESS'] || 'velocitas');
 export const TEST_ROOT = cwd();

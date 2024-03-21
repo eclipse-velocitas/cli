@@ -12,8 +12,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { resolve } from 'path';
-import { cwd } from 'process';
+import { resolve } from 'node:path';
+import { cwd } from 'node:process';
 import { CliFileSystem } from '../utils/fs-bridge';
 
 export const DEFAULT_APP_MANIFEST_PATH = './app/AppManifest.json';
