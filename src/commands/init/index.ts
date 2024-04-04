@@ -14,48 +14,22 @@
 
 import { Command, Flags, ux } from '@oclif/core';
 import { APP_MANIFEST_PATH_VARIABLE, AppManifest } from '../../modules/app-manifest';
-import { ComponentContext } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
-import { ProjectConfig } from '../../modules/project-config';
+import { ProjectConfig, ProjectConfigLock } from '../../modules/project-config';
+import { getMatchedVersion } from '../../modules/semver';
 import { createEnvVars } from '../../modules/variables';
-
-async function runPostInitHook(componentContext: ComponentContext, projectConfig: ProjectConfig, appManifest: any, verbose: boolean) {
-    if (!componentContext.manifest.onPostInit || componentContext.manifest.onPostInit.length === 0) {
-        return;
-    }
-
-    console.log(`... > Running post init hook for '${componentContext.manifest.id}'`);
-
-    for (const execSpec of componentContext.manifest.onPostInit) {
-        const message = `Running '${execSpec.ref}'`;
-        if (!verbose) {
-            ux.action.start(message);
-        } else {
-            console.log(message);
-        }
-        const envVars = createEnvVars(
-            componentContext.packageConfig.getPackageDirectoryWithVersion(),
-            projectConfig.getVariableCollection(componentContext),
-            appManifest,
-        );
-        await runExecSpec(execSpec, componentContext.manifest.id, projectConfig, envVars, { writeStdout: verbose, verbose: verbose });
-        if (!verbose) {
-            ux.action.stop();
-        }
-    }
-}
 
 export default class Init extends Command {
     static description = 'Initializes Velocitas Vehicle App';
 
     static examples = [
         `$ velocitas init
-Initializing Velocitas Vehicle App!
-Velocitas project found!
-... 'devenv-runtime-local:v1.0.11' already initialized.
-... 'devenv-runtime-k3d:v1.0.5' already initialized.
-... 'devenv-github-workflows:v1.0.1' already initialized.
-... 'devenv-github-templates:v1.0.1' already initialized.`,
+        Initializing Velocitas packages ...
+        ... Downloading package: 'pkg-velocitas-main:vx.x.x'
+        ... Downloading package: 'devenv-devcontainer-setup:vx.x.x'
+        ... Downloading package: 'devenv-runtimes:vx.x.x'
+        ... Downloading package: 'devenv-github-templates:vx.x.x'
+        ... Downloading package: 'devenv-github-workflows:vx.x.x'`,
     ];
 
     static flags = {
@@ -74,10 +48,52 @@ Velocitas project found!
         }),
     };
 
+    async run(): Promise<void> {
+        const { flags } = await this.parse(Init);
+
+        this.log(`Initializing Velocitas packages ...`);
+        const projectConfig = this.initializeProject();
+
+        const appManifestData = AppManifest.read(projectConfig.getVariableMappings().get(APP_MANIFEST_PATH_VARIABLE));
+
+        await this.ensurePackagesAreDownloaded(projectConfig, flags.force, flags.verbose);
+
+        if (!flags['no-hooks']) {
+            await this.runPostInitHook(projectConfig, appManifestData, flags.verbose);
+        }
+
+        this.createProjectLockFile(projectConfig, flags.verbose);
+    }
+
+    initializeProject(): ProjectConfig {
+        let projectConfig: ProjectConfig;
+
+        if (!ProjectConfig.isAvailable()) {
+            this.log('... Directory is no velocitas project. Creating .velocitas.json at the root of your repository.');
+            projectConfig = new ProjectConfig(`v${this.config.version}`);
+            projectConfig.write();
+        } else {
+            projectConfig = ProjectConfig.read(`v${this.config.version}`);
+        }
+        return projectConfig;
+    }
+
     async ensurePackagesAreDownloaded(projectConfig: ProjectConfig, force: boolean, verbose: boolean) {
+        const projectConfigLock = ProjectConfigLock.read();
+
         for (const packageConfig of projectConfig.getPackages()) {
+            const packageVersions = await packageConfig.getPackageVersions();
+            const packageVersion =
+                projectConfigLock !== null
+                    ? projectConfigLock.findVersion(packageConfig.repo)!
+                    : getMatchedVersion(packageVersions, packageConfig.version);
+
+            if (verbose) {
+                this.log(`... Resolved '${packageConfig.getPackageName()}:${packageConfig.version}' to version: '${packageVersion}'`);
+            }
+            packageConfig.setPackageVersion(packageVersion);
             if (!force && packageConfig.isPackageInstalled()) {
-                this.log(`... '${packageConfig.getPackageName()}:${packageConfig.version}' already initialized.`);
+                this.log(`... '${packageConfig.getPackageName()}:${packageConfig.version}' already installed.`);
                 continue;
             }
             this.log(`... Downloading package: '${packageConfig.getPackageName()}:${packageConfig.version}'`);
@@ -85,28 +101,35 @@ Velocitas project found!
         }
     }
 
-    async run(): Promise<void> {
-        const { flags } = await this.parse(Init);
+    async runPostInitHook(projectConfig: ProjectConfig, appManifest: any, verbose: boolean) {
+        projectConfig.validateUsedComponents();
+        for (const componentContext of projectConfig.getComponents()) {
+            if (!componentContext.manifest.onPostInit || componentContext.manifest.onPostInit.length === 0) {
+                continue;
+            }
 
-        this.log(`Initializing Velocitas packages ...`);
-        let projectConfig: ProjectConfig;
+            this.log(`... > Running post init hook for '${componentContext.manifest.id}'`);
 
-        if (!ProjectConfig.isAvailable()) {
-            this.log('... Directory is no velocitas project. Creating .velocitas.json at the root of your repository.');
-            projectConfig = new ProjectConfig(`v${this.config.version}`);
-            projectConfig.write();
-        }
-        projectConfig = ProjectConfig.read(`v${this.config.version}`);
-
-        const appManifestData = AppManifest.read(projectConfig.getVariableMappings().get(APP_MANIFEST_PATH_VARIABLE));
-
-        await this.ensurePackagesAreDownloaded(projectConfig, flags.force, flags.verbose);
-
-        if (!flags['no-hooks']) {
-            projectConfig.validateUsedComponents();
-            for (const componentContext of projectConfig.getComponents()) {
+            for (const execSpec of componentContext.manifest.onPostInit) {
                 try {
-                    await runPostInitHook(componentContext, projectConfig, appManifestData, flags.verbose);
+                    const message = `Running '${execSpec.ref}'`;
+                    if (!verbose) {
+                        ux.action.start(message);
+                    } else {
+                        this.log(message);
+                    }
+                    const envVars = createEnvVars(
+                        componentContext.packageConfig.getPackageDirectoryWithVersion(),
+                        projectConfig.getVariableCollection(componentContext),
+                        appManifest,
+                    );
+                    await runExecSpec(execSpec, componentContext.manifest.id, projectConfig, envVars, {
+                        writeStdout: verbose,
+                        verbose: verbose,
+                    });
+                    if (!verbose) {
+                        ux.action.stop();
+                    }
                 } catch (e) {
                     if (e instanceof ExecExitError) {
                         throw e;
@@ -117,6 +140,15 @@ Velocitas project found!
                     }
                 }
             }
+        }
+    }
+
+    createProjectLockFile(projectConfig: ProjectConfig, verbose: boolean): void {
+        if (!ProjectConfigLock.isAvailable()) {
+            if (verbose) {
+                this.log('... No .velocitas-lock.json found. Creating it at the root of your repository.');
+            }
+            ProjectConfigLock.write(projectConfig);
         }
     }
 }

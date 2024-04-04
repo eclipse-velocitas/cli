@@ -12,71 +12,83 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { Command, Flags, ux } from '@oclif/core';
-import { ProjectConfig } from '../../modules/project-config';
-import { getLatestVersion } from '../../modules/semver';
+import { Command, Flags } from '@oclif/core';
+import { PackageConfig } from '../../modules/package';
+import { ProjectConfig, ProjectConfigLock } from '../../modules/project-config';
+import { getLatestVersion, getMatchedVersion, incrementVersionRange } from '../../modules/semver';
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import Init from '../init';
 
 export default class Upgrade extends Command {
     static description = 'Updates Velocitas components.';
 
     static examples = [
         `$ velocitas upgrade
-Checking for updates!
-... 'devenv-runtime-local' is up to date!
-... 'devenv-runtime-k3d' is up to date!
-... 'devenv-github-workflows' is up to date!
-... 'devenv-github-templates' is up to date!`,
+        Checking .velocitas.json for updates!
+        ... pkg-velocitas-main:vx.x.x → up to date!
+        ... devenv-devcontainer-setup:vx.x.x → up to date!
+        ... devenv-runtimes:vx.x.x → vx.x.x
+        ... devenv-github-templates:vx.x.x → up to date!
+        ... devenv-github-workflows:vx.x.x → up to date!`,
     ];
 
     static flags = {
         'dry-run': Flags.boolean({ description: 'Check which packages can be upgraded', required: false }),
+        'ignore-bounds': Flags.boolean({ description: 'Ignores specified version ranges', required: false }),
         verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false, default: false }),
     };
 
     async run(): Promise<void> {
         const { flags } = await this.parse(Upgrade);
-
-        this.log(`Checking for updates!`);
-        const projectConfig = ProjectConfig.read(`v${this.config.version}`);
-        for (const packageConfig of projectConfig.getPackages()) {
-            const availableVersions = await packageConfig.getPackageVersions();
-            try {
-                const latestVersion = getLatestVersion(availableVersions);
-
-                if (packageConfig.version === latestVersion) {
-                    if (!packageConfig.isPackageInstalled()) {
-                        this.log(`... No installed sources for ${packageConfig.repo}:${packageConfig.version} found`);
-                        if (flags['dry-run']) {
-                            continue;
-                        }
-                        const response = await ux.prompt(`... Do you want to download them? [y/n]`, { default: 'y' });
-                        if (response === 'y') {
-                            await packageConfig.downloadPackageVersion(flags.verbose);
-                        }
-                        continue;
-                    }
-                    this.log(`... '${packageConfig.getPackageName()}' is up to date!`);
-                    continue;
-                }
-
-                this.log(
-                    `... '${packageConfig.getPackageName()}' is currently at ${packageConfig.version}, can be updated to ${latestVersion}`,
-                );
-                if (flags['dry-run']) {
-                    continue;
-                }
-                const response = await ux.prompt(`... Do you wish to continue? [y/n]`, { default: 'y' });
-                if (response === 'y') {
-                    packageConfig.version = latestVersion;
-                    await packageConfig.downloadPackageVersion(flags.verbose);
-                    projectConfig.write();
-                }
-            } catch (e) {
-                this.error(`Error during upgrade: '${e}'`);
-            }
+        if (!ProjectConfigLock.isAvailable()) {
+            throw new Error(`No .velocitas-lock.json found. Please 'velocitas init' first!`);
         }
-        if (!projectConfig.cliVersion) {
-            projectConfig.cliVersion = `v${this.config.version}`;
+        this.log(`Checking .velocitas.json for updates!`);
+        const projectConfig = ProjectConfig.read(`v${this.config.version}`);
+        const projectConfigLock = ProjectConfigLock.read()!;
+
+        try {
+            for (const packageConfig of projectConfig.getPackages()) {
+                await this.checkUpdate(packageConfig, projectConfig, projectConfigLock, flags);
+            }
+
+            if (!projectConfig.cliVersion) {
+                projectConfig.cliVersion = `v${this.config.version}`;
+                projectConfig.write();
+            }
+        } catch (error) {
+            this.error(`Error during upgrade: '${error}'`);
+        }
+        if (!flags['dry-run']) {
+            Init.run([]);
+        }
+    }
+
+    async checkUpdate(
+        packageConfig: PackageConfig,
+        projectConfig: ProjectConfig,
+        projectConfigLock: ProjectConfigLock,
+        flags: any,
+    ): Promise<void> {
+        const initialVersionSpecifier = packageConfig.version;
+        const availableVersions = await packageConfig.getPackageVersions();
+        const matchedVersion = flags['ignore-bounds']
+            ? getLatestVersion(availableVersions.all)
+            : getMatchedVersion(availableVersions, packageConfig.version);
+
+        const lockedVersion = projectConfigLock.findVersion(packageConfig.repo);
+
+        if (lockedVersion === matchedVersion) {
+            this.log(`... ${packageConfig.getPackageName()}:${lockedVersion} → up to date!`);
+        } else {
+            this.log(`... ${packageConfig.getPackageName()}:${lockedVersion} → ${matchedVersion}`);
+            if (flags['dry-run']) {
+                return;
+            }
+            packageConfig.setPackageVersion(matchedVersion);
+            ProjectConfigLock.update(packageConfig);
+
+            packageConfig.setPackageVersion(incrementVersionRange(initialVersionSpecifier, matchedVersion));
             projectConfig.write();
         }
     }

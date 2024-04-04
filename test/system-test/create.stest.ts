@@ -33,7 +33,7 @@ describe('CLI command', () => {
                 version: 'v0.0.1', // We need a version to start from
             });
             const availableVersions = await coreConfig.getPackageVersions();
-            latestMainPackageVersion = getLatestVersion(availableVersions);
+            latestMainPackageVersion = getLatestVersion(availableVersions.all);
             coreConfig = new PackageConfig({
                 repo: packageIndex[0].package,
                 version: latestMainPackageVersion,

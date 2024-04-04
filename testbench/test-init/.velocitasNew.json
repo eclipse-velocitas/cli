@@ -38,12 +38,6 @@
             "id": "runtime-local"
         },
         {
-            "id": "runtime-k3d"
-        },
-        {
-            "id": "deployment-k3d"
-        },
-        {
             "id": "runtime-kanto"
         },
         {

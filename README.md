@@ -31,7 +31,7 @@ Once created from either template or any other means of project creation, your n
 
 This is where the CLI comes in - it manages everything in your repo which is not related to your _Vehicle App_'s source code as packages which are maintained by the _Velocitas_ team. The CLI allows you to download the latest versions and integrate the latest changes with ease.
 
-It also comes on a mix and match basis: You need more than the native, default runtime? Simply add the kubernetes runtime to your project. Ever want to migrate from Github to Gitee? Simply switch packages.
+It also comes on a mix and match basis: You need more than the native, default runtime? Simply add the kanto runtime to your project. Ever want to migrate from Github to Gitee? Simply switch packages.
 
 This is enabled by 3 main features the CLI provides:
 
@@ -59,7 +59,7 @@ This file is maintained by velocitas CLI, do not modify manually. Change setting
 
 - OS Recommendation is e.g. Ubuntu >= 22.04
 - python3 (If not default in your environment create a symlink or use `python-is-python3`)
-- `wget`, `dapr`, `build-essential`, `glibc`, `git` need to be installed
+- `wget`, `build-essential`, `glibc`, `git` need to be installed
 
 ## Project configuration
 
@@ -321,12 +321,12 @@ DESCRIPTION
 
 EXAMPLES
   $ velocitas init
-  Initializing Velocitas Vehicle App!
-  Velocitas project found!
-  ... 'devenv-runtime-local:v1.0.11' already initialized.
-  ... 'devenv-runtime-k3d:v1.0.5' already initialized.
-  ... 'devenv-github-workflows:v1.0.1' already initialized.
-  ... 'devenv-github-templates:v1.0.1' already initialized.
+  Initializing Velocitas packages ...
+  ... Downloading package: 'pkg-velocitas-main:vx.x.x'
+  ... Downloading package: 'devenv-devcontainer-setup:vx.x.x'
+  ... Downloading package: 'devenv-runtimes:vx.x.x'
+  ... Downloading package: 'devenv-github-templates:vx.x.x'
+  ... Downloading package: 'devenv-github-workflows:vx.x.x'
 ```
 
 _See code: [src/commands/init/index.ts](src/commands/init/index.ts)_
@@ -392,22 +392,24 @@ Updates Velocitas components.
 
 ```
 USAGE
-  $ velocitas upgrade [--dry-run] [-v]
+  $ velocitas upgrade [--dry-run] [--ignore-bounds] [-v]
 
 FLAGS
-  -v, --verbose  Enable verbose logging
-  --dry-run      Check which packages can be upgraded
+  -v, --verbose    Enable verbose logging
+  --dry-run        Check which packages can be upgraded
+  --ignore-bounds  Ignores specified version ranges
 
 DESCRIPTION
   Updates Velocitas components.
 
 EXAMPLES
   $ velocitas upgrade
-  Checking for updates!
-  ... 'devenv-runtime-local' is up to date!
-  ... 'devenv-runtime-k3d' is up to date!
-  ... 'devenv-github-workflows' is up to date!
-  ... 'devenv-github-templates' is up to date!
+  Checking .velocitas.json for updates!
+  ... pkg-velocitas-main:vx.x.x → up to date!
+  ... devenv-devcontainer-setup:vx.x.x → up to date!
+  ... devenv-runtimes:vx.x.x → vx.x.x
+  ... devenv-github-templates:vx.x.x → up to date!
+  ... devenv-github-workflows:vx.x.x → up to date!
 ```
 
 _See code: [src/commands/upgrade/index.ts](src/commands/upgrade/index.ts)_

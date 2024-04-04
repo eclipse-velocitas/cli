@@ -19,13 +19,15 @@ import { CliFileSystem } from '../utils/fs-bridge';
 import { DEFAULT_APP_MANIFEST_PATH } from './app-manifest';
 import { ComponentConfig, ComponentContext } from './component';
 import { mapReplacer } from './helpers';
-import { PackageConfig } from './package';
+import { PackageConfig, PackageConfigAttributes } from './package';
 import { PackageIndex } from './package-index';
 import { getLatestVersion } from './semver';
 import { VariableCollection } from './variables';
 
 export const DEFAULT_CONFIG_FILE_NAME = '.velocitas.json';
+export const DEFAULT_CONFIG_LOCKFILE_NAME = '.velocitas-lock.json';
 export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), DEFAULT_CONFIG_FILE_NAME);
+export const DEFAULT_CONFIG_LOCKFILE_PATH = resolve(cwd(), DEFAULT_CONFIG_LOCKFILE_NAME);
 
 export interface ProjectConfigOptions {
     packages: PackageConfig[];
@@ -109,7 +111,7 @@ export class ProjectConfig {
         for (const usedPackageRepo of usedPackageRepos) {
             const packageConfig = new PackageConfig({ repo: usedPackageRepo, version: '' });
             const versions = await packageConfig.getPackageVersions();
-            const latestVersion = getLatestVersion(versions);
+            const latestVersion = getLatestVersion(versions.all);
 
             packageConfig.repo = usedPackageRepo;
             packageConfig.version = latestVersion;
@@ -254,5 +256,75 @@ export class ProjectConfig {
 
     getVariableCollection(componentContext: ComponentContext): VariableCollection {
         return VariableCollection.build(this.getComponents(), this.getVariableMappings(), componentContext);
+    }
+}
+
+export class ProjectConfigLock {
+    private _packages: PackageConfig[] = [];
+
+    constructor(packages: PackageConfig[]) {
+        this._packages = packages;
+    }
+
+    static isAvailable = (path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH) => CliFileSystem.existsSync(path);
+
+    static read(): ProjectConfigLock | null {
+        try {
+            const data = JSON.parse(CliFileSystem.readFileSync(DEFAULT_CONFIG_LOCKFILE_NAME));
+            const packages = data.packages;
+            const projectConfigLock = new ProjectConfigLock(packages);
+            return projectConfigLock;
+        } catch {
+            return null;
+        }
+    }
+
+    /**
+     * Writes the locked project configuration to file.
+     * @param projectConfig Project configuration to get the packages for the lock file.
+     * @param path Path of the file to write the configuration to. Defaults to DEFAULT_CONFIG_LOCKFILE_PATH.
+     */
+    static write(projectConfig: ProjectConfig, path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): void {
+        const projectConfigOptions = {
+            packages: projectConfig.getPackages(),
+        };
+        const configString = `${JSON.stringify(projectConfigOptions, null, 4)}\n`;
+        CliFileSystem.writeFileSync(path, configString);
+    }
+
+    /**
+     * Updates the lock file with the new version of a package.
+     * @param packageConfig Package configuration with updated version information.
+     * @param path Path of the file to update. Defaults to DEFAULT_CONFIG_LOCKFILE_PATH.
+     */
+    static update(packageConfig: PackageConfig, path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): void {
+        const projectConfigLock = JSON.parse(CliFileSystem.readFileSync(path));
+
+        const targetPackageIndex = projectConfigLock.packages.findIndex((pkg: PackageConfig) => pkg.repo === packageConfig.repo);
+
+        if (targetPackageIndex !== -1) {
+            projectConfigLock.packages[targetPackageIndex].version = packageConfig.version;
+        } else {
+            throw new Error(`Package not found: '${packageConfig.repo}'. Please 'velocitas init' first!`);
+        }
+
+        try {
+            CliFileSystem.writeFileSync(path, JSON.stringify(projectConfigLock, null, 4));
+        } catch (err) {
+            throw new Error(`Error writing file: ${err}`);
+        }
+    }
+
+    /**
+     * Finds the version of the specified package from the lock file.
+     * @param packageName Name of the package to find the version for.
+     * @returns The version of the specified package if found, otherwise undefined.
+     */
+    public findVersion(packageName: string): string {
+        const packageConfig = this._packages.find((packageI: PackageConfigAttributes) => packageI.repo === packageName);
+        if (!packageConfig) {
+            throw new Error(`Package '${packageName}' not found in lock file. Please init first!`);
+        }
+        return packageConfig.version;
     }
 }
