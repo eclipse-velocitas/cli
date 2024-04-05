@@ -90,7 +90,7 @@ export class ProjectConfig {
                 packageConfig.variables = new Map(Object.entries(packageConfig.variables));
             }
             if (projectConfigLock && !ignoreLock) {
-                packageConfig.version = projectConfigLock.findVersion(packageConfig.repo);
+                packageConfig.version = projectConfigLock.findVersion(packageConfig.repo) ?? packageConfig.version;
             }
         }
 
@@ -313,7 +313,7 @@ export class ProjectConfigLock {
         if (targetPackageIndex !== -1) {
             projectConfigLock.packages[targetPackageIndex].version = packageConfig.version;
         } else {
-            throw new Error(`Package not found: '${packageConfig.repo}'. Please 'velocitas init' first!`);
+            projectConfigLock.packages.push(packageConfig);
         }
 
         try {
@@ -328,10 +328,10 @@ export class ProjectConfigLock {
      * @param packageName Name of the package to find the version for.
      * @returns The version of the specified package if found, otherwise undefined.
      */
-    public findVersion(packageName: string): string {
+    public findVersion(packageName: string): string | undefined {
         const packageConfig = this._packages.find((packageI: PackageConfigAttributes) => packageI.repo === packageName);
         if (!packageConfig) {
-            throw new Error(`Package '${packageName}' not found in lock file. Please init first!`);
+            return undefined;
         }
         return packageConfig.version;
     }

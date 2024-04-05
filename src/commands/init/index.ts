@@ -60,7 +60,7 @@ export default class Init extends Command {
         if (!flags['no-hooks']) {
             await this.runPostInitHook(projectConfig, appManifestData, flags.verbose);
         }
-
+        // TODO: If velocitas-lock.json exists and containing packages which are not in velocitas.json -> remove it
         this.createProjectLockFile(projectConfig, flags.verbose);
     }
 
@@ -82,11 +82,17 @@ export default class Init extends Command {
 
         for (const packageConfig of projectConfig.getPackages()) {
             const packageVersions = await packageConfig.getPackageVersions();
-            const packageVersion =
-                projectConfigLock !== null
-                    ? projectConfigLock.findVersion(packageConfig.repo)!
-                    : getMatchedVersion(packageVersions, packageConfig.version);
+            let packageVersion: string;
 
+            if (projectConfigLock && projectConfigLock.findVersion(packageConfig.repo)) {
+                packageVersion = projectConfigLock.findVersion(packageConfig.repo)!;
+            } else {
+                packageVersion = getMatchedVersion(packageVersions, packageConfig.version);
+                if (projectConfigLock && !projectConfigLock.findVersion(packageConfig.repo)) {
+                    packageConfig.setPackageVersion(packageVersion);
+                    ProjectConfigLock.update(packageConfig);
+                }
+            }
             if (verbose) {
                 this.log(`... Resolved '${packageConfig.getPackageName()}:${packageConfig.version}' to version: '${packageVersion}'`);
             }
