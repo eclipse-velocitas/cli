@@ -19,7 +19,8 @@ import { ExecSpec, ProgramSpec } from './component';
 import { ProjectCache } from './project-cache';
 import { ProjectConfig } from './project-config';
 
-const CACHE_OUTPUT_REGEX: RegExp = /(\w+)\s*=\s*(\'.*?\'|\".*?\"|\w+)\s+\>\>\s+VELOCITAS_CACHE/;
+const CACHE_QOUTED_OUTPUT_REGEX: RegExp = /(\w+)\s*=\s*(\'.*?\'|\".*?\"|\w+)\s+\>\>\s+VELOCITAS_CACHE/;
+const CACHE_ARRAY_OUTPUT_REGEX: RegExp = /(\w+)\s*=\s*(\[\s*(?:\"([^\"]+)(?:\"\s*,\s*|\"))*\])\s+\>\>\s+VELOCITAS_CACHE/;
 
 const lineCapturer = (projectCache: ProjectCache, writeStdout: boolean, data: string) => {
     if (writeStdout) {
@@ -31,11 +32,20 @@ const lineCapturer = (projectCache: ProjectCache, writeStdout: boolean, data: st
         if (lineTrimmed.length === 0) {
             continue;
         }
-        const result = CACHE_OUTPUT_REGEX.exec(lineTrimmed);
-        if (result && result.length > 0) {
-            const key = result[1];
-            const value = result[2].replaceAll("'", '').replaceAll('"', '');
+        const resultQouted = CACHE_QOUTED_OUTPUT_REGEX.exec(lineTrimmed);
+        const resultArray = CACHE_ARRAY_OUTPUT_REGEX.exec(lineTrimmed);
+        if (resultQouted && resultQouted.length > 0) {
+            const key = resultQouted[1];
+            const value = resultQouted[2].replaceAll("'", '').replaceAll('"', '');
             projectCache.set(key, value);
+        }
+        if (resultArray && resultArray.length > 0) {
+            const key = resultArray[1];
+            const value = resultArray[2].replaceAll("'", '').replaceAll('"', '');
+            const arrayPart = value.substring(1, value.length - 1);
+            const array = arrayPart.split(',');
+            const trimmedArray = array.map((str) => str.trim());
+            projectCache.set(key, trimmedArray);
         }
     }
 };
