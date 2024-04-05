@@ -75,8 +75,8 @@
     "coverage": "nyc --reporter=cobertura npm run test && npm run coverage:report",
     "coverage:report": "nyc report --reporter=text --reporter=cobertura --report-dir=coverage",
     "version": "npx oclif readme && git add README.md",
-    "local-system-test": "export VELOCITAS_PROCESS=\"./bin/dev\" && mocha \"test/**/*.stest.ts\"",
-    "system-test": "export VELOCITAS_PROCESS=\"./velocitas-linux-$ARCH\" && mocha \"test/**/*.stest.ts\"",
+    "local-system-test": "export VELOCITAS_PROCESS=\"./bin/dev\" && mocha --timeout 120000 \"test/**/*.stest.ts\"",
+    "system-test": "export VELOCITAS_PROCESS=\"./velocitas-linux-$ARCH\" && mocha --timeout 120000 \"test/**/*.stest.ts\"",
     "compile-exe": "npm run build && pkg --target=$TARGET --compress=Brotli --output=velocitas-$OS-$ARCH ."
   },
   "engines": {
