@@ -13,12 +13,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
-import { mockFolders } from '../../utils/mockfs';
 import { ProjectConfig } from '../../../src/modules/project-config';
+import { mockFolders } from '../../utils/mockfs';
 
 describe('component add', () => {
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
         .command(['component add', 'unused-component'])
@@ -31,7 +31,7 @@ describe('component add', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
         .command(['component add', 'test-runtime-local'])
@@ -41,7 +41,7 @@ describe('component add', () => {
         .it('throws an exception when trying to add an already added component');
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
         .command(['component add', 'test-runtime-local2'])

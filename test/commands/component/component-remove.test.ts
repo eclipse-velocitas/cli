@@ -13,12 +13,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
-import { mockFolders } from '../../utils/mockfs';
 import { ProjectConfig } from '../../../src/modules/project-config';
+import { mockFolders } from '../../utils/mockfs';
 
 describe('component remove', () => {
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
         .command(['component remove', 'test-runtime-local'])
@@ -31,7 +31,7 @@ describe('component remove', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
         .command(['component remove', 'test-runtime-local2'])
@@ -43,7 +43,7 @@ describe('component remove', () => {
         .it('throws an exception when trying to remove an unkown component');
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
         .command(['component remove', 'unused-component'])

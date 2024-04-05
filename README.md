@@ -392,12 +392,13 @@ Updates Velocitas components.
 
 ```
 USAGE
-  $ velocitas upgrade [--dry-run] [--ignore-bounds] [-v]
+  $ velocitas upgrade [--dry-run] [--ignore-bounds] [--init] [-v]
 
 FLAGS
   -v, --verbose    Enable verbose logging
   --dry-run        Check which packages can be upgraded
   --ignore-bounds  Ignores specified version ranges
+  --init           Init after upgrade check
 
 DESCRIPTION
   Updates Velocitas components.

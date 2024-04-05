@@ -66,7 +66,7 @@ class StubPty implements IPty {
 
 describe('exec', () => {
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .stdout()
@@ -77,7 +77,7 @@ describe('exec', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .stdout()
@@ -95,7 +95,7 @@ describe('exec', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .stdout()
@@ -106,7 +106,7 @@ describe('exec', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true, appManifest: false });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true, appManifest: false });
     })
         .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
         .stdout()
@@ -117,7 +117,7 @@ describe('exec', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .stdout()
@@ -126,7 +126,7 @@ describe('exec', () => {
         .it('throws error when program is not found in specified runtime component');
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
         setSpawnImplementation((command: string, args: string | string[], options: any) => new StubPty());
     })
         .stdout()

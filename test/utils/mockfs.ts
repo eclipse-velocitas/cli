@@ -23,15 +23,30 @@ import {
     packageIndexMock,
     runtimePackageManifestMock,
     setupPackageManifestMock,
+    velocitasConfigLockMock,
     velocitasConfigMock,
 } from './mockConfig';
 
 export const userHomeDir = os.homedir();
-const runtimePackagePath = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}/${velocitasConfigMock.packages[0].version}`;
-const setupPackagePath = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}/${velocitasConfigMock.packages[1].version}`;
-const corePackagePath = `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[2].repo}/${velocitasConfigMock.packages[2].version}`;
+export const installedRuntimePackage = {
+    repo: velocitasConfigLockMock.packages[0].repo,
+    version: velocitasConfigLockMock.packages[0].version,
+};
+export const installedSetupPackage = {
+    repo: velocitasConfigLockMock.packages[1].repo,
+    version: velocitasConfigLockMock.packages[1].version,
+};
+export const installedCorePackage = {
+    repo: velocitasConfigLockMock.packages[2].repo,
+    version: velocitasConfigLockMock.packages[2].version,
+};
+
+const runtimePackagePath = `${userHomeDir}/.velocitas/packages/${installedRuntimePackage.repo}/${installedRuntimePackage.version}`;
+const setupPackagePath = `${userHomeDir}/.velocitas/packages/${installedSetupPackage.repo}/${installedSetupPackage.version}`;
+const corePackagePath = `${userHomeDir}/.velocitas/packages/${installedCorePackage.repo}/${installedCorePackage.version}`;
 
 const velocitasConfig = `${cwd()}/.velocitas.json`;
+const velocitasConfigLock = `${cwd()}/.velocitas-lock.json`;
 const appManifestPath = `${cwd()}/app/AppManifest.json`;
 const cacheConfig = `${ProjectCache.getCacheDir()}/cache.json`;
 const packageIndex = `${cwd()}/package-index.json`;
@@ -41,6 +56,7 @@ const corePackagePathManifest = `${corePackagePath}/manifest.json`;
 
 type MockConfig = {
     velocitasConfig?: boolean;
+    velocitasConfigLock?: boolean;
     installedComponents?: boolean;
     appManifest?: boolean;
     packageIndex?: boolean;
@@ -54,6 +70,9 @@ export const mockFolders = (mockConfig?: MockConfig) => {
     }
     if (mockConfig && mockConfig.velocitasConfig) {
         fileSystemObj[velocitasConfig] = JSON.stringify(velocitasConfigMock);
+    }
+    if (mockConfig && mockConfig.velocitasConfigLock) {
+        fileSystemObj[velocitasConfigLock] = JSON.stringify(velocitasConfigLockMock);
     }
     if (mockConfig && mockConfig.packageIndex) {
         fileSystemObj[packageIndex] = JSON.stringify(packageIndexMock);

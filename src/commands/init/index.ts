@@ -50,7 +50,6 @@ export default class Init extends Command {
 
     async run(): Promise<void> {
         const { flags } = await this.parse(Init);
-
         this.log(`Initializing Velocitas packages ...`);
         const projectConfig = this.initializeProject();
 

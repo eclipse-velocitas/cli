@@ -17,7 +17,7 @@ import { mockFolders } from '../../utils/mockfs';
 
 describe('component list', () => {
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
         .command('component list')
@@ -36,7 +36,7 @@ describe('component list', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
         .command(['component list', '-u'])
@@ -48,7 +48,7 @@ describe('component list', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
         .command(['component list', '-a'])

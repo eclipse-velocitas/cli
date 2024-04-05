@@ -68,8 +68,9 @@ export class ProjectConfig {
         this.cliVersion = config?.cliVersion ? config.cliVersion : cliVersion;
     }
 
-    static read(cliVersion: string, path: PathLike = DEFAULT_CONFIG_FILE_PATH): ProjectConfig {
+    static read(cliVersion: string, path: PathLike = DEFAULT_CONFIG_FILE_PATH, ignoreLock: boolean = false): ProjectConfig {
         let config: ProjectConfig;
+        let projectConfigLock: ProjectConfigLock | null = null;
         try {
             config = new ProjectConfig(cliVersion, JSON.parse(CliFileSystem.readFileSync(path as string)));
         } catch (error) {
@@ -80,9 +81,16 @@ export class ProjectConfig {
             config._variables = new Map(Object.entries(config._variables));
         }
 
+        if (ProjectConfigLock.isAvailable()) {
+            projectConfigLock = ProjectConfigLock.read()!;
+        }
+
         for (let packageConfig of config._packages) {
             if (packageConfig.variables) {
                 packageConfig.variables = new Map(Object.entries(packageConfig.variables));
+            }
+            if (projectConfigLock && !ignoreLock) {
+                packageConfig.version = projectConfigLock.findVersion(packageConfig.repo);
             }
         }
 
@@ -268,9 +276,9 @@ export class ProjectConfigLock {
 
     static isAvailable = (path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH) => CliFileSystem.existsSync(path);
 
-    static read(): ProjectConfigLock | null {
+    static read(path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): ProjectConfigLock | null {
         try {
-            const data = JSON.parse(CliFileSystem.readFileSync(DEFAULT_CONFIG_LOCKFILE_NAME));
+            const data = JSON.parse(CliFileSystem.readFileSync(path as string));
             const packages = data.packages;
             const projectConfigLock = new ProjectConfigLock(packages);
             return projectConfigLock;

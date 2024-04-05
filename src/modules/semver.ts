@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { SemVer, coerce, gt, maxSatisfying, valid } from 'semver';
+import { SemVer, gt, maxSatisfying, satisfies, valid } from 'semver';
 import { TagResult } from 'simple-git';
 
 export function getLatestVersion(versions: string[]): string {
@@ -52,21 +52,17 @@ export function getMatchedVersion(versions: TagResult, versionIdentifier: string
 }
 
 export function incrementVersionRange(versionSpecifier: string, matchedVersion: string) {
+    if (!satisfies(matchedVersion, versionSpecifier)) {
+        return matchedVersion;
+    }
+
     if (versionSpecifier.includes('*') || versionSpecifier.includes('x')) {
         return versionSpecifier;
     }
+
     if (versionSpecifier.startsWith('^') || versionSpecifier.startsWith('~')) {
         return `${versionSpecifier[0]}${matchedVersion}`;
     }
-    const parsedVersionSpecifierRange = coerce(versionSpecifier);
-    const versionSpecifierMajor = parsedVersionSpecifierRange ? parsedVersionSpecifierRange.major : null;
-    const parsedMatchedVersion = coerce(matchedVersion);
-    const matchedVersionMajor = parsedMatchedVersion ? parsedMatchedVersion.major : null;
 
-    if (versionSpecifierMajor !== null && matchedVersionMajor !== null) {
-        const nextMajorVersion = versionSpecifierMajor + (matchedVersionMajor - versionSpecifierMajor);
-        const incrementedRange = `v${nextMajorVersion}`;
-        return incrementedRange;
-    }
-    return versionSpecifier;
+    return matchedVersion;
 }

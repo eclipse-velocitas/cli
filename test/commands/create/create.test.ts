@@ -19,8 +19,8 @@ import * as exec from '../../../src/modules/exec';
 import { CoreComponent, ExtensionComponent } from '../../../src/modules/package-index';
 import { ProjectConfig } from '../../../src/modules/project-config';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
-import { packageIndexMock, velocitasConfigMock } from '../../utils/mockConfig';
-import { mockFolders } from '../../utils/mockfs';
+import { packageIndexMock } from '../../utils/mockConfig';
+import { installedCorePackage, installedRuntimePackage, mockFolders } from '../../utils/mockfs';
 const inquirer = require('inquirer');
 
 const TEST_APP_NAME = 'TestApp';
@@ -39,12 +39,12 @@ const TEST_EXPOSED_INTERFACE_PARAMETER_NAME_2 = TEST_COMPONENT_EXTENSION.paramet
 const TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_2 = TEST_COMPONENT_EXTENSION.parameters![1].default as string;
 
 const TEST_PACKAGE_URI = packageIndexMock[0].package;
-const TEST_PACKAGE_NAME = velocitasConfigMock.packages[0].repo;
-const TEST_PACKAGE_VERSION = velocitasConfigMock.packages[0].version;
+const TEST_PACKAGE_NAME = installedRuntimePackage.repo;
+const TEST_PACKAGE_VERSION = installedRuntimePackage.version;
 
 const TEST_MAIN_PACKAGE_URI = packageIndexMock[1].package;
-const TEST_MAIN_PACKAGE_NAME = velocitasConfigMock.packages[2].repo;
-const TEST_MAIN_PACKAGE_VERSION = velocitasConfigMock.packages[2].version;
+const TEST_MAIN_PACKAGE_NAME = installedCorePackage.repo;
+const TEST_MAIN_PACKAGE_VERSION = installedCorePackage.version;
 
 enum CoreOption {
     fromExample = 0,
@@ -54,8 +54,8 @@ enum CoreOption {
 const EXPECTED_NON_INTERACTIVE_STDOUT = `Creating a new Velocitas project ...
 ... Project for Vehicle Application '${TEST_APP_NAME}' created!
 Initializing Velocitas packages ...
-... '${TEST_MAIN_PACKAGE_NAME}:${TEST_MAIN_PACKAGE_VERSION}' already initialized.
-... '${TEST_PACKAGE_NAME}:${TEST_PACKAGE_VERSION}' already initialized.
+... '${TEST_MAIN_PACKAGE_NAME}:${TEST_MAIN_PACKAGE_VERSION}' already installed.
+... '${TEST_PACKAGE_NAME}:${TEST_PACKAGE_VERSION}' already installed.
 Syncing Velocitas components!
 `;
 
@@ -63,8 +63,8 @@ const EXPECTED_INTERACTIVE_STDOUT = (appName: string, withExtension?: string) =>
 Interactive project creation started
 ${withExtension ? `Configure extension '${withExtension}'\n` : ''}... Project for Vehicle Application '${appName}' created!
 Initializing Velocitas packages ...
-... '${TEST_MAIN_PACKAGE_NAME}:${TEST_MAIN_PACKAGE_VERSION}' already initialized.
-... '${TEST_PACKAGE_NAME}:${TEST_PACKAGE_VERSION}' already initialized.
+... '${TEST_MAIN_PACKAGE_NAME}:${TEST_MAIN_PACKAGE_VERSION}' already installed.
+... '${TEST_PACKAGE_NAME}:${TEST_PACKAGE_VERSION}' already installed.
 Syncing Velocitas components!
 `;
 

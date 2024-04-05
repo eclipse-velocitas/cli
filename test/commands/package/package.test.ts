@@ -13,12 +13,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
-import { velocitasConfigMock } from '../../utils/mockConfig';
-import { mockFolders, userHomeDir } from '../../utils/mockfs';
+import { installedRuntimePackage, mockFolders, userHomeDir } from '../../utils/mockfs';
 
 describe('package', () => {
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
         .command(['package'])
@@ -28,26 +27,26 @@ describe('package', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
-        .command(['package', '-p', `${velocitasConfigMock.packages[0].repo}`])
+        .command(['package', '-p', `${installedRuntimePackage.repo}`])
         .it('prints the path of specified package', (ctx) => {
             expect(ctx.stdout).to.contain(
-                `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}/${velocitasConfigMock.packages[0].version}`,
+                `${userHomeDir}/.velocitas/packages/${installedRuntimePackage.repo}/${installedRuntimePackage.version}`,
             );
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true });
     })
         .stdout()
         .command(['package'])
-        .catch(`Cannot find package ${velocitasConfigMock.packages[0].repo}:${velocitasConfigMock.packages[0].version}`)
+        .catch(`Cannot find package ${installedRuntimePackage.repo}:${installedRuntimePackage.version}`)
         .it('throws error when configured package cannot be found');
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
         .command(['package', '-p'])
