@@ -16,17 +16,18 @@ import { expect } from 'chai';
 import 'mocha';
 import { homedir } from 'node:os';
 import { cwd } from 'node:process';
+import sinon from 'sinon';
+import { PackageConfig } from '../../src/modules/package';
 import { ProjectConfig, ProjectConfigLock } from '../../src/modules/project-config';
 import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/utils/fs-bridge';
 
 describe('project-config - module', () => {
+    const packageManifestPath = `${homedir()}/.velocitas/packages/pkg1/v1.0.0/manifest.json`;
+    const validProjectConfigPath = `${cwd()}/.velocitasValid.json`;
+    const validProjectConfigLockPath = `${cwd()}/.velocitasValid-lock.json`;
+    const validProjectConfigNoCompsPath = `${cwd()}/.velocitasValidNoComps.json`;
+    const invalidProjectConfigPath = `${cwd()}/.velocitasInvalid.json`;
     before(() => {
-        const packageManifestPath = `${homedir()}/.velocitas/packages/pkg1/v1.0.0/manifest.json`;
-        const validProjectConfigPath = `${cwd()}/.velocitasValid.json`;
-        const validProjectConfigLockPath = `${cwd()}/.velocitasValid-lock.json`;
-        const validProjectConfigNoCompsPath = `${cwd()}/.velocitasValidNoComps.json`;
-        const invalidProjectConfigPath = `${cwd()}/.velocitasInvalid.json`;
-
         const mockFilesystem: MockFileSystemObj = {
             [validProjectConfigPath]:
                 '{ "packages": [{"repo":"pkg1", "version": "v1.0.0"}], "components": [{"id": "comp1"}], "variables": {} }',
@@ -67,6 +68,31 @@ describe('project-config - module', () => {
         });
         it('should read the ProjectLockConfig when .velocitas-lock.json is valid.', () => {
             expect(ProjectConfigLock.read('./.velocitasValid-lock.json')).to.not.be.null;
+        });
+    });
+    describe('.velocitas-lock.json writing', () => {
+        it('should throw an error when writing to .velocitas-lock.json fails.', () => {
+            const projectConfig = ProjectConfig.read('v0.0.0', './.velocitasValid.json');
+            const writeFileStub = sinon.stub(CliFileSystem, 'writeFileSync').throws('Mocked error');
+            const writeFunction = () => ProjectConfigLock.write(projectConfig);
+            expect(writeFunction).to.throw('Error writing .velocitas-lock.json: Mocked error');
+            writeFileStub.restore();
+        });
+        it('should throw an error when updating .velocitas-lock.json fails.', () => {
+            const updateFunction = () => ProjectConfigLock.update({ repo: '', version: '' } as PackageConfig, '.');
+            expect(updateFunction).to.throw();
+        });
+        it('should update an existing package inside .velocitas-lock.json', () => {
+            const updatedPackageConfig = { repo: 'pkg1', version: 'v2.0.0' } as PackageConfig;
+            ProjectConfigLock.update(updatedPackageConfig, validProjectConfigLockPath);
+            const lockFileContent = ProjectConfigLock.read(validProjectConfigLockPath)!;
+            expect(lockFileContent.packages).to.deep.include(updatedPackageConfig);
+        });
+        it('should add a new package to .velocitas-lock.json if it is missing', () => {
+            const newPackageConfig = { repo: 'newPackage', version: '1.0.0' } as PackageConfig;
+            ProjectConfigLock.update(newPackageConfig, validProjectConfigLockPath);
+            const lockFileContent = ProjectConfigLock.read(validProjectConfigLockPath)!;
+            expect(lockFileContent.packages).to.deep.include(newPackageConfig);
         });
     });
     describe('ProjectConfig components', () => {

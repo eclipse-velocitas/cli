@@ -41,6 +41,7 @@
     "prettier": "3.2.5",
     "prettier-plugin-organize-imports": "3.2.4",
     "shx": "0.3.4",
+    "sinon": "^17.0.1",
     "ts-node": "10.9.2",
     "typescript": "5.4.3",
     "yaml": "2.4.1"
