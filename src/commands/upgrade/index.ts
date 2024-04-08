@@ -57,7 +57,7 @@ export default class Upgrade extends Command {
                     updateCheck = true;
                 }
             }
-            if (updateCheck) {
+            if (updateCheck && !flags.init) {
                 this.log("Update available: Call 'velocitas init'");
             }
         } catch (error) {
@@ -91,9 +91,6 @@ export default class Upgrade extends Command {
             if (flags['dry-run']) {
                 return false;
             }
-            packageConfig.setPackageVersion(matchedVersion);
-            ProjectConfigLock.update(packageConfig);
-
             packageConfig.setPackageVersion(incrementVersionRange(initialVersionSpecifier, matchedVersion));
             projectConfig.write();
             return true;

@@ -169,7 +169,6 @@ describe('upgrade command', () => {
                     `... ${installedSetupPackage.repo}:${installedSetupPackage.version} → ${mockedNewVersionTag}`,
                 );
                 expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → ${mockedNewVersionTag}`);
-                expect(ctx.stdout).to.contain("Update available: Call 'velocitas init'");
             });
 
         test.do(() => {
