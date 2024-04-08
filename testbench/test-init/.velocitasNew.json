@@ -2,15 +2,15 @@
     "packages": [
         {
             "repo": "https://github.com/eclipse-velocitas/pkg-velocitas-main.git",
-            "version": "v0.0.1"
+            "version": "v0.0.2"
         },
         {
             "repo": "https://github.com/eclipse-velocitas/devenv-devcontainer-setup.git",
-            "version": "v1.5.1"
+            "version": "v2.0.0"
         },
         {
             "repo": "https://github.com/eclipse-velocitas/devenv-runtimes.git",
-            "version": "v2.2.6"
+            "version": "v3.0.0"
         },
         {
             "repo": "https://github.com/eclipse-velocitas/devenv-github-templates.git",
@@ -18,7 +18,7 @@
         },
         {
             "repo": "https://github.com/eclipse-velocitas/devenv-github-workflows.git",
-            "version": "v4.1.4"
+            "version": "v5.0.0"
         }
     ],
     "components": [

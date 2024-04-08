@@ -81,16 +81,19 @@ export class ProjectConfig {
             config._variables = new Map(Object.entries(config._variables));
         }
 
-        if (ProjectConfigLock.isAvailable()) {
-            projectConfigLock = ProjectConfigLock.read()!;
+        if (!ignoreLock && ProjectConfigLock.isAvailable()) {
+            projectConfigLock = ProjectConfigLock.read();
         }
 
         for (let packageConfig of config._packages) {
             if (packageConfig.variables) {
                 packageConfig.variables = new Map(Object.entries(packageConfig.variables));
             }
-            if (projectConfigLock && !ignoreLock) {
-                packageConfig.version = projectConfigLock.findVersion(packageConfig.repo) ?? packageConfig.version;
+            if (projectConfigLock) {
+                const lockedVersion = projectConfigLock.findVersion(packageConfig.repo);
+                if (lockedVersion !== undefined) {
+                    packageConfig.version = lockedVersion;
+                }
             }
         }
 
@@ -268,10 +271,10 @@ export class ProjectConfig {
 }
 
 export class ProjectConfigLock {
-    private _packages: PackageConfig[] = [];
+    packages: PackageConfig[];
 
     constructor(packages: PackageConfig[]) {
-        this._packages = packages;
+        this.packages = packages;
     }
 
     static isAvailable = (path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH) => CliFileSystem.existsSync(path);
@@ -280,8 +283,7 @@ export class ProjectConfigLock {
         try {
             const data = JSON.parse(CliFileSystem.readFileSync(path as string));
             const packages = data.packages;
-            const projectConfigLock = new ProjectConfigLock(packages);
-            return projectConfigLock;
+            return new ProjectConfigLock(packages);
         } catch {
             return null;
         }
@@ -293,11 +295,15 @@ export class ProjectConfigLock {
      * @param path Path of the file to write the configuration to. Defaults to DEFAULT_CONFIG_LOCKFILE_PATH.
      */
     static write(projectConfig: ProjectConfig, path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): void {
-        const projectConfigOptions = {
-            packages: projectConfig.getPackages(),
-        };
-        const configString = `${JSON.stringify(projectConfigOptions, null, 4)}\n`;
-        CliFileSystem.writeFileSync(path, configString);
+        try {
+            const projectConfigOptions = {
+                packages: projectConfig.getPackages(),
+            };
+            const configString = JSON.stringify(projectConfigOptions, null, 4);
+            CliFileSystem.writeFileSync(path, configString);
+        } catch (error) {
+            throw new Error(`Error writing .velocitas-lock.json: ${error}`);
+        }
     }
 
     /**
@@ -306,20 +312,22 @@ export class ProjectConfigLock {
      * @param path Path of the file to update. Defaults to DEFAULT_CONFIG_LOCKFILE_PATH.
      */
     static update(packageConfig: PackageConfig, path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): void {
-        const projectConfigLock = JSON.parse(CliFileSystem.readFileSync(path));
-
-        const targetPackageIndex = projectConfigLock.packages.findIndex((pkg: PackageConfig) => pkg.repo === packageConfig.repo);
-
-        if (targetPackageIndex !== -1) {
-            projectConfigLock.packages[targetPackageIndex].version = packageConfig.version;
-        } else {
-            projectConfigLock.packages.push(packageConfig);
-        }
-
         try {
+            const projectConfigLock = ProjectConfigLock.read(path);
+            if (!projectConfigLock) {
+                throw new Error(`Failed to read .velocitas-lock.json at ${path}`);
+            }
+            const targetPackageIndex = projectConfigLock.packages.findIndex((pkg: PackageConfig) => pkg.repo === packageConfig.repo);
+
+            if (targetPackageIndex !== -1) {
+                projectConfigLock.packages[targetPackageIndex].version = packageConfig.version;
+            } else {
+                projectConfigLock.packages.push(packageConfig);
+            }
+
             CliFileSystem.writeFileSync(path, JSON.stringify(projectConfigLock, null, 4));
-        } catch (err) {
-            throw new Error(`Error writing file: ${err}`);
+        } catch (error) {
+            throw new Error(`Error updating .velocitas-lock.json: ${error}`);
         }
     }
 
@@ -329,10 +337,7 @@ export class ProjectConfigLock {
      * @returns The version of the specified package if found, otherwise undefined.
      */
     public findVersion(packageName: string): string | undefined {
-        const packageConfig = this._packages.find((packageI: PackageConfigAttributes) => packageI.repo === packageName);
-        if (!packageConfig) {
-            return undefined;
-        }
-        return packageConfig.version;
+        const packageConfig = this.packages.find((pkg: PackageConfigAttributes) => pkg.repo === packageName);
+        return packageConfig ? packageConfig.version : undefined;
     }
 }

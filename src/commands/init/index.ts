@@ -60,7 +60,7 @@ export default class Init extends Command {
         if (!flags['no-hooks']) {
             await this.runPostInitHook(projectConfig, appManifestData, flags.verbose);
         }
-        // TODO: If velocitas-lock.json exists and containing packages which are not in velocitas.json -> remove it
+
         this.createProjectLockFile(projectConfig, flags.verbose);
     }
 
@@ -82,25 +82,31 @@ export default class Init extends Command {
 
         for (const packageConfig of projectConfig.getPackages()) {
             const packageVersions = await packageConfig.getPackageVersions();
-            let packageVersion: string;
+            let packageVersion: string | undefined = undefined;
 
-            if (projectConfigLock && projectConfigLock.findVersion(packageConfig.repo)) {
-                packageVersion = projectConfigLock.findVersion(packageConfig.repo)!;
+            const lockedVersion = projectConfigLock?.findVersion(packageConfig.repo);
+
+            if (lockedVersion) {
+                packageVersion = lockedVersion;
             } else {
                 packageVersion = getMatchedVersion(packageVersions, packageConfig.version);
-                if (projectConfigLock && !projectConfigLock.findVersion(packageConfig.repo)) {
+                if (projectConfigLock && !lockedVersion) {
                     packageConfig.setPackageVersion(packageVersion);
                     ProjectConfigLock.update(packageConfig);
                 }
             }
+
             if (verbose) {
                 this.log(`... Resolved '${packageConfig.getPackageName()}:${packageConfig.version}' to version: '${packageVersion}'`);
             }
+
             packageConfig.setPackageVersion(packageVersion);
+
             if (!force && packageConfig.isPackageInstalled()) {
                 this.log(`... '${packageConfig.getPackageName()}:${packageConfig.version}' already installed.`);
                 continue;
             }
+
             this.log(`... Downloading package: '${packageConfig.getPackageName()}:${packageConfig.version}'`);
             await packageConfig.downloadPackageVersion(verbose);
         }
@@ -149,11 +155,9 @@ export default class Init extends Command {
     }
 
     createProjectLockFile(projectConfig: ProjectConfig, verbose: boolean): void {
-        if (!ProjectConfigLock.isAvailable()) {
-            if (verbose) {
-                this.log('... No .velocitas-lock.json found. Creating it at the root of your repository.');
-            }
-            ProjectConfigLock.write(projectConfig);
+        if (verbose && !ProjectConfigLock.isAvailable()) {
+            this.log('... No .velocitas-lock.json found. Creating it at the root of your repository.');
         }
+        ProjectConfigLock.write(projectConfig);
     }
 }
