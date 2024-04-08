@@ -72,29 +72,15 @@ export default class Init extends Command {
             projectConfig = new ProjectConfig(`v${this.config.version}`);
             projectConfig.write();
         } else {
-            projectConfig = ProjectConfig.read(`v${this.config.version}`);
+            projectConfig = ProjectConfig.read(`v${this.config.version}`, undefined, true);
         }
         return projectConfig;
     }
 
     async ensurePackagesAreDownloaded(projectConfig: ProjectConfig, force: boolean, verbose: boolean) {
-        const projectConfigLock = ProjectConfigLock.read();
-
         for (const packageConfig of projectConfig.getPackages()) {
             const packageVersions = await packageConfig.getPackageVersions();
-            let packageVersion: string | undefined = undefined;
-
-            const lockedVersion = projectConfigLock?.findVersion(packageConfig.repo);
-
-            if (lockedVersion) {
-                packageVersion = lockedVersion;
-            } else {
-                packageVersion = getMatchedVersion(packageVersions, packageConfig.version);
-                if (projectConfigLock && !lockedVersion) {
-                    packageConfig.setPackageVersion(packageVersion);
-                    ProjectConfigLock.update(packageConfig);
-                }
-            }
+            const packageVersion = getMatchedVersion(packageVersions, packageConfig.version);
 
             if (verbose) {
                 this.log(`... Resolved '${packageConfig.getPackageName()}:${packageConfig.version}' to version: '${packageVersion}'`);

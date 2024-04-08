@@ -40,14 +40,23 @@ export function getLatestVersion(versions: string[]): string {
 }
 
 export function getMatchedVersion(versions: TagResult, versionIdentifier: string): string {
-    let matchedVersion;
+    const branchPrefix = '@';
+    if (versionIdentifier.startsWith(branchPrefix)) {
+        return versionIdentifier.split(branchPrefix)[1];
+    }
+
     if (versionIdentifier === 'latest') {
-        matchedVersion = versions.latest ? versions.latest : getLatestVersion(versions.all);
+        return versions.latest || getLatestVersion(versions.all);
     }
-    matchedVersion = maxSatisfying(versions.all, versionIdentifier);
+
+    const matchedVersion = maxSatisfying(versions.all, versionIdentifier);
+
     if (matchedVersion === null) {
-        throw new Error(`Can't find matching version for ${versionIdentifier}`);
+        throw new Error(
+            `Can't find matching version for ${versionIdentifier}. Prefix with '${branchPrefix}' for a branch or use a valid semantic version.`,
+        );
     }
+
     return matchedVersion;
 }
 
