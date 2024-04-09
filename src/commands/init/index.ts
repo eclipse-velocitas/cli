@@ -12,10 +12,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { Command, Flags, ux } from '@oclif/core';
 import { APP_MANIFEST_PATH_VARIABLE, AppManifest } from '../../modules/app-manifest';
-import { ComponentContext } from '../../modules/component';
+import { Command, Flags, ux } from '@oclif/core';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
+
+import { ComponentContext } from '../../modules/component';
 import { ProjectConfig } from '../../modules/project-config';
 import { createEnvVars } from '../../modules/variables';
 
@@ -87,6 +88,8 @@ Velocitas project found!
 
     async run(): Promise<void> {
         const { flags } = await this.parse(Init);
+
+        this.log(`Test`);
 
         this.log(`Initializing Velocitas packages ...`);
         let projectConfig: ProjectConfig;
