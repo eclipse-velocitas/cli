@@ -204,7 +204,15 @@ function verifyGivenVariables(
                 missingVars.push(componentExposedVariable);
             }
         } else {
-            if (typeof configuredValue !== componentExposedVariable.type) {
+            if (componentExposedVariable.type === 'array') {
+                if (!Array.isArray(configuredValue)) {
+                    wronglyTypedVars.push(
+                        `'${componentExposedVariable.name}' has wrong type! Expected ${
+                            componentExposedVariable.type
+                        } but got ${typeof configuredValue}`,
+                    );
+                }
+            } else if (typeof configuredValue !== componentExposedVariable.type) {
                 wronglyTypedVars.push(
                     `'${componentExposedVariable.name}' has wrong type! Expected ${
                         componentExposedVariable.type
