@@ -277,7 +277,7 @@ DESCRIPTION
   Executes a script contained in one of your installed components.
 
 EXAMPLES
-  $ velocitas exec devenv-runtime-local run-mosquitto
+  $ velocitas exec runtime-local up
   Executing script...
 ```
 
@@ -349,19 +349,19 @@ DESCRIPTION
   Prints information about packages
 
 EXAMPLES
-  $ velocitas package devenv-runtime-local
-  devenv-runtime-local
-      version: v1.0.12
-      components:
-            - id: runtime-local
-              type: runtime
-              variables:
-                      name: myVar
-                      type: string
-                      description: some basic description
-                      required: false
-  $ velocitas component --get-path devenv-runtime-local
-  /home/vscode/.velocitas/packages/devenv-runtime-local/v1.0.12
+  $ velocitas package devenv-runtimes
+  devenv-runtimes:
+    version: v3.0.0
+    components:
+      - id: runtime-local
+        variables:
+        - runtimeFilePath:
+            type: string
+            description: "Path to the file describing your custom runtime configuration."
+            required: false
+            default: runtime.json
+  $ velocitas package --get-path devenv-runtimes
+  /home/vscode/.velocitas/packages/devenv-runtimes/v3.0.0
 ```
 
 _See code: [src/commands/package/index.ts](src/commands/package/index.ts)_
