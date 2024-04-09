@@ -71,9 +71,12 @@ export class VariableCollection {
 
         for (const [key, value] of this._variables.entries()) {
             const transformedKey = key.replaceAll('.', '_');
-
+            let transformedValue = value;
+            if (Array.isArray(value)) {
+                transformedValue = JSON.stringify(value);
+            }
             Object.assign(envVars, {
-                [transformedKey]: value,
+                [transformedKey]: transformedValue,
             });
         }
 
