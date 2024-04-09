@@ -75,9 +75,9 @@ Velocitas project found!
         }),
     };
 
-    async ensurePackagesAreDownloaded(projectConfig: ProjectConfig, force: boolean, verbose: boolean) {
+    async ensurePackagesAreDownloaded(projectConfig: ProjectConfig, forceTest: boolean, verbose: boolean) {
         for (const packageConfig of projectConfig.getPackages()) {
-            if (!force && packageConfig.isPackageInstalled()) {
+            if (!forceTest && packageConfig.isPackageInstalled()) {
                 this.log(`... '${packageConfig.getPackageName()}:${packageConfig.version}' already initialized.`);
                 continue;
             }
@@ -88,8 +88,6 @@ Velocitas project found!
 
     async run(): Promise<void> {
         const { flags } = await this.parse(Init);
-
-        this.log(`Test`);
 
         this.log(`Initializing Velocitas packages ...`);
         let projectConfig: ProjectConfig;
