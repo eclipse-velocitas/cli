@@ -43,4 +43,3 @@
 |pre-commit/action|v3.0.1|MIT License|
 |TriPSs/conventional-changelog-action|v5|MIT License|
 |uraimo/run-on-arch-action|v2|BSD 3-Clause "New" or "Revised" License|
-|irongut/CodeCoverageSummary|v1.3.0|MIT License|
