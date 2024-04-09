@@ -34,42 +34,47 @@ export default class Upgrade extends Command {
 
     static flags = {
         'dry-run': Flags.boolean({ description: 'Check which packages can be upgraded', required: false }),
-        'ignore-bounds': Flags.boolean({ description: 'Ignores specified version ranges', required: false }),
-        init: Flags.boolean({ description: 'Init after upgrade check', required: false }),
+        'ignore-bounds': Flags.boolean({
+            description: 'Ignores specified version ranges and will result in upgrading to the latest available semantic version',
+            required: false,
+        }),
+        init: Flags.boolean({ description: 'Initializes components after upgrading them', required: false }),
         verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false, default: false }),
     };
 
     async run(): Promise<void> {
         const { flags } = await this.parse(Upgrade);
-        const projectConfigLock = ProjectConfigLock.read();
-
-        if (!projectConfigLock) {
+        let projectConfigLock: ProjectConfigLock | null = null;
+        try {
+            projectConfigLock = ProjectConfigLock.read();
+        } catch (error) {
             throw new Error(`No .velocitas-lock.json found. Please 'velocitas init' first!`);
         }
+
         this.log(`Checking .velocitas.json for updates!`);
         const projectConfig = ProjectConfig.read(`v${this.config.version}`, undefined, true);
 
-        let updateCheck: boolean = false;
+        let isAnyPackageUpdated: boolean = false;
         try {
             for (const packageConfig of projectConfig.getPackages()) {
-                const updateAvailable = await this.checkUpdate(packageConfig, projectConfig, projectConfigLock, flags);
-                if (updateAvailable) {
-                    updateCheck = true;
+                const isPackageUpdated = await this.updatePackageIfAvailable(packageConfig, projectConfig, projectConfigLock!, flags);
+                if (isPackageUpdated) {
+                    isAnyPackageUpdated = true;
                 }
             }
-            if (updateCheck && !flags.init) {
+            if (isAnyPackageUpdated && !flags.init) {
                 this.log("Update available: Call 'velocitas init'");
             }
         } catch (error) {
             this.error(`Error during upgrade: '${error}'`);
         }
-        if (flags.init && updateCheck) {
+        if (flags.init && isAnyPackageUpdated) {
             const commandArgs = flags.verbose ? ['-v'] : [];
             await Init.run(commandArgs);
         }
     }
 
-    async checkUpdate(
+    async updatePackageIfAvailable(
         packageConfig: PackageConfig,
         projectConfig: ProjectConfig,
         projectConfigLock: ProjectConfigLock,
@@ -82,15 +87,16 @@ export default class Upgrade extends Command {
             : getMatchedVersion(availableVersions, packageConfig.version);
 
         const lockedVersion = projectConfigLock.findVersion(packageConfig.repo);
+        const packageStatus: string = lockedVersion === matchedVersion ? 'up to date!' : matchedVersion;
+        this.log(`... ${packageConfig.getPackageName()}:${lockedVersion} → ${packageStatus}`);
+
+        if (flags['dry-run']) {
+            return false;
+        }
 
         if (lockedVersion === matchedVersion) {
-            this.log(`... ${packageConfig.getPackageName()}:${lockedVersion} → up to date!`);
             return false;
         } else {
-            this.log(`... ${packageConfig.getPackageName()}:${lockedVersion} → ${matchedVersion}`);
-            if (flags['dry-run']) {
-                return false;
-            }
             packageConfig.setPackageVersion(incrementVersionRange(initialVersionSpecifier, matchedVersion));
             projectConfig.write();
             return true;

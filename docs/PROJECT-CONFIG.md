@@ -1,6 +1,6 @@
 # Project configuration
 
-The project configuration describes which packages your project is using and in which version. The versions of the referenced packages can be upgraded using the `upgrade` command. If you only want to see which new versions are available use `upgrade --dry-run`. Each package may expose variables which need to be set from the project configuration. If multiple different packages all expose the same named variable `foo`, setting this variable once in the project configuration will pass the value to all packages.
+The project configuration describes which packages your project is using and in which version. The versions of the referenced packages can be upgraded using the `upgrade` command. If you only want to see which new versions are available use `upgrade --dry-run` or `upgrade --dry-run --ignore-bounds`. Each package may expose variables which need to be set from the project configuration. If multiple different packages all expose the same named variable `foo`, setting this variable once in the project configuration will pass the value to all packages.
 
 Read more about variables [here](./features/VARIABLES.md).
 
@@ -80,7 +80,12 @@ The name of the package or URL to the package git repository. This field is curr
 
 ### `version` - string
 
-The version of the package to use. May be a tag, branch or SHA.
+The version of the package to use.
+May be specified as:
+- valid semantic version range
+- tag
+- branch (prefixed with an '@')
+- latest
 
 ### `variables` - Map[string, any]
 

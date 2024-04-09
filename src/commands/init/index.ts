@@ -14,6 +14,7 @@
 
 import { Command, Flags, ux } from '@oclif/core';
 import { APP_MANIFEST_PATH_VARIABLE, AppManifest } from '../../modules/app-manifest';
+import { ComponentContext, ExecSpec } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { ProjectConfig, ProjectConfigLock } from '../../modules/project-config';
 import { getMatchedVersion } from '../../modules/semver';
@@ -51,20 +52,21 @@ export default class Init extends Command {
     async run(): Promise<void> {
         const { flags } = await this.parse(Init);
         this.log(`Initializing Velocitas packages ...`);
-        const projectConfig = this.initializeProject();
+        const projectConfig = this.initializeOrReadProject();
 
         const appManifestData = AppManifest.read(projectConfig.getVariableMappings().get(APP_MANIFEST_PATH_VARIABLE));
 
         await this.ensurePackagesAreDownloaded(projectConfig, flags.force, flags.verbose);
 
         if (!flags['no-hooks']) {
-            await this.runPostInitHook(projectConfig, appManifestData, flags.verbose);
+            projectConfig.validateUsedComponents();
+            await this.runPostInitHooks(projectConfig, appManifestData, flags.verbose);
         }
 
         this.createProjectLockFile(projectConfig, flags.verbose);
     }
 
-    initializeProject(): ProjectConfig {
+    initializeOrReadProject(): ProjectConfig {
         let projectConfig: ProjectConfig;
 
         if (!ProjectConfig.isAvailable()) {
@@ -98,8 +100,34 @@ export default class Init extends Command {
         }
     }
 
-    async runPostInitHook(projectConfig: ProjectConfig, appManifest: any, verbose: boolean) {
-        projectConfig.validateUsedComponents();
+    async runSinglePostInitHook(
+        execSpec: ExecSpec,
+        componentContext: ComponentContext,
+        projectConfig: ProjectConfig,
+        appManifest: any,
+        verbose: boolean,
+    ): Promise<void> {
+        const message = `Running '${execSpec.ref}'`;
+        if (!verbose) {
+            ux.action.start(message);
+        } else {
+            this.log(message);
+        }
+        const envVars = createEnvVars(
+            componentContext.packageConfig.getPackageDirectoryWithVersion(),
+            projectConfig.getVariableCollection(componentContext),
+            appManifest,
+        );
+        await runExecSpec(execSpec, componentContext.manifest.id, projectConfig, envVars, {
+            writeStdout: verbose,
+            verbose: verbose,
+        });
+        if (!verbose) {
+            ux.action.stop();
+        }
+    }
+
+    async runPostInitHooks(projectConfig: ProjectConfig, appManifest: any, verbose: boolean) {
         for (const componentContext of projectConfig.getComponents()) {
             if (!componentContext.manifest.onPostInit || componentContext.manifest.onPostInit.length === 0) {
                 continue;
@@ -109,24 +137,7 @@ export default class Init extends Command {
 
             for (const execSpec of componentContext.manifest.onPostInit) {
                 try {
-                    const message = `Running '${execSpec.ref}'`;
-                    if (!verbose) {
-                        ux.action.start(message);
-                    } else {
-                        this.log(message);
-                    }
-                    const envVars = createEnvVars(
-                        componentContext.packageConfig.getPackageDirectoryWithVersion(),
-                        projectConfig.getVariableCollection(componentContext),
-                        appManifest,
-                    );
-                    await runExecSpec(execSpec, componentContext.manifest.id, projectConfig, envVars, {
-                        writeStdout: verbose,
-                        verbose: verbose,
-                    });
-                    if (!verbose) {
-                        ux.action.stop();
-                    }
+                    await this.runSinglePostInitHook(execSpec, componentContext, projectConfig, appManifest, verbose);
                 } catch (e) {
                     if (e instanceof ExecExitError) {
                         throw e;

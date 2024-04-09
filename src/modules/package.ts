@@ -95,8 +95,8 @@ export class PackageConfig {
         return join(this.getPackageDirectoryWithVersion(), MANIFEST_FILE_NAME);
     }
 
-    setPackageVersion(newVersion: string): void {
-        this.version = newVersion;
+    setPackageVersion(version: string): void {
+        this.version = version;
     }
 
     async getPackageVersions(): Promise<TagResult> {

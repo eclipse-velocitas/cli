@@ -63,8 +63,8 @@ describe('incrementVersionRange', () => {
     });
 
     it('should increment the version range correctly if it starts with "^" or "~"', () => {
-        expect(incrementVersionRange('^1.0.0', '1.1.0')).to.equal('^1.1.0');
-        expect(incrementVersionRange('~2.0.0', '2.0.1')).to.equal('~2.0.1');
+        expect(incrementVersionRange('^1.0.0', '1.1.0')).to.equal('^1.0.0');
+        expect(incrementVersionRange('~2.0.0', '2.0.1')).to.equal('~2.0.0');
     });
 
     it('should return the matched version otherwise', () => {

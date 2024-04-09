@@ -397,8 +397,8 @@ USAGE
 FLAGS
   -v, --verbose    Enable verbose logging
   --dry-run        Check which packages can be upgraded
-  --ignore-bounds  Ignores specified version ranges
-  --init           Init after upgrade check
+  --ignore-bounds  Ignores specified version ranges and will result in upgrading to the latest available semantic version
+  --init           Initializes components after upgrading them.
 
 DESCRIPTION
   Updates Velocitas components.

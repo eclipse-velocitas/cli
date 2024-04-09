@@ -122,10 +122,10 @@ describe('upgrade command', () => {
             mockFolders({ velocitasConfig: true, velocitasConfigLock: true });
         })
             .stdout()
-            .stub(upgrade.default.prototype, 'checkUpdate', (stub) => stub.throws())
+            .stub(upgrade.default.prototype, 'updatePackageIfAvailable', (stub) => stub.throws())
             .command(['upgrade'])
             .catch((err) => expect(err.message).to.match(/Error during upgrade:/))
-            .it('checking for upgrades - error during checkUpdate');
+            .it('checking for upgrades - error during updatePackageIfAvailable');
 
         test.do(() => {
             mockFolders({ velocitasConfig: true, velocitasConfigLock: true });

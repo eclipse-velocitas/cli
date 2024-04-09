@@ -30,7 +30,15 @@
                 }
             },
             // Similar extensions like in vehicle-app-python-template
-            "extensions": ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint", "ms-azuretools.vscode-docker", "ms-python.python", "rpdswtk.vsmqtt", "leizongmin.node-module-intellisense", "bierner.markdown-preview-github-styles"]
+            "extensions": [
+                "esbenp.prettier-vscode",
+                "dbaeumer.vscode-eslint",
+                "ms-azuretools.vscode-docker",
+                "ms-python.python",
+                "rpdswtk.vsmqtt",
+                "leizongmin.node-module-intellisense",
+                "bierner.markdown-preview-github-styles"
+            ]
         }
     },
     "onCreateCommand": "bash .devcontainer/scripts/postCreateCommand.sh",

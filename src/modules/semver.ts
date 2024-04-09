@@ -42,7 +42,7 @@ export function getLatestVersion(versions: string[]): string {
 export function getMatchedVersion(versions: TagResult, versionIdentifier: string): string {
     const branchPrefix = '@';
     if (versionIdentifier.startsWith(branchPrefix)) {
-        return versionIdentifier.split(branchPrefix)[1];
+        return versionIdentifier.substring(1);
     }
 
     if (versionIdentifier === 'latest') {
@@ -65,12 +65,13 @@ export function incrementVersionRange(versionSpecifier: string, matchedVersion: 
         return matchedVersion;
     }
 
-    if (versionSpecifier.includes('*') || versionSpecifier.includes('x')) {
+    if (
+        versionSpecifier.includes('*') ||
+        versionSpecifier.includes('x') ||
+        versionSpecifier.startsWith('^') ||
+        versionSpecifier.startsWith('~')
+    ) {
         return versionSpecifier;
-    }
-
-    if (versionSpecifier.startsWith('^') || versionSpecifier.startsWith('~')) {
-        return `${versionSpecifier[0]}${matchedVersion}`;
     }
 
     return matchedVersion;

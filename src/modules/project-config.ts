@@ -90,10 +90,7 @@ export class ProjectConfig {
                 packageConfig.variables = new Map(Object.entries(packageConfig.variables));
             }
             if (projectConfigLock) {
-                const lockedVersion = projectConfigLock.findVersion(packageConfig.repo);
-                if (lockedVersion !== undefined) {
-                    packageConfig.version = lockedVersion;
-                }
+                packageConfig.version = projectConfigLock.findVersion(packageConfig.repo);
             }
         }
 
@@ -279,13 +276,23 @@ export class ProjectConfigLock {
 
     static isAvailable = (path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH) => CliFileSystem.existsSync(path);
 
+    /**
+     * Reads the locked project configuration from file.
+     * @param path The path to the lock file. Defaults to DEFAULT_CONFIG_LOCKFILE_PATH if not provided.
+     * @returns An instance of ProjectConfigLock if the lock file exists and is readable, or null if the file is not present.
+     * @throws Error if there's an issue reading the lock file other than it not being present.
+     */
     static read(path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): ProjectConfigLock | null {
         try {
             const data = JSON.parse(CliFileSystem.readFileSync(path as string));
             const packages = data.packages;
             return new ProjectConfigLock(packages);
-        } catch {
-            return null;
+        } catch (error: any) {
+            if (error.code === 'ENOENT') {
+                return null;
+            } else {
+                throw new Error(`Error reading lock file: ${error.message}`);
+            }
         }
     }
 
@@ -307,37 +314,22 @@ export class ProjectConfigLock {
     }
 
     /**
-     * Updates the lock file with the new version of a package.
-     * @param packageConfig Package configuration with updated version information.
-     * @param path Path of the file to update. Defaults to DEFAULT_CONFIG_LOCKFILE_PATH.
-     */
-    static update(packageConfig: PackageConfig, path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): void {
-        try {
-            const projectConfigLock = ProjectConfigLock.read(path);
-            if (!projectConfigLock) {
-                throw new Error(`Failed to read .velocitas-lock.json at ${path}`);
-            }
-            const targetPackageIndex = projectConfigLock.packages.findIndex((pkg: PackageConfig) => pkg.repo === packageConfig.repo);
-
-            if (targetPackageIndex !== -1) {
-                projectConfigLock.packages[targetPackageIndex].version = packageConfig.version;
-            } else {
-                projectConfigLock.packages.push(packageConfig);
-            }
-
-            CliFileSystem.writeFileSync(path, JSON.stringify(projectConfigLock, null, 4));
-        } catch (error) {
-            throw new Error(`Error updating .velocitas-lock.json: ${error}`);
-        }
-    }
-
-    /**
      * Finds the version of the specified package from the lock file.
      * @param packageName Name of the package to find the version for.
-     * @returns The version of the specified package if found, otherwise undefined.
+     * @returns The version of the specified package if found.
+     * @throws Error if the lock file is corrupted, the package is not found, or no version is stored for the package.
      */
-    public findVersion(packageName: string): string | undefined {
+    public findVersion(packageName: string): string {
         const packageConfig = this.packages.find((pkg: PackageConfigAttributes) => pkg.repo === packageName);
-        return packageConfig ? packageConfig.version : undefined;
+
+        if (!packageConfig) {
+            throw new Error(`Package '${packageName}' not found in lock file.`);
+        }
+
+        if (!packageConfig.version) {
+            throw new Error(`No version found for package '${packageName}' in lock file.`);
+        }
+
+        return packageConfig.version;
     }
 }

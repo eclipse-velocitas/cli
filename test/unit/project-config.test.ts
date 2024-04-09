@@ -17,7 +17,6 @@ import 'mocha';
 import { homedir } from 'node:os';
 import { cwd } from 'node:process';
 import sinon from 'sinon';
-import { PackageConfig } from '../../src/modules/package';
 import { ProjectConfig, ProjectConfigLock } from '../../src/modules/project-config';
 import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/utils/fs-bridge';
 
@@ -63,8 +62,8 @@ describe('project-config - module', () => {
         });
     });
     describe('.velocitas-lock.json parsing', () => {
-        it('should be null when .velocitas-lock.json is invalid or not available.', () => {
-            expect(ProjectConfigLock.read()).to.be.null;
+        it('should throw an error when .velocitas-lock.json is invalid.', () => {
+            expect(() => ProjectConfigLock.read()).to.throw();
         });
         it('should read the ProjectLockConfig when .velocitas-lock.json is valid.', () => {
             expect(ProjectConfigLock.read('./.velocitasValid-lock.json')).to.not.be.null;
@@ -77,22 +76,6 @@ describe('project-config - module', () => {
             const writeFunction = () => ProjectConfigLock.write(projectConfig);
             expect(writeFunction).to.throw('Error writing .velocitas-lock.json: Mocked error');
             writeFileStub.restore();
-        });
-        it('should throw an error when updating .velocitas-lock.json fails.', () => {
-            const updateFunction = () => ProjectConfigLock.update({ repo: '', version: '' } as PackageConfig, '.');
-            expect(updateFunction).to.throw();
-        });
-        it('should update an existing package inside .velocitas-lock.json', () => {
-            const updatedPackageConfig = { repo: 'pkg1', version: 'v2.0.0' } as PackageConfig;
-            ProjectConfigLock.update(updatedPackageConfig, validProjectConfigLockPath);
-            const lockFileContent = ProjectConfigLock.read(validProjectConfigLockPath)!;
-            expect(lockFileContent.packages).to.deep.include(updatedPackageConfig);
-        });
-        it('should add a new package to .velocitas-lock.json if it is missing', () => {
-            const newPackageConfig = { repo: 'newPackage', version: '1.0.0' } as PackageConfig;
-            ProjectConfigLock.update(newPackageConfig, validProjectConfigLockPath);
-            const lockFileContent = ProjectConfigLock.read(validProjectConfigLockPath)!;
-            expect(lockFileContent.packages).to.deep.include(newPackageConfig);
         });
     });
     describe('ProjectConfig components', () => {
