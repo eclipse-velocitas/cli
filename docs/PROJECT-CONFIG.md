@@ -81,11 +81,12 @@ The name of the package or URL to the package git repository. This field is curr
 ### `version` - string
 
 The version of the package to use.
-May be specified as:
-- valid semantic version range
-- tag
-- branch (prefixed with an '@')
-- latest
+| Literal | Behaviour | Example |
+|---------|-----------|---------|
+| valid semantic version range | Specifies a range of valid semantic versions | `"v1.0.*", "~v1.0.0", "^v1.0.0", "v1"` |
+| tag | Refers to a specific tagged version | `"v1.0.0"` |
+| branch (prefixed with an '@') | Refers to the latest commit in a specific branch | `"@main"` |
+| latest | Refers to the latest available version | `"latest"` |
 
 ### `variables` - Map[string, any]
 

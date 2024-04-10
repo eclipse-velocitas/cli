@@ -17,7 +17,7 @@ import { APP_MANIFEST_PATH_VARIABLE, AppManifest } from '../../modules/app-manif
 import { ComponentContext, ExecSpec } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { ProjectConfig, ProjectConfigLock } from '../../modules/project-config';
-import { getMatchedVersion } from '../../modules/semver';
+import { resolveVersionIdentifier } from '../../modules/semver';
 import { createEnvVars } from '../../modules/variables';
 
 export default class Init extends Command {
@@ -57,9 +57,9 @@ export default class Init extends Command {
         const appManifestData = AppManifest.read(projectConfig.getVariableMappings().get(APP_MANIFEST_PATH_VARIABLE));
 
         await this.ensurePackagesAreDownloaded(projectConfig, flags.force, flags.verbose);
+        projectConfig.validateUsedComponents();
 
         if (!flags['no-hooks']) {
-            projectConfig.validateUsedComponents();
             await this.runPostInitHooks(projectConfig, appManifestData, flags.verbose);
         }
 
@@ -82,7 +82,7 @@ export default class Init extends Command {
     async ensurePackagesAreDownloaded(projectConfig: ProjectConfig, force: boolean, verbose: boolean) {
         for (const packageConfig of projectConfig.getPackages()) {
             const packageVersions = await packageConfig.getPackageVersions();
-            const packageVersion = getMatchedVersion(packageVersions, packageConfig.version);
+            const packageVersion = resolveVersionIdentifier(packageVersions, packageConfig.version);
 
             if (verbose) {
                 this.log(`... Resolved '${packageConfig.getPackageName()}:${packageConfig.version}' to version: '${packageVersion}'`);

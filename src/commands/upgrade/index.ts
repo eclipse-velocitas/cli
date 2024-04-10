@@ -15,7 +15,7 @@
 import { Command, Flags } from '@oclif/core';
 import { PackageConfig } from '../../modules/package';
 import { ProjectConfig, ProjectConfigLock } from '../../modules/project-config';
-import { getLatestVersion, getMatchedVersion, incrementVersionRange } from '../../modules/semver';
+import { getLatestVersion, incrementVersionRange, resolveVersionIdentifier } from '../../modules/semver';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import Init from '../init';
 
@@ -84,17 +84,13 @@ export default class Upgrade extends Command {
         const availableVersions = await packageConfig.getPackageVersions();
         const matchedVersion = flags['ignore-bounds']
             ? getLatestVersion(availableVersions.all)
-            : getMatchedVersion(availableVersions, packageConfig.version);
+            : resolveVersionIdentifier(availableVersions, packageConfig.version);
 
         const lockedVersion = projectConfigLock.findVersion(packageConfig.repo);
         const packageStatus: string = lockedVersion === matchedVersion ? 'up to date!' : matchedVersion;
         this.log(`... ${packageConfig.getPackageName()}:${lockedVersion} → ${packageStatus}`);
 
-        if (flags['dry-run']) {
-            return false;
-        }
-
-        if (lockedVersion === matchedVersion) {
+        if (flags['dry-run'] || lockedVersion === matchedVersion) {
             return false;
         } else {
             packageConfig.setPackageVersion(incrementVersionRange(initialVersionSpecifier, matchedVersion));

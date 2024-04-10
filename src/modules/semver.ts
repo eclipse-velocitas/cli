@@ -39,7 +39,7 @@ export function getLatestVersion(versions: string[]): string {
     return latestVersion.raw;
 }
 
-export function getMatchedVersion(versions: TagResult, versionIdentifier: string): string {
+export function resolveVersionIdentifier(versions: TagResult, versionIdentifier: string): string {
     const branchPrefix = '@';
     if (versionIdentifier.startsWith(branchPrefix)) {
         return versionIdentifier.substring(1);

@@ -44,6 +44,9 @@ export const velocitasConfigMock = {
         {
             id: 'core-test',
         },
+        {
+            id: 'test-extension-mandatory',
+        },
     ],
     variables: {
         appManifestPath: './app/AppManifest.json',
@@ -309,6 +312,12 @@ export const corePackageManifestMock = {
         },
         {
             id: 'unused-component',
+        },
+        {
+            id: 'test-extension-mandatory',
+            name: 'Mandatory Test Extension',
+            description: 'Mandatory extension for tests',
+            type: 'extension',
         },
     ],
 };

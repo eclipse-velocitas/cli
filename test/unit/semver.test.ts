@@ -15,7 +15,7 @@
 import { expect } from 'chai';
 import 'mocha';
 import { TagResult } from 'simple-git';
-import { getLatestVersion, getMatchedVersion, incrementVersionRange } from '../../src/modules/semver';
+import { getLatestVersion, incrementVersionRange, resolveVersionIdentifier } from '../../src/modules/semver';
 
 describe('getLatestVersion', () => {
     it('should return the latest version from the provided array', () => {
@@ -29,26 +29,26 @@ describe('getLatestVersion', () => {
     });
 });
 
-describe('getMatchedVersion', () => {
+describe('resolveVersionIdentifier', () => {
     const versions: TagResult = {
         all: ['1.0.0', '2.0.0', '3.0.0'],
         latest: '3.0.0',
     };
 
-    it('should return the specified branch if it starts with "@"', () => {
-        expect(getMatchedVersion(versions, '@myBranch')).to.equal('myBranch');
+    it('should resolve to a branch if versionIdentifier starts with "@"', () => {
+        expect(resolveVersionIdentifier(versions, '@myBranch')).to.equal('myBranch');
     });
 
-    it('should return the latest version if versionIdentifier is "latest"', () => {
-        expect(getMatchedVersion(versions, 'latest')).to.equal('3.0.0');
+    it('should resolve to the latest version if versionIdentifier is "latest"', () => {
+        expect(resolveVersionIdentifier(versions, 'latest')).to.equal('3.0.0');
     });
 
-    it('should return the matched version from the versions array', () => {
-        expect(getMatchedVersion(versions, '^2.0.0')).to.equal('2.0.0');
+    it('should resolve to the correct version from the versions array', () => {
+        expect(resolveVersionIdentifier(versions, '^2.0.0')).to.equal('2.0.0');
     });
 
     it('should throw an error if no matching version is found', () => {
-        expect(() => getMatchedVersion(versions, '4.0.0')).to.throw("Can't find matching version for 4.0.0");
+        expect(() => resolveVersionIdentifier(versions, '4.0.0')).to.throw("Can't find matching version for 4.0.0");
     });
 });
 
