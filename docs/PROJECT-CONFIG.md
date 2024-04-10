@@ -76,7 +76,7 @@ Project-wide key-value variable configuration.
 
 ### `repo` - string
 
-The name of the package or URL to the package git repository. A simple name is currently resolved to `https://github.com/eclipse-velocitas/<name>` otherwise e.g. `https://github.com/OWNER/REPO.git` is supported.
+The name of the package or URL to the package git repository. A simple name is currently resolved to `https://github.com/eclipse-velocitas/<name>` otherwise e.g. `https://github.com/OWNER/REPO.git` or `git@github.com/OWNER/REPO.git` is supported.
 
 ### `version` - string
 

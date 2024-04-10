@@ -86,7 +86,7 @@ export default class Upgrade extends Command {
             : resolveVersionIdentifier(availableVersions, packageConfig.version);
 
         const lockedVersion = projectConfigLock.findVersion(packageConfig.repo);
-        const packageStatus: string = lockedVersion === matchedVersion ? 'up to date!' : matchedVersion;
+        const packageStatus = lockedVersion === matchedVersion ? 'up to date!' : matchedVersion;
         this.log(`... ${packageConfig.getPackageName()}:${lockedVersion} → ${packageStatus}`);
 
         if (flags['dry-run'] || lockedVersion === matchedVersion) {
