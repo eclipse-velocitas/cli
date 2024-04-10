@@ -23,9 +23,8 @@ export default class Exec extends Command {
     static description = 'Executes a script contained in one of your installed components.';
 
     static examples = [
-        `$ velocitas exec devenv-runtime-local run-mosquitto
-Executing script...
-`,
+        `$ velocitas exec runtime-local up
+            Executing script...`,
     ];
 
     static strict = false;

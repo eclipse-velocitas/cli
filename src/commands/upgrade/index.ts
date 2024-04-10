@@ -12,72 +12,89 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { Command, Flags, ux } from '@oclif/core';
-import { ProjectConfig } from '../../modules/project-config';
-import { getLatestVersion } from '../../modules/semver';
+import { Command, Flags } from '@oclif/core';
+import { PackageConfig } from '../../modules/package';
+import { ProjectConfig, ProjectConfigLock } from '../../modules/project-config';
+import { getLatestVersion, incrementVersionRange, resolveVersionIdentifier } from '../../modules/semver';
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import Init from '../init';
 
 export default class Upgrade extends Command {
     static description = 'Updates Velocitas components.';
 
     static examples = [
         `$ velocitas upgrade
-Checking for updates!
-... 'devenv-runtime-local' is up to date!
-... 'devenv-runtime-k3d' is up to date!
-... 'devenv-github-workflows' is up to date!
-... 'devenv-github-templates' is up to date!`,
+        Checking .velocitas.json for updates!
+        ... pkg-velocitas-main:vx.x.x → up to date!
+        ... devenv-devcontainer-setup:vx.x.x → up to date!
+        ... devenv-runtimes:vx.x.x → vx.x.x
+        ... devenv-github-templates:vx.x.x → up to date!
+        ... devenv-github-workflows:vx.x.x → up to date!`,
     ];
 
     static flags = {
         'dry-run': Flags.boolean({ description: 'Check which packages can be upgraded', required: false }),
+        'ignore-bounds': Flags.boolean({
+            description: 'Ignores specified version ranges and will result in upgrading to the latest available semantic version',
+            required: false,
+        }),
+        init: Flags.boolean({ description: 'Initializes components after upgrading them', required: false }),
         verbose: Flags.boolean({ char: 'v', aliases: ['verbose'], description: 'Enable verbose logging', required: false, default: false }),
     };
 
     async run(): Promise<void> {
         const { flags } = await this.parse(Upgrade);
+        let projectConfigLock: ProjectConfigLock | null = ProjectConfigLock.read();
 
-        this.log(`Checking for updates!`);
-        const projectConfig = ProjectConfig.read(`v${this.config.version}`);
-        for (const packageConfig of projectConfig.getPackages()) {
-            const availableVersions = await packageConfig.getPackageVersions();
-            try {
-                const latestVersion = getLatestVersion(availableVersions);
-
-                if (packageConfig.version === latestVersion) {
-                    if (!packageConfig.isPackageInstalled()) {
-                        this.log(`... No installed sources for ${packageConfig.repo}:${packageConfig.version} found`);
-                        if (flags['dry-run']) {
-                            continue;
-                        }
-                        const response = await ux.prompt(`... Do you want to download them? [y/n]`, { default: 'y' });
-                        if (response === 'y') {
-                            await packageConfig.downloadPackageVersion(flags.verbose);
-                        }
-                        continue;
-                    }
-                    this.log(`... '${packageConfig.getPackageName()}' is up to date!`);
-                    continue;
-                }
-
-                this.log(
-                    `... '${packageConfig.getPackageName()}' is currently at ${packageConfig.version}, can be updated to ${latestVersion}`,
-                );
-                if (flags['dry-run']) {
-                    continue;
-                }
-                const response = await ux.prompt(`... Do you wish to continue? [y/n]`, { default: 'y' });
-                if (response === 'y') {
-                    packageConfig.version = latestVersion;
-                    await packageConfig.downloadPackageVersion(flags.verbose);
-                    projectConfig.write();
-                }
-            } catch (e) {
-                this.error(`Error during upgrade: '${e}'`);
-            }
+        if (!projectConfigLock) {
+            throw new Error(`No .velocitas-lock.json found. Please 'velocitas init' first!`);
         }
-        if (!projectConfig.cliVersion) {
-            projectConfig.cliVersion = `v${this.config.version}`;
+
+        this.log(`Checking .velocitas.json for updates!`);
+        const projectConfig = ProjectConfig.read(`v${this.config.version}`, undefined, true);
+
+        let isAnyPackageUpdated: boolean = false;
+        try {
+            for (const packageConfig of projectConfig.getPackages()) {
+                const isPackageUpdated = await this.updatePackageIfAvailable(packageConfig, projectConfig, projectConfigLock!, flags);
+                if (isPackageUpdated) {
+                    isAnyPackageUpdated = true;
+                }
+            }
+            if (isAnyPackageUpdated && !flags.init) {
+                this.log("Update available: Call 'velocitas init'");
+            }
+        } catch (error) {
+            this.error(`Error during upgrade: '${error}'`);
+        }
+        if (flags.init && isAnyPackageUpdated) {
+            const commandArgs = flags.verbose ? ['-v'] : [];
+            await Init.run(commandArgs);
+        }
+    }
+
+    async updatePackageIfAvailable(
+        packageConfig: PackageConfig,
+        projectConfig: ProjectConfig,
+        projectConfigLock: ProjectConfigLock,
+        flags: any,
+    ): Promise<boolean> {
+        const initialVersionSpecifier = packageConfig.version;
+        const availableVersions = await packageConfig.getPackageVersions();
+        const matchedVersion = flags['ignore-bounds']
+            ? getLatestVersion(availableVersions.all)
+            : resolveVersionIdentifier(availableVersions, packageConfig.version);
+
+        const lockedVersion = projectConfigLock.findVersion(packageConfig.repo);
+        const packageStatus = lockedVersion === matchedVersion ? 'up to date!' : matchedVersion;
+        this.log(`... ${packageConfig.getPackageName()}:${lockedVersion} → ${packageStatus}`);
+
+        if (flags['dry-run'] || lockedVersion === matchedVersion) {
+            return false;
+        } else {
+            packageConfig.setPackageVersion(incrementVersionRange(initialVersionSpecifier, matchedVersion));
             projectConfig.write();
+            return true;
         }
     }
 }

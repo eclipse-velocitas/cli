@@ -17,7 +17,7 @@ import { mockFolders } from '../../utils/mockfs';
 
 describe('component list', () => {
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
         .command('component list')
@@ -31,12 +31,15 @@ describe('component list', () => {
 - id: 'core-test'
   description: 'Velocitas VApp written in Python'
   providedBy: test-package-main
+- id: 'test-extension-mandatory'
+  description: 'Mandatory extension for tests'
+  providedBy: test-package-main
 `;
             expect(ctx.stdout).to.equal(expected);
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
         .command(['component list', '-u'])
@@ -48,11 +51,11 @@ describe('component list', () => {
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
         .command(['component list', '-a'])
-        .it('lists unused components from all available packages', (ctx) => {
+        .it('lists components from all available packages', (ctx) => {
             const expected = `- id: 'test-runtime-local' [used]
   providedBy: test-runtime
 - id: 'test-runtime-deploy-local' [used]
@@ -63,6 +66,9 @@ describe('component list', () => {
   description: 'Velocitas VApp written in Python'
   providedBy: test-package-main
 - id: 'unused-component'
+  providedBy: test-package-main
+- id: 'test-extension-mandatory' [used]
+  description: 'Mandatory extension for tests'
   providedBy: test-package-main
 `;
             expect(ctx.stdout).to.equal(expected);

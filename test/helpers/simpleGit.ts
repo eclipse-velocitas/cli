@@ -38,7 +38,7 @@ export const simpleGitInstanceMock = (mockedNewVersionTag?: string) => {
         },
         tags: () => {
             if (mockedNewVersionTag) {
-                return { all: [mockedNewVersionTag] };
+                return { all: [mockedNewVersionTag, 'v1.1.1'] };
             }
             return { all: ['v1.1.1'] };
         },

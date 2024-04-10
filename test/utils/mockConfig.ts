@@ -19,16 +19,16 @@ export const velocitasConfigMock = {
     packages: [
         {
             repo: 'test-runtime',
-            version: 'v1.1.1',
+            version: 'v1.1.*',
             variables: { test: 'test' },
         },
         {
             repo: 'test-setup',
-            version: 'v1.1.1',
+            version: 'v1.1.*',
         },
         {
             repo: 'test-package-main',
-            version: 'v1.1.1',
+            version: 'v1.1.*',
         },
     ],
     components: [
@@ -44,11 +44,31 @@ export const velocitasConfigMock = {
         {
             id: 'core-test',
         },
+        {
+            id: 'test-extension-mandatory',
+        },
     ],
     variables: {
         appManifestPath: './app/AppManifest.json',
         githubRepoId: 'myRepo',
     },
+};
+
+export const velocitasConfigLockMock = {
+    packages: [
+        {
+            repo: 'test-runtime',
+            version: 'v1.1.1',
+        },
+        {
+            repo: 'test-setup',
+            version: 'v1.1.1',
+        },
+        {
+            repo: 'test-package-main',
+            version: 'v1.1.1',
+        },
+    ],
 };
 
 export const packageIndexMock: PackageAttributes[] = [
@@ -292,6 +312,12 @@ export const corePackageManifestMock = {
         },
         {
             id: 'unused-component',
+        },
+        {
+            id: 'test-extension-mandatory',
+            name: 'Mandatory Test Extension',
+            description: 'Mandatory extension for tests',
+            type: 'extension',
         },
     ],
 };

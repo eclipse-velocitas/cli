@@ -14,6 +14,7 @@
 
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { TagResult } from 'simple-git';
 import { CliFileSystem } from '../utils/fs-bridge';
 import { ComponentManifest } from './component';
 import { packageDownloader } from './package-downloader';
@@ -94,15 +95,22 @@ export class PackageConfig {
         return join(this.getPackageDirectoryWithVersion(), MANIFEST_FILE_NAME);
     }
 
-    async getPackageVersions(): Promise<string[]> {
+    setPackageVersion(version: string): void {
+        this.version = version;
+    }
+
+    async getPackageVersions(): Promise<TagResult> {
         try {
             const packageInformation = await packageDownloader(this).downloadPackage({ checkVersionOnly: true });
             const packageVersionTags = await packageInformation.tags();
-            return packageVersionTags.all;
+            return packageVersionTags;
         } catch (error) {
             console.log(error);
         }
-        return [];
+        return {
+            all: [],
+            latest: '',
+        };
     }
 
     async downloadPackageVersion(verbose?: boolean): Promise<void> {

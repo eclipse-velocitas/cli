@@ -15,10 +15,11 @@
 import { expect, test } from '@oclif/test';
 import * as gitModule from 'simple-git';
 import * as exec from '../../../src/modules/exec';
+import { ProjectConfigLock } from '../../../src/modules/project-config';
 import { CliFileSystem } from '../../../src/utils/fs-bridge';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
 import { velocitasConfigMock } from '../../utils/mockConfig';
-import { mockFolders, userHomeDir } from '../../utils/mockfs';
+import { installedCorePackage, installedRuntimePackage, installedSetupPackage, mockFolders, userHomeDir } from '../../utils/mockfs';
 
 describe('init', () => {
     test.do(() => {
@@ -30,22 +31,19 @@ describe('init', () => {
         .command(['init'])
         .it('downloads packages from preconfigured velocitas.json', (ctx) => {
             expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
-            expect(ctx.stdout).to.contain(
-                `... Downloading package: '${velocitasConfigMock.packages[0].repo}:${velocitasConfigMock.packages[0].version}'`,
-            );
-            expect(ctx.stdout).to.contain(
-                `... Downloading package: '${velocitasConfigMock.packages[1].repo}:${velocitasConfigMock.packages[1].version}'`,
-            );
+            expect(ctx.stdout).to.contain(`... Downloading package: '${installedRuntimePackage.repo}:${installedRuntimePackage.version}'`);
+            expect(ctx.stdout).to.contain(`... Downloading package: '${installedSetupPackage.repo}:${installedRuntimePackage.version}'`);
             expect(
                 CliFileSystem.existsSync(
-                    `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}/${velocitasConfigMock.packages[0].version}`,
+                    `${userHomeDir}/.velocitas/packages/${installedRuntimePackage.repo}/${installedRuntimePackage.version}`,
                 ),
             ).to.be.true;
             expect(
                 CliFileSystem.existsSync(
-                    `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}/${velocitasConfigMock.packages[1].version}`,
+                    `${userHomeDir}/.velocitas/packages/${installedSetupPackage.repo}/${installedSetupPackage.version}`,
                 ),
             ).to.be.true;
+            expect(ProjectConfigLock.isAvailable()).to.be.true;
         });
 
     test.do(() => {
@@ -56,30 +54,40 @@ describe('init', () => {
         .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
         .command(['init', '-v'])
         .it('skips downloading because package is already installed', (ctx) => {
-            console.error(ctx.stdout);
             expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
             expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[0].repo}:${velocitasConfigMock.packages[0].version}' already initialized.`,
+                `... Resolved '${installedRuntimePackage.repo}:${velocitasConfigMock.packages[0].version}' to version: '${installedRuntimePackage.version}'`,
             );
+            expect(ctx.stdout).to.contain(`... '${installedRuntimePackage.repo}:${installedRuntimePackage.version}' already installed.`);
             expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[1].repo}:${velocitasConfigMock.packages[1].version}' already initialized.`,
+                `... Resolved '${installedSetupPackage.repo}:${velocitasConfigMock.packages[1].version}' to version: '${installedSetupPackage.version}'`,
             );
+            expect(ctx.stdout).to.contain(`... '${installedSetupPackage.repo}:${installedSetupPackage.version}' already installed.`);
+            expect(ctx.stdout).to.contain(
+                `... Resolved '${installedCorePackage.repo}:${velocitasConfigMock.packages[2].version}' to version: '${installedCorePackage.version}'`,
+            );
+            expect(ctx.stdout).to.contain(`... '${installedCorePackage.repo}:${installedCorePackage.version}' already installed.`);
             expect(
                 CliFileSystem.existsSync(
-                    `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}/${velocitasConfigMock.packages[0].version}`,
+                    `${userHomeDir}/.velocitas/packages/${installedRuntimePackage.repo}/${installedRuntimePackage.version}`,
                 ),
             ).to.be.true;
             expect(
                 CliFileSystem.existsSync(
-                    `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}/${velocitasConfigMock.packages[1].version}`,
+                    `${userHomeDir}/.velocitas/packages/${installedSetupPackage.repo}/${installedSetupPackage.version}`,
                 ),
             ).to.be.true;
+            expect(
+                CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${installedCorePackage.repo}/${installedCorePackage.version}`),
+            ).to.be.true;
+            expect(ProjectConfigLock.isAvailable()).to.be.true;
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true, appManifest: false });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true, appManifest: false });
     })
         .stdout()
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
         .command(['init', '-v', '--no-hooks'])
         .it('should log warning when no AppManifest.json is found', (ctx) => {
             console.error(ctx.stdout);
@@ -97,10 +105,11 @@ describe('init', () => {
                 '... Directory is no velocitas project. Creating .velocitas.json at the root of your repository.',
             );
             expect(CliFileSystem.existsSync(`${process.cwd()}/.velocitas.json`)).to.be.true;
+            expect(ProjectConfigLock.isAvailable()).to.be.true;
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
         .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))

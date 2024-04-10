@@ -31,7 +31,7 @@ Once created from either template or any other means of project creation, your n
 
 This is where the CLI comes in - it manages everything in your repo which is not related to your _Vehicle App_'s source code as packages which are maintained by the _Velocitas_ team. The CLI allows you to download the latest versions and integrate the latest changes with ease.
 
-It also comes on a mix and match basis: You need more than the native, default runtime? Simply add the kubernetes runtime to your project. Ever want to migrate from Github to Gitee? Simply switch packages.
+It also comes on a mix and match basis: You need more than the native, default runtime? Simply add the Kanto runtime to your project. Ever want to migrate from Github to Gitee? Simply switch packages.
 
 This is enabled by 3 main features the CLI provides:
 
@@ -59,7 +59,7 @@ This file is maintained by velocitas CLI, do not modify manually. Change setting
 
 - OS Recommendation is e.g. Ubuntu >= 22.04
 - python3 (If not default in your environment create a symlink or use `python-is-python3`)
-- `wget`, `dapr`, `build-essential`, `glibc`, `git` need to be installed
+- `wget`, `build-essential`, `glibc`, `git` need to be installed
 
 ## Project configuration
 
@@ -69,11 +69,11 @@ An exemplary project configuration (`.velocitas.json`) looks like this:
 {
   "packages": [
     {
-      "name": "package-A",
+      "repo": "package-A",
       "version": "v1.0.0"
     },
     {
-      "name": "package-B",
+      "repo": "package-B",
       "version": "v2.3.1-dev"
     }
   ],
@@ -85,7 +85,7 @@ An exemplary project configuration (`.velocitas.json`) looks like this:
 }
 ```
 
-As mentioned previously, a package simply is a git repository. The `name` attribute of a package is used to identify the git repository which holds the package. `name` is currently resolved to `https://github.com/eclipse-velocitas/<name>`. In a future feature addition, we will allow arbitrary git repository URLs in the name field. The `version` attribute specifies a tag, a branch or a SHA of the repository.
+As mentioned previously, a package simply is a git repository. The `repo` attribute of a package is used to identify the git repository which holds the package. `repo` is currently resolved to `https://github.com/eclipse-velocitas/<name>`. Alternatively, you can also supply a fully qualified Git repo URL e.g. `https://<your-host>/<your-repo>.git` or `git@<your-host>/<your-repo>.git`. Credentials for HTTPs and SSH based git repos are provided by your local git configuration (CLI is using Git under the hood). The `version` attribute specifies a tag, a branch or a SHA of the repository.
 
 The `variables` block holds user configured values for the packages and their contained components. It is a global variable definition. Should two components share the same variable name, both can be set with one line in this global block. Package-wide or component-wide variable configuration to avoid name clashes is also possible.
 
@@ -277,7 +277,7 @@ DESCRIPTION
   Executes a script contained in one of your installed components.
 
 EXAMPLES
-  $ velocitas exec devenv-runtime-local run-mosquitto
+  $ velocitas exec runtime-local up
   Executing script...
 ```
 
@@ -321,12 +321,12 @@ DESCRIPTION
 
 EXAMPLES
   $ velocitas init
-  Initializing Velocitas Vehicle App!
-  Velocitas project found!
-  ... 'devenv-runtime-local:v1.0.11' already initialized.
-  ... 'devenv-runtime-k3d:v1.0.5' already initialized.
-  ... 'devenv-github-workflows:v1.0.1' already initialized.
-  ... 'devenv-github-templates:v1.0.1' already initialized.
+  Initializing Velocitas packages ...
+  ... Downloading package: 'pkg-velocitas-main:vx.x.x'
+  ... Downloading package: 'devenv-devcontainer-setup:vx.x.x'
+  ... Downloading package: 'devenv-runtimes:vx.x.x'
+  ... Downloading package: 'devenv-github-templates:vx.x.x'
+  ... Downloading package: 'devenv-github-workflows:vx.x.x'
 ```
 
 _See code: [src/commands/init/index.ts](src/commands/init/index.ts)_
@@ -349,19 +349,19 @@ DESCRIPTION
   Prints information about packages
 
 EXAMPLES
-  $ velocitas package devenv-runtime-local
-  devenv-runtime-local
-      version: v1.0.12
-      components:
-            - id: runtime-local
-              type: runtime
-              variables:
-                      name: myVar
-                      type: string
-                      description: some basic description
-                      required: false
-  $ velocitas component --get-path devenv-runtime-local
-  /home/vscode/.velocitas/packages/devenv-runtime-local/v1.0.12
+  $ velocitas package devenv-runtimes
+  devenv-runtimes:
+    version: v3.0.0
+    components:
+      - id: runtime-local
+        variables:
+        - runtimeFilePath:
+            type: string
+            description: "Path to the file describing your custom runtime configuration."
+            required: false
+            default: runtime.json
+  $ velocitas package --get-path devenv-runtimes
+  /home/vscode/.velocitas/packages/devenv-runtimes/v3.0.0
 ```
 
 _See code: [src/commands/package/index.ts](src/commands/package/index.ts)_
@@ -392,22 +392,25 @@ Updates Velocitas components.
 
 ```
 USAGE
-  $ velocitas upgrade [--dry-run] [-v]
+  $ velocitas upgrade [--dry-run] [--ignore-bounds] [--init] [-v]
 
 FLAGS
-  -v, --verbose  Enable verbose logging
-  --dry-run      Check which packages can be upgraded
+  -v, --verbose    Enable verbose logging
+  --dry-run        Check which packages can be upgraded
+  --ignore-bounds  Ignores specified version ranges and will result in upgrading to the latest available semantic version
+  --init           Initializes components after upgrading them.
 
 DESCRIPTION
   Updates Velocitas components.
 
 EXAMPLES
   $ velocitas upgrade
-  Checking for updates!
-  ... 'devenv-runtime-local' is up to date!
-  ... 'devenv-runtime-k3d' is up to date!
-  ... 'devenv-github-workflows' is up to date!
-  ... 'devenv-github-templates' is up to date!
+  Checking .velocitas.json for updates!
+  ... pkg-velocitas-main:vx.x.x → up to date!
+  ... devenv-devcontainer-setup:vx.x.x → up to date!
+  ... devenv-runtimes:vx.x.x → vx.x.x
+  ... devenv-github-templates:vx.x.x → up to date!
+  ... devenv-github-workflows:vx.x.x → up to date!
 ```
 
 _See code: [src/commands/upgrade/index.ts](src/commands/upgrade/index.ts)_

@@ -127,6 +127,11 @@ export class MockFileSystem implements IFileSystem, IFileSystemTests {
 
     readFileSync(path: fs.PathOrFileDescriptor): string {
         const filePath = path.toString().startsWith('./') ? join(cwd(), path.toString()) : path.toString();
+        if (this._fileSystemObj[filePath] === undefined) {
+            const error: NodeJS.ErrnoException = new Error('ENOENT: no such file or directory');
+            error.code = 'ENOENT';
+            throw error;
+        }
         return this._fileSystemObj[filePath];
     }
 

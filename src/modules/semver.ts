@@ -12,7 +12,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { gt, SemVer, valid } from 'semver';
+import { SemVer, gt, maxSatisfying, satisfies, valid } from 'semver';
+import { TagResult } from 'simple-git';
 
 export function getLatestVersion(versions: string[]): string {
     let latestVersion: SemVer | undefined = undefined;
@@ -36,4 +37,42 @@ export function getLatestVersion(versions: string[]): string {
     }
 
     return latestVersion.raw;
+}
+
+export function resolveVersionIdentifier(versions: TagResult, versionIdentifier: string): string {
+    const branchPrefix = '@';
+    if (versionIdentifier.startsWith(branchPrefix)) {
+        return versionIdentifier.substring(1);
+    }
+
+    if (versionIdentifier === 'latest') {
+        return versions.latest || getLatestVersion(versions.all);
+    }
+
+    const matchedVersion = maxSatisfying(versions.all, versionIdentifier);
+
+    if (matchedVersion === null) {
+        throw new Error(
+            `Can't find matching version for ${versionIdentifier}. Prefix with '${branchPrefix}' for a branch or use a valid semantic version.`,
+        );
+    }
+
+    return matchedVersion;
+}
+
+export function incrementVersionRange(versionSpecifier: string, matchedVersion: string) {
+    if (!satisfies(matchedVersion, versionSpecifier)) {
+        return matchedVersion;
+    }
+
+    if (
+        versionSpecifier.includes('*') ||
+        versionSpecifier.includes('x') ||
+        versionSpecifier.startsWith('^') ||
+        versionSpecifier.startsWith('~')
+    ) {
+        return versionSpecifier;
+    }
+
+    return matchedVersion;
 }

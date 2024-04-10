@@ -28,10 +28,10 @@ describe('CLI command', () => {
             spawnSync(VELOCITAS_PROCESS, ['init']);
         });
 
-        it('should be able to exec all exposed program specs of runtime-local', async () => {
-            const packageOutput = spawnSync(VELOCITAS_PROCESS, ['package', 'devenv-runtime-local'], { encoding: DEFAULT_BUFFER_ENCODING });
+        it('should be able to exec all exposed program specs of runtimes', async () => {
+            const packageOutput = spawnSync(VELOCITAS_PROCESS, ['package', 'devenv-runtimes'], { encoding: DEFAULT_BUFFER_ENCODING });
             const parsedPackageOutput = yaml.parse(packageOutput.stdout.toString());
-            const runtimeLocalComponent = parsedPackageOutput['devenv-runtime-local'].components.find(
+            const runtimeLocalComponent = parsedPackageOutput['devenv-runtimes'].components.find(
                 (component: any) => component.id === 'runtime-local',
             );
             let spawnSuccesful = false;

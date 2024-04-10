@@ -25,6 +25,7 @@
 |semver|7.6.0|ISC|
 |shx|0.3.4|MIT|
 |simple-git|3.23.0|unknown|
+|sinon|17.0.1|MIT<br/>New BSD|
 |ts-node|10.9.2|MIT|
 |typescript|5.4.3|Apache 2.0|
 |velocitas-cli|0.0.0|Apache 2.0|

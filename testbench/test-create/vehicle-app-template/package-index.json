@@ -229,28 +229,6 @@
                 "parameters": []
             },
             {
-                "id": "runtime-k3d",
-                "type": "extension",
-                "name": "K3D Runtime",
-                "description": "Component for kubernetes runtime",
-                "mandatory": true,
-                "compatibleCores": [
-                    "vapp-core-python"
-                ],
-                "parameters": []
-            },
-            {
-                "id": "deployment-k3d",
-                "type": "extension",
-                "name": "K3D Runtime",
-                "description": "Component for kubernetes runtime deployment",
-                "mandatory": true,
-                "compatibleCores": [
-                    "vapp-core-python"
-                ],
-                "parameters": []
-            },
-            {
                 "id": "runtime-kanto",
                 "type": "extension",
                 "name": "Kanto Runtime",

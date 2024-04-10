@@ -19,13 +19,15 @@ import { CliFileSystem } from '../utils/fs-bridge';
 import { DEFAULT_APP_MANIFEST_PATH } from './app-manifest';
 import { ComponentConfig, ComponentContext } from './component';
 import { mapReplacer } from './helpers';
-import { PackageConfig } from './package';
+import { PackageConfig, PackageConfigAttributes } from './package';
 import { PackageIndex } from './package-index';
 import { getLatestVersion } from './semver';
 import { VariableCollection } from './variables';
 
 export const DEFAULT_CONFIG_FILE_NAME = '.velocitas.json';
+export const DEFAULT_CONFIG_LOCKFILE_NAME = '.velocitas-lock.json';
 export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), DEFAULT_CONFIG_FILE_NAME);
+export const DEFAULT_CONFIG_LOCKFILE_PATH = resolve(cwd(), DEFAULT_CONFIG_LOCKFILE_NAME);
 
 export interface ProjectConfigOptions {
     packages: PackageConfig[];
@@ -66,8 +68,9 @@ export class ProjectConfig {
         this.cliVersion = config?.cliVersion ? config.cliVersion : cliVersion;
     }
 
-    static read(cliVersion: string, path: PathLike = DEFAULT_CONFIG_FILE_PATH): ProjectConfig {
+    static read(cliVersion: string, path: PathLike = DEFAULT_CONFIG_FILE_PATH, ignoreLock: boolean = false): ProjectConfig {
         let config: ProjectConfig;
+        let projectConfigLock: ProjectConfigLock | null = null;
         try {
             config = new ProjectConfig(cliVersion, JSON.parse(CliFileSystem.readFileSync(path as string)));
         } catch (error) {
@@ -78,9 +81,16 @@ export class ProjectConfig {
             config._variables = new Map(Object.entries(config._variables));
         }
 
+        if (!ignoreLock && ProjectConfigLock.isAvailable()) {
+            projectConfigLock = ProjectConfigLock.read();
+        }
+
         for (let packageConfig of config._packages) {
             if (packageConfig.variables) {
                 packageConfig.variables = new Map(Object.entries(packageConfig.variables));
+            }
+            if (projectConfigLock) {
+                packageConfig.version = projectConfigLock.findVersion(packageConfig.repo);
             }
         }
 
@@ -109,7 +119,7 @@ export class ProjectConfig {
         for (const usedPackageRepo of usedPackageRepos) {
             const packageConfig = new PackageConfig({ repo: usedPackageRepo, version: '' });
             const versions = await packageConfig.getPackageVersions();
-            const latestVersion = getLatestVersion(versions);
+            const latestVersion = getLatestVersion(versions.all);
 
             packageConfig.repo = usedPackageRepo;
             packageConfig.version = latestVersion;
@@ -254,5 +264,72 @@ export class ProjectConfig {
 
     getVariableCollection(componentContext: ComponentContext): VariableCollection {
         return VariableCollection.build(this.getComponents(), this.getVariableMappings(), componentContext);
+    }
+}
+
+export class ProjectConfigLock {
+    packages: PackageConfig[];
+
+    constructor(packages: PackageConfig[]) {
+        this.packages = packages;
+    }
+
+    static isAvailable = (path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH) => CliFileSystem.existsSync(path);
+
+    /**
+     * Reads the locked project configuration from file.
+     * @param path The path to the lock file. Defaults to DEFAULT_CONFIG_LOCKFILE_PATH if not provided.
+     * @returns An instance of ProjectConfigLock if the lock file exists and is readable, or null if the file is not present.
+     * @throws Error if there's an issue reading the lock file other than it not being present.
+     */
+    static read(path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): ProjectConfigLock | null {
+        try {
+            const data = JSON.parse(CliFileSystem.readFileSync(path as string));
+            const packages = data.packages;
+            return new ProjectConfigLock(packages);
+        } catch (error: any) {
+            if (error.code === 'ENOENT') {
+                return null;
+            } else {
+                throw new Error(`Error reading lock file: ${error.message}`);
+            }
+        }
+    }
+
+    /**
+     * Writes the locked project configuration to file.
+     * @param projectConfig Project configuration to get the packages for the lock file.
+     * @param path Path of the file to write the configuration to. Defaults to DEFAULT_CONFIG_LOCKFILE_PATH.
+     */
+    static write(projectConfig: ProjectConfig, path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): void {
+        try {
+            const projectConfigOptions = {
+                packages: projectConfig.getPackages(),
+            };
+            const configString = JSON.stringify(projectConfigOptions, null, 4);
+            CliFileSystem.writeFileSync(path, configString);
+        } catch (error) {
+            throw new Error(`Error writing .velocitas-lock.json: ${error}`);
+        }
+    }
+
+    /**
+     * Finds the version of the specified package from the lock file.
+     * @param packageName Name of the package to find the version for.
+     * @returns The version of the specified package if found.
+     * @throws Error if the lock file is corrupted, the package is not found, or no version is stored for the package.
+     */
+    public findVersion(packageName: string): string {
+        const packageConfig = this.packages.find((pkg: PackageConfigAttributes) => pkg.repo === packageName);
+
+        if (!packageConfig) {
+            throw new Error(`Package '${packageName}' not found in lock file.`);
+        }
+
+        if (!packageConfig.version) {
+            throw new Error(`No version found for package '${packageName}' in lock file.`);
+        }
+
+        return packageConfig.version;
     }
 }

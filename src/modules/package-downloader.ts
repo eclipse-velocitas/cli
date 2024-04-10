@@ -16,7 +16,6 @@ import { posix as pathPosix } from 'node:path';
 import { CheckRepoActions, SimpleGit, simpleGit } from 'simple-git';
 import { CliFileSystem } from '../utils/fs-bridge';
 import { PackageConfig } from './package';
-import { getLatestVersion } from './semver';
 
 export class PackageDownloader {
     packageConfig: PackageConfig;
@@ -41,10 +40,6 @@ export class PackageDownloader {
     }
 
     async checkoutVersion(): Promise<void> {
-        if (this.packageConfig.version === 'latest') {
-            const repositoryVersions = await this.git.tags();
-            this.packageConfig.version = repositoryVersions.latest ? repositoryVersions.latest : getLatestVersion(repositoryVersions.all);
-        }
         await this.git.checkout(this.packageConfig.version);
     }
 

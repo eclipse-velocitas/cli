@@ -18,7 +18,7 @@ import { mockFolders } from '../../utils/mockfs';
 
 describe('sync', () => {
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
         .command(['sync'])

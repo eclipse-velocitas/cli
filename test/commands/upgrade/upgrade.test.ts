@@ -12,180 +12,195 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { ux } from '@oclif/core';
 import { expect, test } from '@oclif/test';
 import * as gitModule from 'simple-git';
-import * as packageModule from '../../../src/modules/package';
-import { ProjectConfigOptions } from '../../../src/modules/project-config';
-import { CliFileSystem } from '../../../src/utils/fs-bridge';
+// eslint-disable-next-line @typescript-eslint/naming-convention
+import Init from '../../../src/commands/init';
+import * as upgrade from '../../../src/commands/upgrade';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
-import { velocitasConfigMock } from '../../utils/mockConfig';
-import { mockFolders, userHomeDir } from '../../utils/mockfs';
+import { installedCorePackage, installedRuntimePackage, installedSetupPackage, mockFolders } from '../../utils/mockfs';
 
 const mockedNewVersionTag = 'v2.0.0';
+const mockedLowerVersionTag = 'v1.0.0';
+const mockedHigherVersionTag = 'v1.1.2';
 
-describe('upgrade', () => {
+describe('upgrade command', () => {
     test.do(() => {
         mockFolders({ velocitasConfig: true });
     })
         .stdout()
-        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
-        .command(['upgrade', '--dry-run'])
-        .it('checking for upgrades in dry-run - no installed sources found', (ctx) => {
-            expect(ctx.stdout).to.contain('Checking for updates!');
-            expect(ctx.stdout).to.contain(
-                `... No installed sources for ${velocitasConfigMock.packages[0].repo}:${velocitasConfigMock.packages[0].version} found`,
-            );
-            expect(ctx.stdout).to.contain(
-                `... No installed sources for ${velocitasConfigMock.packages[1].repo}:${velocitasConfigMock.packages[1].version} found`,
-            );
-        });
+        .command(['upgrade'])
+        .catch((err) => expect(err.message).to.match(/No .velocitas-lock.json found. Please 'velocitas init' first!/))
+        .it('should throw when no .velocitas-lock.json is present');
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true });
+    })
+        .stdout()
+        .stub(upgrade.default.prototype, 'updatePackageIfAvailable', (stub) => stub.throws())
+        .command(['upgrade'])
+        .catch((err) => expect(err.message).to.match(/Error during upgrade:/))
+        .it('should throw when updatePackageIfAvailable fails');
+
+    test.do(() => {
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true });
     })
         .stdout()
         .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
-        .command(['upgrade', '--dry-run'])
-        .it('checking for upgrades in dry-run - up to date', (ctx) => {
-            expect(ctx.stdout).to.contain('Checking for updates!');
-            expect(ctx.stdout).to.contain(`... '${velocitasConfigMock.packages[0].repo}' is up to date!`);
-            expect(ctx.stdout).to.contain(`... '${velocitasConfigMock.packages[1].repo}' is up to date!`);
+        .command(['upgrade'])
+        .it('should report configured package version specifiers are up to date', (ctx) => {
+            expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
+            expect(ctx.stdout).to.contain(`... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → up to date!`);
+            expect(ctx.stdout).to.contain(`... ${installedSetupPackage.repo}:${installedSetupPackage.version} → up to date!`);
+            expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → up to date!`);
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true });
     })
         .stdout()
         .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock(mockedNewVersionTag)))
-        .command(['upgrade', '--dry-run'])
-        .it('checking for upgrades in dry-run - can be updated', (ctx) => {
-            expect(ctx.stdout).to.contain('Checking for updates!');
-            expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[0].repo}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersionTag}`,
-            );
-            expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[1].repo}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersionTag}`,
-            );
+        .command(['upgrade'])
+        .it('should report configured package version specifiers are up to date based on configured version range', (ctx) => {
+            expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
+            expect(ctx.stdout).to.contain(`... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → up to date!`);
+            expect(ctx.stdout).to.contain(`... ${installedSetupPackage.repo}:${installedSetupPackage.version} → up to date!`);
+            expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → up to date!`);
         });
 
     test.do(() => {
-        mockFolders({ velocitasConfig: true });
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true });
     })
         .stdout()
-        .stub(ux, 'prompt', (stub) => stub.returns('y'))
-        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock(mockedHigherVersionTag)))
         .command(['upgrade'])
-        .it('checking for upgrades - no installed sources found - download', (ctx) => {
-            expect(ctx.stdout).to.contain('Checking for updates!');
+        .it('should upgrade configured package version specifiers based on configured version range', (ctx) => {
+            expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
             expect(ctx.stdout).to.contain(
-                `... No installed sources for ${velocitasConfigMock.packages[0].repo}:${velocitasConfigMock.packages[0].version} found`,
+                `... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → ${mockedHigherVersionTag}`,
             );
-            expect(ctx.stdout).to.contain(
-                `... No installed sources for ${velocitasConfigMock.packages[1].repo}:${velocitasConfigMock.packages[1].version} found`,
-            );
-            expect(CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}`)).to.be.true;
-            expect(CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}`)).to.be.true;
+            expect(ctx.stdout).to.contain(`... ${installedSetupPackage.repo}:${installedSetupPackage.version} → ${mockedHigherVersionTag}`);
+            expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → ${mockedHigherVersionTag}`);
+            expect(ctx.stdout).to.contain("Update available: Call 'velocitas init'");
         });
 
-    test.do(() => {
-        mockFolders({ velocitasConfig: true });
-    })
-        .stderr()
-        .stdout()
-        .stub(ux, 'prompt', (stub) => stub.returns('y'))
-        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
-        .stub(packageModule.PackageConfig.prototype, 'downloadPackageVersion', (stub) => stub.throws('Error in downloading package'))
-        .command(['upgrade'])
-        .catch((err) => expect(err.message).to.match(/Error in downloading package/))
-        .it('catches error during upgrade', (ctx) => {
-            expect(ctx.stdout).to.contain('Checking for updates!');
-            expect(ctx.stdout).to.contain(
-                `... No installed sources for ${velocitasConfigMock.packages[0].repo}:${velocitasConfigMock.packages[0].version} found`,
-            );
-        });
+    describe('with flags', () => {
+        test.do(() => {
+            mockFolders({ velocitasConfig: true, velocitasConfigLock: true });
+        })
+            .stdout()
+            .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock(mockedNewVersionTag)))
+            .command(['upgrade', '--ignore-bounds'])
+            .it('should upgrade configured package version specifiers to latest versions', (ctx) => {
+                expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
+                expect(ctx.stdout).to.contain(
+                    `... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → ${mockedNewVersionTag}`,
+                );
+                expect(ctx.stdout).to.contain(
+                    `... ${installedSetupPackage.repo}:${installedSetupPackage.version} → ${mockedNewVersionTag}`,
+                );
+                expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → ${mockedNewVersionTag}`);
+                expect(ctx.stdout).to.contain("Update available: Call 'velocitas init'");
+            });
 
-    test.do(() => {
-        mockFolders({ velocitasConfig: true });
-    })
-        .stdout()
-        .stub(ux, 'prompt', (stub) => stub.returns('n'))
-        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
-        .command(['upgrade'])
-        .it('checking for upgrades - no installed sources found - do nothing', (ctx) => {
-            expect(ctx.stdout).to.contain('Checking for updates!');
-            expect(ctx.stdout).to.contain(
-                `... No installed sources for ${velocitasConfigMock.packages[0].repo}:${velocitasConfigMock.packages[0].version} found`,
-            );
-            expect(ctx.stdout).to.contain(
-                `... No installed sources for ${velocitasConfigMock.packages[1].repo}:${velocitasConfigMock.packages[1].version} found`,
-            );
-            expect(CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}/_cache`)).to.be
-                .true;
-            expect(CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}/_cache`)).to.be
-                .true;
-            expect(
-                CliFileSystem.existsSync(
-                    `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}/${velocitasConfigMock.packages[0].version}`,
-                ),
-            ).to.be.false;
-            expect(
-                CliFileSystem.existsSync(
-                    `${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}/${velocitasConfigMock.packages[1].version}`,
-                ),
-            ).to.be.false;
-        });
+        test.do(() => {
+            mockFolders({ velocitasConfig: true });
+        })
+            .stdout()
+            .command(['upgrade', '--dry-run'])
+            .catch((err) => expect(err.message).to.match(/No .velocitas-lock.json found. Please 'velocitas init' first!/))
+            .it('should throw when no .velocitas-lock.json is present');
 
-    test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
-    })
-        .stdout()
-        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
-        .command(['upgrade'])
-        .it('checking for upgrades - up to date', (ctx) => {
-            expect(ctx.stdout).to.contain('Checking for updates!');
-            expect(ctx.stdout).to.contain(`... '${velocitasConfigMock.packages[0].repo}' is up to date!`);
-            expect(ctx.stdout).to.contain(`... '${velocitasConfigMock.packages[1].repo}' is up to date!`);
-        });
+        test.do(() => {
+            mockFolders({ velocitasConfig: true, velocitasConfigLock: true });
+        })
+            .stdout()
+            .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+            .command(['upgrade', '--dry-run'])
+            .it('should report configured package version specifiers are up to date', (ctx) => {
+                expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
+                expect(ctx.stdout).to.contain(`... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → up to date!`);
+                expect(ctx.stdout).to.contain(`... ${installedSetupPackage.repo}:${installedSetupPackage.version} → up to date!`);
+                expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → up to date!`);
+            });
 
-    test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
-    })
-        .stdout()
-        .stub(ux, 'prompt', (stub) => stub.returns('y'))
-        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock(mockedNewVersionTag)))
-        .command(['upgrade'])
-        .it('checking for upgrades - can be updated - download', (ctx) => {
-            expect(ctx.stdout).to.contain('Checking for updates!');
-            expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[0].repo}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersionTag}`,
-            );
-            expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[1].repo}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersionTag}`,
-            );
-            expect(CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}`)).to.be.true;
-            expect(CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}`)).to.be.true;
-            const newVelocitasConfig: ProjectConfigOptions = JSON.parse(CliFileSystem.readFileSync(`${process.cwd()}/.velocitas.json`));
-            expect(newVelocitasConfig.packages[0].version).to.be.equal(mockedNewVersionTag);
-            expect(newVelocitasConfig.packages[1].version).to.be.equal(mockedNewVersionTag);
-        });
+        test.do(() => {
+            mockFolders({ velocitasConfig: true, velocitasConfigLock: true });
+        })
+            .stdout()
+            .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock(mockedNewVersionTag)))
+            .command(['upgrade', '--dry-run'])
+            .it('should report configured package version specifiers are up to date based on configured version range', (ctx) => {
+                expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
+                expect(ctx.stdout).to.contain(`... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → up to date!`);
+                expect(ctx.stdout).to.contain(`... ${installedSetupPackage.repo}:${installedSetupPackage.version} → up to date!`);
+                expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → up to date!`);
+            });
 
-    test.do(() => {
-        mockFolders({ velocitasConfig: true, installedComponents: true });
-    })
-        .stdout()
-        .stub(ux, 'prompt', (stub) => stub.returns('n'))
-        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock(mockedNewVersionTag)))
-        .command(['upgrade'])
-        .it('checking for upgrades - can be updated - do nothing', (ctx) => {
-            expect(ctx.stdout).to.contain('Checking for updates!');
-            expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[0].repo}' is currently at ${velocitasConfigMock.packages[0].version}, can be updated to ${mockedNewVersionTag}`,
-            );
-            expect(ctx.stdout).to.contain(
-                `... '${velocitasConfigMock.packages[1].repo}' is currently at ${velocitasConfigMock.packages[1].version}, can be updated to ${mockedNewVersionTag}`,
-            );
-            expect(CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[0].repo}`)).to.be.true;
-            expect(CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${velocitasConfigMock.packages[1].repo}`)).to.be.true;
-        });
+        test.do(() => {
+            mockFolders({ velocitasConfig: true, velocitasConfigLock: true });
+        })
+            .stdout()
+            .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock(mockedHigherVersionTag)))
+            .command(['upgrade', '--dry-run'])
+            .it('should report configured package version specifiers can be updated based on configured version range', (ctx) => {
+                expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
+                expect(ctx.stdout).to.contain(
+                    `... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → ${mockedHigherVersionTag}`,
+                );
+                expect(ctx.stdout).to.contain(
+                    `... ${installedSetupPackage.repo}:${installedSetupPackage.version} → ${mockedHigherVersionTag}`,
+                );
+                expect(ctx.stdout).to.contain(
+                    `... ${installedCorePackage.repo}:${installedCorePackage.version} → ${mockedHigherVersionTag}`,
+                );
+            });
+
+        test.do(() => {
+            mockFolders({ velocitasConfig: true, velocitasConfigLock: true });
+        })
+            .stdout()
+            .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock(mockedLowerVersionTag)))
+            .command(['upgrade', '--dry-run', '--ignore-bounds'])
+            .it('should report configured package version specifiers are up to date according to all available versions', (ctx) => {
+                expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
+                expect(ctx.stdout).to.contain(`... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → up to date!`);
+                expect(ctx.stdout).to.contain(`... ${installedSetupPackage.repo}:${installedSetupPackage.version} → up to date!`);
+                expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → up to date!`);
+            });
+
+        test.do(() => {
+            mockFolders({ velocitasConfig: true, velocitasConfigLock: true });
+        })
+            .stdout()
+            .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock(mockedNewVersionTag)))
+            .command(['upgrade', '--dry-run', '--ignore-bounds'])
+            .it('should report configured package version specifiers can be updated according to all available versions', (ctx) => {
+                expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
+                expect(ctx.stdout).to.contain(
+                    `... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → ${mockedNewVersionTag}`,
+                );
+                expect(ctx.stdout).to.contain(
+                    `... ${installedSetupPackage.repo}:${installedSetupPackage.version} → ${mockedNewVersionTag}`,
+                );
+                expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → ${mockedNewVersionTag}`);
+            });
+        test.do(() => {
+            mockFolders({ velocitasConfig: true, velocitasConfigLock: true });
+        })
+            .stdout()
+            .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock(mockedNewVersionTag)))
+            .stub(Init.prototype, 'run', (stub) => stub.returns(''))
+            .command(['upgrade', '--ignore-bounds', '--init', '-v'])
+            .it('should upgrade configured package version specifiers and initialize new versions', (ctx) => {
+                expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
+                expect(ctx.stdout).to.contain(
+                    `... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → ${mockedNewVersionTag}`,
+                );
+                expect(ctx.stdout).to.contain(
+                    `... ${installedSetupPackage.repo}:${installedSetupPackage.version} → ${mockedNewVersionTag}`,
+                );
+                expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → ${mockedNewVersionTag}`);
+            });
+    });
 });
