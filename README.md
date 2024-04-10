@@ -31,7 +31,7 @@ Once created from either template or any other means of project creation, your n
 
 This is where the CLI comes in - it manages everything in your repo which is not related to your _Vehicle App_'s source code as packages which are maintained by the _Velocitas_ team. The CLI allows you to download the latest versions and integrate the latest changes with ease.
 
-It also comes on a mix and match basis: You need more than the native, default runtime? Simply add the kanto runtime to your project. Ever want to migrate from Github to Gitee? Simply switch packages.
+It also comes on a mix and match basis: You need more than the native, default runtime? Simply add the Kanto runtime to your project. Ever want to migrate from Github to Gitee? Simply switch packages.
 
 This is enabled by 3 main features the CLI provides:
 
