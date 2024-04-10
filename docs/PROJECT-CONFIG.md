@@ -86,7 +86,7 @@ The version of the package to use.
 | valid semantic version range | Specifies a range of valid semantic versions | `"v1.0.*", "~v1.0.0", "^v1.0.0", "v1"` |
 | tag | Refers to a specific tagged version | `"v1.0.0"` |
 | branch (prefixed with an '@') | Refers to the latest commit in a specific branch | `"@main"` |
-| latest | Refers to the latest available version | `"latest"` |
+| latest | Refers to the latest tag if available else to the highest version tag | `"latest"` |
 
 ### `variables` - Map[string, any]
 
