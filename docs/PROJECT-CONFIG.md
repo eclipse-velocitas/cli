@@ -76,7 +76,7 @@ Project-wide key-value variable configuration.
 
 ### `repo` - string
 
-The name of the package or URL to the package git repository. A simple name is currently resolved to `https://github.com/eclipse-velocitas/<name>` otherwise e.g. `https://github.com/OWNER/REPO.git` or `git@github.com/OWNER/REPO.git` is supported.
+The name of the package or URL to the package git repository. A simple name is currently resolved to `https://github.com/eclipse-velocitas/<name>`. Alternatively, you can also supply a fully qualified Git repo URL e.g. `https://<your-host>/<your-repo>.git` or `git@<your-host>/<your-repo>.git`. Credentials for HTTPs and SSH based git repos are provided by your local git configuration (CLI is using Git under the hood).
 
 ### `version` - string
 

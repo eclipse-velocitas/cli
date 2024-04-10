@@ -85,7 +85,7 @@ An exemplary project configuration (`.velocitas.json`) looks like this:
 }
 ```
 
-As mentioned previously, a package simply is a git repository. The `repo` attribute of a package is used to identify the git repository which holds the package. `repo` is currently resolved to `https://github.com/eclipse-velocitas/<name>` otherwise e.g. `https://github.com/OWNER/REPO.git` or `git@github.com/OWNER/REPO.git` is supported. The `version` attribute specifies a tag, a branch or a SHA of the repository.
+As mentioned previously, a package simply is a git repository. The `repo` attribute of a package is used to identify the git repository which holds the package. `repo` is currently resolved to `https://github.com/eclipse-velocitas/<name>`. Alternatively, you can also supply a fully qualified Git repo URL e.g. `https://<your-host>/<your-repo>.git` or `git@<your-host>/<your-repo>.git`. Credentials for HTTPs and SSH based git repos are provided by your local git configuration (CLI is using Git under the hood). The `version` attribute specifies a tag, a branch or a SHA of the repository.
 
 The `variables` block holds user configured values for the packages and their contained components. It is a global variable definition. Should two components share the same variable name, both can be set with one line in this global block. Package-wide or component-wide variable configuration to avoid name clashes is also possible.
 
