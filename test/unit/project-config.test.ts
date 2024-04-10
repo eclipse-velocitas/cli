@@ -63,6 +63,9 @@ describe('project-config - module', () => {
     });
     describe('.velocitas-lock.json parsing', () => {
         it('should throw an error when .velocitas-lock.json is invalid.', () => {
+            expect(() => ProjectConfigLock.read('./.velocitasInvalid.json')).to.throw();
+        });
+        it('should be null when no .velocitas-lock.json is found.', () => {
             expect(ProjectConfigLock.read()).to.be.null;
         });
         it('should read the ProjectLockConfig when .velocitas-lock.json is valid.', () => {
