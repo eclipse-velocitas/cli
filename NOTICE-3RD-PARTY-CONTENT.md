@@ -27,7 +27,7 @@
 |simple-git|3.24.0|unknown|
 |sinon|17.0.1|MIT<br/>New BSD|
 |ts-node|10.9.2|MIT|
-|typescript|5.4.4Apache 2.0|
+|typescript|5.4.4|Apache 2.0|
 |velocitas-cli|0.0.0|Apache 2.0|
 |yaml|2.4.1|ISC|
 ## Workflows
@@ -38,7 +38,7 @@
 |actions/setup-node|v4|MIT License|
 |actions/upload-artifact|v4|MIT License|
 |docker/setup-qemu-action|v3|Apache License 2.0|
-|insightsengineering/coverage-action|v2|MIT License|
+|irongut/CodeCoverageSummary|v1.3.0|MIT License|
 |ncipollo/release-action|v1|MIT License|
 |pre-commit/action|v3.0.1|MIT License|
 |TriPSs/conventional-changelog-action|v5|MIT License|
