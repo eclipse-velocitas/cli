@@ -74,16 +74,16 @@ Project-wide key-value variable configuration.
 
 ## `PackageConfig`
 
-### `name` - string
+### `repo` - string
 
-The name of the package or URL to the package git repository. This field is currently resolved to `https://github.com/eclipse-velocitas/<name>`. In a future feature addition, we will allow arbitrary git repository URLs in the name field
+The name of the package or URL to the package git repository. A simple name is currently resolved to `https://github.com/eclipse-velocitas/<name>` otherwise e.g. `https://github.com/OWNER/REPO.git` is supported.
 
 ### `version` - string
 
 The version of the package to use.
 | Literal | Behaviour | Example |
 |---------|-----------|---------|
-| valid semantic version range | Specifies a range of valid semantic versions | `"v1.0.*", "~v1.0.0", "^v1.0.0", "v1"` |
+| valid semantic version range | [Follows semantic versioning](https://semver.org/) with [ranges](https://www.npmjs.com/package/semver#ranges) | `"v1.0.*", "~v1.0.0", "^v1.0.0", "v1"` |
 | tag | Refers to a specific tagged version | `"v1.0.0"` |
 | branch (prefixed with an '@') | Refers to the latest commit in a specific branch | `"@main"` |
 | latest | Refers to the latest tag if available else to the highest version tag | `"latest"` |

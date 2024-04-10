@@ -44,10 +44,9 @@ export default class Upgrade extends Command {
 
     async run(): Promise<void> {
         const { flags } = await this.parse(Upgrade);
-        let projectConfigLock: ProjectConfigLock | null = null;
-        try {
-            projectConfigLock = ProjectConfigLock.read();
-        } catch (error) {
+        let projectConfigLock: ProjectConfigLock | null = ProjectConfigLock.read();
+
+        if (!projectConfigLock) {
             throw new Error(`No .velocitas-lock.json found. Please 'velocitas init' first!`);
         }
 

@@ -69,11 +69,11 @@ An exemplary project configuration (`.velocitas.json`) looks like this:
 {
   "packages": [
     {
-      "name": "package-A",
+      "repo": "package-A",
       "version": "v1.0.0"
     },
     {
-      "name": "package-B",
+      "repo": "package-B",
       "version": "v2.3.1-dev"
     }
   ],
@@ -85,7 +85,7 @@ An exemplary project configuration (`.velocitas.json`) looks like this:
 }
 ```
 
-As mentioned previously, a package simply is a git repository. The `name` attribute of a package is used to identify the git repository which holds the package. `name` is currently resolved to `https://github.com/eclipse-velocitas/<name>`. In a future feature addition, we will allow arbitrary git repository URLs in the name field. The `version` attribute specifies a tag, a branch or a SHA of the repository.
+As mentioned previously, a package simply is a git repository. The `repo` attribute of a package is used to identify the git repository which holds the package. `repo` is currently resolved to `https://github.com/eclipse-velocitas/<name>` otherwise e.g. `https://github.com/OWNER/REPO.git` is supported. The `version` attribute specifies a tag, a branch or a SHA of the repository.
 
 The `variables` block holds user configured values for the packages and their contained components. It is a global variable definition. Should two components share the same variable name, both can be set with one line in this global block. Package-wide or component-wide variable configuration to avoid name clashes is also possible.
 
