@@ -3,20 +3,20 @@
 ## JavaScript
 | Dependency | Version | License |
 |:-----------|:-------:|--------:|
-|@oclif/core|3.25.3|MIT|
-|@oclif/test|3.2.6|MIT|
+|@oclif/core|3.26.2|MIT|
+|@oclif/test|3.2.8|MIT|
 |@types/chai|4.3.14|MIT|
 |@types/fs-extra|11.0.4|MIT|
 |@types/mocha|10.0.6|MIT|
-|@types/node|20.11.30|MIT|
-|@typescript-eslint/eslint-plugin|7.3.1|MIT|
-|@typescript-eslint/parser|7.3.1|unknown|
+|@types/node|20.12.7|MIT|
+|@typescript-eslint/eslint-plugin|7.6.0|MIT|
+|@typescript-eslint/parser|7.6.0|unknown|
 |@yao-pkg/pkg|5.11.5|MIT|
 |chai|4.4.1|MIT|
 |eslint|8.57.0|ISC<br/>MIT|
 |fs-extra|11.2.0|MIT|
 |inquirer|8.2.6|MIT|
-|mocha|10.3.0|ISC<br/>MIT|
+|mocha|10.4.0|ISC<br/>MIT|
 |node-pty|1.0.0|MIT|
 |nyc|15.1.0|ISC<br/>MIT|
 |prettier|3.2.5|Apache 2.0|
@@ -24,10 +24,10 @@
 |recursive-copy|2.0.14|ISC<br/>MIT|
 |semver|7.6.0|ISC|
 |shx|0.3.4|MIT|
-|simple-git|3.23.0|unknown|
+|simple-git|3.24.0|unknown|
 |sinon|17.0.1|MIT<br/>New BSD|
 |ts-node|10.9.2|MIT|
-|typescript|5.4.3|Apache 2.0|
+|typescript|5.4.4|Apache 2.0|
 |velocitas-cli|0.0.0|Apache 2.0|
 |yaml|2.4.1|ISC|
 ## Workflows
