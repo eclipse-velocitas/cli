@@ -118,4 +118,55 @@ describe('init', () => {
         .it('runs post-init hooks', (ctx) => {
             expect(ctx.stdout).to.contain(`... > Running post init hook for 'test-runtime-local'`);
         });
+
+    test.do(() => {
+        mockFolders({ velocitasConfig: true, packageIndex: true });
+    })
+        .stdout()
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
+        .command(['init', '--package', 'devenv-runtime'])
+        .it('adds a new entry to .velocitas.json if the package does not exist', (ctx) => {
+            expect(ctx.stdout).to.contain(`... Package 'devenv-runtime:v1.1.1' added to .velocitas.json`);
+        });
+
+    test.do(() => {
+        mockFolders({ velocitasConfig: true, packageIndex: true });
+    })
+        .stdout()
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
+        .command(['init', '--package', `${installedCorePackage.repo}`])
+        .it('downloads correctly the latest package if no version is specified', (ctx) => {
+            expect(ctx.stdout).to.contain(`... Downloading package: '${installedCorePackage.repo}:${installedCorePackage.version}'`);
+            expect(
+                CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${installedCorePackage.repo}/${installedCorePackage.version}`),
+            ).to.be.true;
+        });
+
+    test.do(() => {
+        mockFolders({ velocitasConfig: true, packageIndex: true });
+    })
+        .stdout()
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
+        .command(['init', '--package', `${installedCorePackage.repo}@${installedCorePackage.version}`])
+        .it('correctly downloads the defined package if a version is specified', (ctx) => {
+            expect(ctx.stdout).to.contain(`... Downloading package: '${installedCorePackage.repo}:${installedCorePackage.version}'`);
+            expect(
+                CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${installedCorePackage.repo}/${installedCorePackage.version}`),
+            ).to.be.true;
+        });
+
+    test.do(() => {
+        mockFolders({ velocitasConfig: true, packageIndex: true });
+    })
+        .stdout()
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
+        .command(['init', '--package', `${installedCorePackage.repo}@v10.5.2`])
+        .catch((err) => {
+            expect(err.message).to.contain(`Can't find matching version for v10.5.2.`);
+        })
+        .it('throws an error if an invalid version is specified', (ctx) => {});
 });

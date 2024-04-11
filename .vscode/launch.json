@@ -2,16 +2,28 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run tests",
+            "type": "node",
             "request": "launch",
-            "runtimeArgs": [
-                "test",
-            ],
+            "name": "Debug CLI - init all",
+            "cwd": "${workspaceFolder}/vehicle-app-repo",
+            "program": "${workspaceFolder}/bin/dev",
+            "args": ["init"]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug CLI - init with package and version",
+            "cwd": "${workspaceFolder}/vehicle-app-repo",
+            "program": "${workspaceFolder}/bin/dev",
+            "args": ["init", "-p", "devenv-runtimes@v3.0.0"]
+        },
+        {
+            "name": "Run tests",
+            "type": "node",
+            "request": "launch",
+            "runtimeArgs": ["test"],
             "runtimeExecutable": "npm",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "type": "node"
+            "skipFiles": ["<node_internals>/**"]
         }
     ]
 }
