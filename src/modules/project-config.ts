@@ -19,7 +19,7 @@ import { CliFileSystem } from '../utils/fs-bridge';
 import { DEFAULT_APP_MANIFEST_PATH } from './app-manifest';
 import { ComponentConfig, ComponentContext } from './component';
 import { mapReplacer } from './helpers';
-import { PackageConfig, PackageConfigAttributes } from './package';
+import { PackageConfig } from './package';
 import { PackageIndex } from './package-index';
 import { getLatestVersion } from './semver';
 import { VariableCollection } from './variables';
@@ -30,9 +30,9 @@ export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), DEFAULT_CONFIG_FILE_NAME)
 export const DEFAULT_CONFIG_LOCKFILE_PATH = resolve(cwd(), DEFAULT_CONFIG_LOCKFILE_NAME);
 
 export interface ProjectConfigOptions {
-    packages: PackageConfig[];
-    components?: ComponentConfig[];
-    variables: Map<string, any>;
+    packages: Map<string, any>;
+    components?: Set<string>;
+    variables?: Map<string, any>;
     cliVersion?: string;
 }
 
@@ -49,21 +49,14 @@ export class ProjectConfig {
     // version of the CLI used by the project
     cliVersion: string;
 
-    private static _parsePackageConfig(packages: PackageConfig[]): PackageConfig[] {
-        const configArray: PackageConfig[] = [];
-        packages.forEach((packageConfig: PackageConfig) => {
-            configArray.push(new PackageConfig(packageConfig));
-        });
-        return configArray;
-    }
     /**
      * Create a new project configuration.
      *
      * @param config The options to use when creating the confugration. May be undefined.
      */
     constructor(cliVersion: string, config?: ProjectConfigOptions) {
-        this._packages = config?.packages ? ProjectConfig._parsePackageConfig(config.packages) : this._packages;
-        this._components = config?.components ? config.components : this._components;
+        this._packages = config?.packages ? PackageConfig.parseMapToArray(config.packages) : this._packages;
+        this._components = config?.components ? ComponentConfig.parseSetToArray(config.components) : this._components;
         this._variables = config?.variables ? config.variables : this._variables;
         this.cliVersion = config?.cliVersion ? config.cliVersion : cliVersion;
     }
@@ -86,9 +79,7 @@ export class ProjectConfig {
         }
 
         for (let packageConfig of config._packages) {
-            if (packageConfig.variables) {
-                packageConfig.variables = new Map(Object.entries(packageConfig.variables));
-            }
+            ProjectConfig.parseVariables(config._variables, packageConfig);
             if (projectConfigLock) {
                 packageConfig.version = projectConfigLock.findVersion(packageConfig.repo);
             }
@@ -96,13 +87,26 @@ export class ProjectConfig {
 
         if (config._components) {
             for (let componentConfig of config._components) {
-                if (componentConfig.variables) {
-                    componentConfig.variables = new Map(Object.entries(componentConfig.variables));
-                }
+                componentConfig.parseVariables(config._variables);
             }
         }
 
         return config;
+    }
+
+    /**
+     * Parses project configuration variables and assigns them to the package configuration.
+     * @param projectConfigVariables Project configuration variables.
+     * @param packageConfig Package configuration to which the variables will be assigned.
+     */
+    // TODO: PLACE OF THIS FUNCTION TBD
+    static parseVariables(projectConfigVariables: Map<string, any>, packageConfig: PackageConfig): void {
+        for (const [variableKey, variableValue] of projectConfigVariables) {
+            if (variableKey.includes(packageConfig.repo)) {
+                const [parsedVariableKey] = variableKey.split('@');
+                packageConfig.variables?.set(parsedVariableKey, variableValue);
+            }
+        }
     }
 
     static isAvailable = (path: PathLike = DEFAULT_CONFIG_FILE_PATH) => CliFileSystem.existsSync(path);
@@ -131,6 +135,23 @@ export class ProjectConfig {
     }
 
     /**
+     * Creates a string out of the project configuration in format for the lock file.
+     * @returns A string for writing the ProjectConfigLock.
+     */
+    toLockString(): string {
+        const packagesObject: { [key: string]: string } = {};
+        this.getPackages().forEach((packageConfig: PackageConfig) => {
+            packagesObject[`${packageConfig.repo}`] = packageConfig.version;
+        });
+        const projectConfigOptions = {
+            packages: packagesObject,
+        };
+
+        const configString = `${JSON.stringify(projectConfigOptions, null, 4)}\n`;
+        return configString;
+    }
+
+    /**
      * Write the project configuration to file.
      *
      * @param path Path of the file to write the configuration to.
@@ -145,8 +166,8 @@ export class ProjectConfig {
         }
 
         const projectConfigOptions: ProjectConfigOptions = {
-            packages: this._packages,
-            components: componentsToSerialize,
+            packages: PackageConfig.parseArrayToMap(this._packages),
+            components: ComponentConfig.parseArrayToSet(componentsToSerialize),
             variables: this._variables,
             cliVersion: this.cliVersion,
         };
@@ -267,10 +288,10 @@ export class ProjectConfig {
     }
 }
 
-export class ProjectConfigLock {
-    packages: PackageConfig[];
+export class ProjectConfigLock implements ProjectConfigOptions {
+    packages: Map<string, any>;
 
-    constructor(packages: PackageConfig[]) {
+    constructor(packages: Map<string, any>) {
         this.packages = packages;
     }
 
@@ -285,7 +306,7 @@ export class ProjectConfigLock {
     static read(path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): ProjectConfigLock | null {
         try {
             const data = JSON.parse(CliFileSystem.readFileSync(path as string));
-            const packages = data.packages;
+            const packages = new Map(Object.entries(data.packages));
             return new ProjectConfigLock(packages);
         } catch (error: any) {
             if (error.code === 'ENOENT') {
@@ -303,11 +324,7 @@ export class ProjectConfigLock {
      */
     static write(projectConfig: ProjectConfig, path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): void {
         try {
-            const projectConfigOptions = {
-                packages: projectConfig.getPackages(),
-            };
-            const configString = JSON.stringify(projectConfigOptions, null, 4);
-            CliFileSystem.writeFileSync(path, configString);
+            CliFileSystem.writeFileSync(path, projectConfig.toLockString());
         } catch (error) {
             throw new Error(`Error writing .velocitas-lock.json: ${error}`);
         }
@@ -317,19 +334,13 @@ export class ProjectConfigLock {
      * Finds the version of the specified package from the lock file.
      * @param packageName Name of the package to find the version for.
      * @returns The version of the specified package if found.
-     * @throws Error if the lock file is corrupted, the package is not found, or no version is stored for the package.
+     * @throws Error if no package version is found.
      */
     public findVersion(packageName: string): string {
-        const packageConfig = this.packages.find((pkg: PackageConfigAttributes) => pkg.repo === packageName);
-
-        if (!packageConfig) {
+        const packageVersion = this.packages.get(packageName);
+        if (!packageVersion) {
             throw new Error(`Package '${packageName}' not found in lock file.`);
         }
-
-        if (!packageConfig.version) {
-            throw new Error(`No version found for package '${packageName}' in lock file.`);
-        }
-
-        return packageConfig.version;
+        return packageVersion;
     }
 }
