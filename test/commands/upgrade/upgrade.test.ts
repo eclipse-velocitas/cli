@@ -18,7 +18,8 @@ import * as gitModule from 'simple-git';
 import Init from '../../../src/commands/init';
 import * as upgrade from '../../../src/commands/upgrade';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
-import { installedCorePackage, installedRuntimePackage, installedSetupPackage, mockFolders } from '../../utils/mockfs';
+import { corePackageInfoMock, runtimePackageInfoMock, setupPackageInfoMock } from '../../utils/mockConfig';
+import { mockFolders } from '../../utils/mockfs';
 
 const mockedNewVersionTag = 'v2.0.0';
 const mockedLowerVersionTag = 'v1.0.0';
@@ -50,9 +51,9 @@ describe('upgrade command', () => {
         .command(['upgrade'])
         .it('should report configured package version specifiers are up to date', (ctx) => {
             expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
-            expect(ctx.stdout).to.contain(`... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → up to date!`);
-            expect(ctx.stdout).to.contain(`... ${installedSetupPackage.repo}:${installedSetupPackage.version} → up to date!`);
-            expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → up to date!`);
+            expect(ctx.stdout).to.contain(`... ${runtimePackageInfoMock.repo}:${runtimePackageInfoMock.resolvedVersion} → up to date!`);
+            expect(ctx.stdout).to.contain(`... ${setupPackageInfoMock.repo}:${setupPackageInfoMock.resolvedVersion} → up to date!`);
+            expect(ctx.stdout).to.contain(`... ${corePackageInfoMock.repo}:${corePackageInfoMock.resolvedVersion} → up to date!`);
         });
 
     test.do(() => {
@@ -63,9 +64,9 @@ describe('upgrade command', () => {
         .command(['upgrade'])
         .it('should report configured package version specifiers are up to date based on configured version range', (ctx) => {
             expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
-            expect(ctx.stdout).to.contain(`... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → up to date!`);
-            expect(ctx.stdout).to.contain(`... ${installedSetupPackage.repo}:${installedSetupPackage.version} → up to date!`);
-            expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → up to date!`);
+            expect(ctx.stdout).to.contain(`... ${runtimePackageInfoMock.repo}:${runtimePackageInfoMock.resolvedVersion} → up to date!`);
+            expect(ctx.stdout).to.contain(`... ${setupPackageInfoMock.repo}:${setupPackageInfoMock.resolvedVersion} → up to date!`);
+            expect(ctx.stdout).to.contain(`... ${corePackageInfoMock.repo}:${corePackageInfoMock.resolvedVersion} → up to date!`);
         });
 
     test.do(() => {
@@ -77,10 +78,14 @@ describe('upgrade command', () => {
         .it('should upgrade configured package version specifiers based on configured version range', (ctx) => {
             expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
             expect(ctx.stdout).to.contain(
-                `... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → ${mockedHigherVersionTag}`,
+                `... ${runtimePackageInfoMock.repo}:${runtimePackageInfoMock.resolvedVersion} → ${mockedHigherVersionTag}`,
             );
-            expect(ctx.stdout).to.contain(`... ${installedSetupPackage.repo}:${installedSetupPackage.version} → ${mockedHigherVersionTag}`);
-            expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → ${mockedHigherVersionTag}`);
+            expect(ctx.stdout).to.contain(
+                `... ${setupPackageInfoMock.repo}:${setupPackageInfoMock.resolvedVersion} → ${mockedHigherVersionTag}`,
+            );
+            expect(ctx.stdout).to.contain(
+                `... ${corePackageInfoMock.repo}:${corePackageInfoMock.resolvedVersion} → ${mockedHigherVersionTag}`,
+            );
             expect(ctx.stdout).to.contain("Update available: Call 'velocitas init'");
         });
 
@@ -94,12 +99,14 @@ describe('upgrade command', () => {
             .it('should upgrade configured package version specifiers to latest versions', (ctx) => {
                 expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
                 expect(ctx.stdout).to.contain(
-                    `... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → ${mockedNewVersionTag}`,
+                    `... ${runtimePackageInfoMock.repo}:${runtimePackageInfoMock.resolvedVersion} → ${mockedNewVersionTag}`,
                 );
                 expect(ctx.stdout).to.contain(
-                    `... ${installedSetupPackage.repo}:${installedSetupPackage.version} → ${mockedNewVersionTag}`,
+                    `... ${setupPackageInfoMock.repo}:${setupPackageInfoMock.resolvedVersion} → ${mockedNewVersionTag}`,
                 );
-                expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → ${mockedNewVersionTag}`);
+                expect(ctx.stdout).to.contain(
+                    `... ${corePackageInfoMock.repo}:${corePackageInfoMock.resolvedVersion} → ${mockedNewVersionTag}`,
+                );
                 expect(ctx.stdout).to.contain("Update available: Call 'velocitas init'");
             });
 
@@ -119,9 +126,9 @@ describe('upgrade command', () => {
             .command(['upgrade', '--dry-run'])
             .it('should report configured package version specifiers are up to date', (ctx) => {
                 expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
-                expect(ctx.stdout).to.contain(`... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → up to date!`);
-                expect(ctx.stdout).to.contain(`... ${installedSetupPackage.repo}:${installedSetupPackage.version} → up to date!`);
-                expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → up to date!`);
+                expect(ctx.stdout).to.contain(`... ${runtimePackageInfoMock.repo}:${runtimePackageInfoMock.resolvedVersion} → up to date!`);
+                expect(ctx.stdout).to.contain(`... ${setupPackageInfoMock.repo}:${setupPackageInfoMock.resolvedVersion} → up to date!`);
+                expect(ctx.stdout).to.contain(`... ${corePackageInfoMock.repo}:${corePackageInfoMock.resolvedVersion} → up to date!`);
             });
 
         test.do(() => {
@@ -132,9 +139,9 @@ describe('upgrade command', () => {
             .command(['upgrade', '--dry-run'])
             .it('should report configured package version specifiers are up to date based on configured version range', (ctx) => {
                 expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
-                expect(ctx.stdout).to.contain(`... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → up to date!`);
-                expect(ctx.stdout).to.contain(`... ${installedSetupPackage.repo}:${installedSetupPackage.version} → up to date!`);
-                expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → up to date!`);
+                expect(ctx.stdout).to.contain(`... ${runtimePackageInfoMock.repo}:${runtimePackageInfoMock.resolvedVersion} → up to date!`);
+                expect(ctx.stdout).to.contain(`... ${setupPackageInfoMock.repo}:${setupPackageInfoMock.resolvedVersion} → up to date!`);
+                expect(ctx.stdout).to.contain(`... ${corePackageInfoMock.repo}:${corePackageInfoMock.resolvedVersion} → up to date!`);
             });
 
         test.do(() => {
@@ -146,13 +153,13 @@ describe('upgrade command', () => {
             .it('should report configured package version specifiers can be updated based on configured version range', (ctx) => {
                 expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
                 expect(ctx.stdout).to.contain(
-                    `... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → ${mockedHigherVersionTag}`,
+                    `... ${runtimePackageInfoMock.repo}:${runtimePackageInfoMock.resolvedVersion} → ${mockedHigherVersionTag}`,
                 );
                 expect(ctx.stdout).to.contain(
-                    `... ${installedSetupPackage.repo}:${installedSetupPackage.version} → ${mockedHigherVersionTag}`,
+                    `... ${setupPackageInfoMock.repo}:${setupPackageInfoMock.resolvedVersion} → ${mockedHigherVersionTag}`,
                 );
                 expect(ctx.stdout).to.contain(
-                    `... ${installedCorePackage.repo}:${installedCorePackage.version} → ${mockedHigherVersionTag}`,
+                    `... ${corePackageInfoMock.repo}:${corePackageInfoMock.resolvedVersion} → ${mockedHigherVersionTag}`,
                 );
             });
 
@@ -164,9 +171,9 @@ describe('upgrade command', () => {
             .command(['upgrade', '--dry-run', '--ignore-bounds'])
             .it('should report configured package version specifiers are up to date according to all available versions', (ctx) => {
                 expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
-                expect(ctx.stdout).to.contain(`... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → up to date!`);
-                expect(ctx.stdout).to.contain(`... ${installedSetupPackage.repo}:${installedSetupPackage.version} → up to date!`);
-                expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → up to date!`);
+                expect(ctx.stdout).to.contain(`... ${runtimePackageInfoMock.repo}:${runtimePackageInfoMock.resolvedVersion} → up to date!`);
+                expect(ctx.stdout).to.contain(`... ${setupPackageInfoMock.repo}:${setupPackageInfoMock.resolvedVersion} → up to date!`);
+                expect(ctx.stdout).to.contain(`... ${corePackageInfoMock.repo}:${corePackageInfoMock.resolvedVersion} → up to date!`);
             });
 
         test.do(() => {
@@ -178,12 +185,14 @@ describe('upgrade command', () => {
             .it('should report configured package version specifiers can be updated according to all available versions', (ctx) => {
                 expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
                 expect(ctx.stdout).to.contain(
-                    `... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → ${mockedNewVersionTag}`,
+                    `... ${runtimePackageInfoMock.repo}:${runtimePackageInfoMock.resolvedVersion} → ${mockedNewVersionTag}`,
                 );
                 expect(ctx.stdout).to.contain(
-                    `... ${installedSetupPackage.repo}:${installedSetupPackage.version} → ${mockedNewVersionTag}`,
+                    `... ${setupPackageInfoMock.repo}:${setupPackageInfoMock.resolvedVersion} → ${mockedNewVersionTag}`,
                 );
-                expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → ${mockedNewVersionTag}`);
+                expect(ctx.stdout).to.contain(
+                    `... ${corePackageInfoMock.repo}:${corePackageInfoMock.resolvedVersion} → ${mockedNewVersionTag}`,
+                );
             });
         test.do(() => {
             mockFolders({ velocitasConfig: true, velocitasConfigLock: true });
@@ -195,12 +204,14 @@ describe('upgrade command', () => {
             .it('should upgrade configured package version specifiers and initialize new versions', (ctx) => {
                 expect(ctx.stdout).to.contain('Checking .velocitas.json for updates!');
                 expect(ctx.stdout).to.contain(
-                    `... ${installedRuntimePackage.repo}:${installedRuntimePackage.version} → ${mockedNewVersionTag}`,
+                    `... ${runtimePackageInfoMock.repo}:${runtimePackageInfoMock.resolvedVersion} → ${mockedNewVersionTag}`,
                 );
                 expect(ctx.stdout).to.contain(
-                    `... ${installedSetupPackage.repo}:${installedSetupPackage.version} → ${mockedNewVersionTag}`,
+                    `... ${setupPackageInfoMock.repo}:${setupPackageInfoMock.resolvedVersion} → ${mockedNewVersionTag}`,
                 );
-                expect(ctx.stdout).to.contain(`... ${installedCorePackage.repo}:${installedCorePackage.version} → ${mockedNewVersionTag}`);
+                expect(ctx.stdout).to.contain(
+                    `... ${corePackageInfoMock.repo}:${corePackageInfoMock.resolvedVersion} → ${mockedNewVersionTag}`,
+                );
             });
     });
 });

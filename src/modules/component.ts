@@ -96,40 +96,8 @@ export class ComponentConfig {
     // component-wide variable configuration
     variables: Map<string, any> = new Map<string, any>();
 
-    /**
-     * Converts an array of ComponentConfig objects into a Set of component IDs.
-     * @param componentConfig Array of ComponentConfig objects.
-     * @returns A Set containing the IDs of the components.
-     */
-    static parseArrayToSet(componentConfig: ComponentConfig[]): Set<string> {
-        return new Set(componentConfig.map((component: ComponentConfig) => component.id));
-    }
-
-    /**
-     * Converts a Set of component IDs into an array of ComponentConfig objects.
-     * @param components Set of component IDs.
-     * @returns An array of ComponentConfig objects.
-     */
-    static parseSetToArray(components: Set<string>): ComponentConfig[] {
-        return [...components].map((component: string) => new ComponentConfig(component));
-    }
-
     constructor(id: string) {
         this.id = id;
-    }
-
-    /**
-     * Parses configuration variables and assigns them to the ComponentConfig variables map.
-     * @param configVariables Map containing configuration variables.
-     */
-    // TODO: PLACE OF THIS FUNCTION TBD
-    parseVariables(configVariables: Map<string, any>): void {
-        for (const [variableKey, variableValue] of configVariables) {
-            if (variableKey.includes(this.id)) {
-                const [parsedVariableKey] = variableKey.split('@');
-                this.variables.set(parsedVariableKey, variableValue);
-            }
-        }
     }
 }
 

@@ -18,32 +18,23 @@ import { ProjectCache } from '../../src/modules/project-cache';
 import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/utils/fs-bridge';
 import {
     appManifestMock,
+    corePackageInfoMock,
     corePackageManifestMock,
     mockCacheContent,
     packageIndexMock,
+    runtimePackageInfoMock,
     runtimePackageManifestMock,
+    setupPackageInfoMock,
     setupPackageManifestMock,
     velocitasConfigLockMock,
     velocitasConfigMock,
 } from './mockConfig';
 
 export const userHomeDir = os.homedir();
-export const installedRuntimePackage = {
-    repo: velocitasConfigLockMock.packages[0].repo,
-    version: velocitasConfigLockMock.packages[0].version,
-};
-export const installedSetupPackage = {
-    repo: velocitasConfigLockMock.packages[1].repo,
-    version: velocitasConfigLockMock.packages[1].version,
-};
-export const installedCorePackage = {
-    repo: velocitasConfigLockMock.packages[2].repo,
-    version: velocitasConfigLockMock.packages[2].version,
-};
 
-const runtimePackagePath = `${userHomeDir}/.velocitas/packages/${installedRuntimePackage.repo}/${installedRuntimePackage.version}`;
-const setupPackagePath = `${userHomeDir}/.velocitas/packages/${installedSetupPackage.repo}/${installedSetupPackage.version}`;
-const corePackagePath = `${userHomeDir}/.velocitas/packages/${installedCorePackage.repo}/${installedCorePackage.version}`;
+const runtimePackagePath = `${userHomeDir}/.velocitas/packages/${runtimePackageInfoMock.repo}/${runtimePackageInfoMock.resolvedVersion}`;
+const setupPackagePath = `${userHomeDir}/.velocitas/packages/${setupPackageInfoMock.repo}/${setupPackageInfoMock.resolvedVersion}`;
+const corePackagePath = `${userHomeDir}/.velocitas/packages/${corePackageInfoMock.repo}/${setupPackageInfoMock.resolvedVersion}`;
 
 const velocitasConfig = `${cwd()}/.velocitas.json`;
 const velocitasConfigLock = `${cwd()}/.velocitas-lock.json`;

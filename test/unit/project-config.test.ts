@@ -28,10 +28,9 @@ describe('project-config - module', () => {
     const invalidProjectConfigPath = `${cwd()}/.velocitasInvalid.json`;
     before(() => {
         const mockFilesystem: MockFileSystemObj = {
-            [validProjectConfigPath]:
-                '{ "packages": [{"repo":"pkg1", "version": "v1.0.0"}], "components": [{"id": "comp1"}], "variables": {} }',
-            [validProjectConfigLockPath]: '{ "packages": [{"repo":"pkg1", "version": "v1.0.0"}] }',
-            [validProjectConfigNoCompsPath]: '{ "packages": [{"repo":"pkg1", "version": "v1.0.0"}], "variables": {} }',
+            [validProjectConfigPath]: '{ "packages": {"pkg1": "v1.0.0"}, "components": ["comp1"], "variables": {} }',
+            [validProjectConfigLockPath]: '{ "packages": {"pkg1": "v1.0.0"} }',
+            [validProjectConfigNoCompsPath]: '{ "packages": {"pkg1": "v1.0.0"}, "components": [], "variables": {} }',
             [invalidProjectConfigPath]: 'foo',
             [packageManifestPath]: '{ "components": [{"id": "comp1"}, {"id": "comp2"}]}',
         };

@@ -19,8 +19,9 @@ import * as exec from '../../../src/modules/exec';
 import { CoreComponent, ExtensionComponent } from '../../../src/modules/package-index';
 import { ProjectConfig } from '../../../src/modules/project-config';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
-import { packageIndexMock } from '../../utils/mockConfig';
-import { installedCorePackage, installedRuntimePackage, mockFolders } from '../../utils/mockfs';
+import { corePackageInfoMock, packageIndexMock, runtimePackageInfoMock } from '../../utils/mockConfig';
+import { mockFolders } from '../../utils/mockfs';
+
 const inquirer = require('inquirer');
 
 const TEST_APP_NAME = 'TestApp';
@@ -39,12 +40,12 @@ const TEST_EXPOSED_INTERFACE_PARAMETER_NAME_2 = TEST_COMPONENT_EXTENSION.paramet
 const TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_2 = TEST_COMPONENT_EXTENSION.parameters![1].default as string;
 
 const TEST_PACKAGE_URI = packageIndexMock[0].package;
-const TEST_PACKAGE_NAME = installedRuntimePackage.repo;
-const TEST_PACKAGE_VERSION = installedRuntimePackage.version;
+const TEST_PACKAGE_NAME = runtimePackageInfoMock.repo;
+const TEST_PACKAGE_VERSION = runtimePackageInfoMock.resolvedVersion;
 
 const TEST_MAIN_PACKAGE_URI = packageIndexMock[1].package;
-const TEST_MAIN_PACKAGE_NAME = installedCorePackage.repo;
-const TEST_MAIN_PACKAGE_VERSION = installedCorePackage.version;
+const TEST_MAIN_PACKAGE_NAME = corePackageInfoMock.repo;
+const TEST_MAIN_PACKAGE_VERSION = corePackageInfoMock.resolvedVersion;
 
 enum CoreOption {
     fromExample = 0,

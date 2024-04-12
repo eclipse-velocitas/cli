@@ -18,8 +18,8 @@ import * as exec from '../../../src/modules/exec';
 import { ProjectConfigLock } from '../../../src/modules/project-config';
 import { CliFileSystem } from '../../../src/utils/fs-bridge';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
-import { velocitasConfigMock } from '../../utils/mockConfig';
-import { installedCorePackage, installedRuntimePackage, installedSetupPackage, mockFolders, userHomeDir } from '../../utils/mockfs';
+import { corePackageInfoMock, runtimePackageInfoMock, setupPackageInfoMock } from '../../utils/mockConfig';
+import { mockFolders, userHomeDir } from '../../utils/mockfs';
 
 describe('init', () => {
     test.do(() => {
@@ -31,16 +31,20 @@ describe('init', () => {
         .command(['init'])
         .it('downloads packages from preconfigured velocitas.json', (ctx) => {
             expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
-            expect(ctx.stdout).to.contain(`... Downloading package: '${installedRuntimePackage.repo}:${installedRuntimePackage.version}'`);
-            expect(ctx.stdout).to.contain(`... Downloading package: '${installedSetupPackage.repo}:${installedRuntimePackage.version}'`);
+            expect(ctx.stdout).to.contain(
+                `... Downloading package: '${runtimePackageInfoMock.repo}:${runtimePackageInfoMock.resolvedVersion}'`,
+            );
+            expect(ctx.stdout).to.contain(
+                `... Downloading package: '${setupPackageInfoMock.repo}:${runtimePackageInfoMock.resolvedVersion}'`,
+            );
             expect(
                 CliFileSystem.existsSync(
-                    `${userHomeDir}/.velocitas/packages/${installedRuntimePackage.repo}/${installedRuntimePackage.version}`,
+                    `${userHomeDir}/.velocitas/packages/${runtimePackageInfoMock.repo}/${runtimePackageInfoMock.resolvedVersion}`,
                 ),
             ).to.be.true;
             expect(
                 CliFileSystem.existsSync(
-                    `${userHomeDir}/.velocitas/packages/${installedSetupPackage.repo}/${installedSetupPackage.version}`,
+                    `${userHomeDir}/.velocitas/packages/${setupPackageInfoMock.repo}/${setupPackageInfoMock.resolvedVersion}`,
                 ),
             ).to.be.true;
             expect(ProjectConfigLock.isAvailable()).to.be.true;
@@ -56,29 +60,33 @@ describe('init', () => {
         .it('skips downloading because package is already installed', (ctx) => {
             expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
             expect(ctx.stdout).to.contain(
-                `... Resolved '${installedRuntimePackage.repo}:${velocitasConfigMock.packages[0].version}' to version: '${installedRuntimePackage.version}'`,
+                `... Resolved '${runtimePackageInfoMock.repo}:${runtimePackageInfoMock.versionIdentifier}' to version: '${runtimePackageInfoMock.resolvedVersion}'`,
             );
-            expect(ctx.stdout).to.contain(`... '${installedRuntimePackage.repo}:${installedRuntimePackage.version}' already installed.`);
             expect(ctx.stdout).to.contain(
-                `... Resolved '${installedSetupPackage.repo}:${velocitasConfigMock.packages[1].version}' to version: '${installedSetupPackage.version}'`,
+                `... '${runtimePackageInfoMock.repo}:${runtimePackageInfoMock.resolvedVersion}' already installed.`,
             );
-            expect(ctx.stdout).to.contain(`... '${installedSetupPackage.repo}:${installedSetupPackage.version}' already installed.`);
             expect(ctx.stdout).to.contain(
-                `... Resolved '${installedCorePackage.repo}:${velocitasConfigMock.packages[2].version}' to version: '${installedCorePackage.version}'`,
+                `... Resolved '${setupPackageInfoMock.repo}:${setupPackageInfoMock.versionIdentifier}' to version: '${setupPackageInfoMock.resolvedVersion}'`,
             );
-            expect(ctx.stdout).to.contain(`... '${installedCorePackage.repo}:${installedCorePackage.version}' already installed.`);
+            expect(ctx.stdout).to.contain(`... '${setupPackageInfoMock.repo}:${setupPackageInfoMock.resolvedVersion}' already installed.`);
+            expect(ctx.stdout).to.contain(
+                `... Resolved '${corePackageInfoMock.repo}:${corePackageInfoMock.versionIdentifier}' to version: '${corePackageInfoMock.resolvedVersion}'`,
+            );
+            expect(ctx.stdout).to.contain(`... '${corePackageInfoMock.repo}:${corePackageInfoMock.resolvedVersion}' already installed.`);
             expect(
                 CliFileSystem.existsSync(
-                    `${userHomeDir}/.velocitas/packages/${installedRuntimePackage.repo}/${installedRuntimePackage.version}`,
+                    `${userHomeDir}/.velocitas/packages/${runtimePackageInfoMock.repo}/${runtimePackageInfoMock.resolvedVersion}`,
                 ),
             ).to.be.true;
             expect(
                 CliFileSystem.existsSync(
-                    `${userHomeDir}/.velocitas/packages/${installedSetupPackage.repo}/${installedSetupPackage.version}`,
+                    `${userHomeDir}/.velocitas/packages/${setupPackageInfoMock.repo}/${setupPackageInfoMock.resolvedVersion}`,
                 ),
             ).to.be.true;
             expect(
-                CliFileSystem.existsSync(`${userHomeDir}/.velocitas/packages/${installedCorePackage.repo}/${installedCorePackage.version}`),
+                CliFileSystem.existsSync(
+                    `${userHomeDir}/.velocitas/packages/${corePackageInfoMock.repo}/${corePackageInfoMock.resolvedVersion}`,
+                ),
             ).to.be.true;
             expect(ProjectConfigLock.isAvailable()).to.be.true;
         });

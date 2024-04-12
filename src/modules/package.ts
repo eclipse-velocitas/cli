@@ -52,29 +52,6 @@ export class PackageConfig {
     }
 
     /**
-     * Converts an array of PackageConfig objects into a Map with repository names as keys and version numbers as values.
-     * @param packageConfig Array of PackageConfig objects.
-     * @returns A Map containing repository names as keys and version numbers as values.
-     */
-    static parseArrayToMap(packageConfig: PackageConfig[]): Map<string, any> {
-        return new Map(packageConfig.map((pkg: PackageConfig) => [pkg.repo, pkg.version]));
-    }
-
-    /**
-     * Converts a Map with repository names as keys and version numbers as values into an array of PackageConfig objects.
-     * @param packages Map containing repository names as keys and version numbers as values.
-     * @returns An array of PackageConfig objects.
-     */
-    static parseMapToArray(packages: Map<string, any>): PackageConfig[] {
-        const configArray: PackageConfig[] = [];
-        const parsedPackages = new Map<string, any>(Object.entries(packages));
-        for (const [repoName, version] of parsedPackages) {
-            configArray.push(new PackageConfig({ repo: repoName, version: version }));
-        }
-        return configArray;
-    }
-
-    /**
      * Return the fully qualified URL to the package repository.
      * In case of Eclipse Velocitas repos which can be referenced by name only,
      * their Github URL is returned.
