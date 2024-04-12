@@ -71,10 +71,7 @@ export class VariableCollection {
 
         for (const [key, value] of this._variables.entries()) {
             const transformedKey = key.replaceAll('.', '_');
-            let transformedValue = value;
-            if (Array.isArray(value)) {
-                transformedValue = JSON.stringify(value);
-            }
+            const transformedValue = Array.isArray(value) ? JSON.stringify(value) : value;
             Object.assign(envVars, {
                 [transformedKey]: transformedValue,
             });
@@ -199,6 +196,9 @@ function verifyGivenVariables(
 
     for (const componentExposedVariable of variableDefinitions) {
         const configuredValue = configuredVars.get(componentExposedVariable.name);
+        const errorMsg = `'${componentExposedVariable.name}' has wrong type! Expected ${
+            componentExposedVariable.type
+        } but got ${typeof configuredValue}`;
         if (!configuredValue) {
             if (componentExposedVariable.default === undefined) {
                 missingVars.push(componentExposedVariable);
@@ -206,18 +206,10 @@ function verifyGivenVariables(
         } else {
             if (componentExposedVariable.type === 'array') {
                 if (!Array.isArray(configuredValue)) {
-                    wronglyTypedVars.push(
-                        `'${componentExposedVariable.name}' has wrong type! Expected ${
-                            componentExposedVariable.type
-                        } but got ${typeof configuredValue}`,
-                    );
+                    wronglyTypedVars.push(errorMsg);
                 }
             } else if (typeof configuredValue !== componentExposedVariable.type) {
-                wronglyTypedVars.push(
-                    `'${componentExposedVariable.name}' has wrong type! Expected ${
-                        componentExposedVariable.type
-                    } but got ${typeof configuredValue}`,
-                );
+                wronglyTypedVars.push(errorMsg);
             }
             configuredVars.delete(componentExposedVariable.name);
         }

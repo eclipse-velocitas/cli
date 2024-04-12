@@ -40,8 +40,8 @@ echo "myKey=myValue >> VELOCITAS_CACHE"
 print("myKey=myValue >> VELOCITAS_CACHE")
 ```
 
-#### array support
-The cache write supports array values as well. The elements need to be double quoted and comma separated.
+#### String array support
+The cache write supports string array values as well. The elements need to be double quoted and comma separated.
 
 Examples:
 
