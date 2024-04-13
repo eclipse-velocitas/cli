@@ -17,7 +17,7 @@
   ],
   "repository": "eclipse-velocitas/cli",
   "dependencies": {
-    "@oclif/core": "3.26.2",
+    "@oclif/core": "3.26.3",
     "fs-extra": "11.2.0",
     "inquirer": "8.2.6",
     "node-pty": "1.0.0",
