@@ -129,8 +129,8 @@ export class ProjectConfig {
         }
 
         const projectConfigAttributes = {
-            packages: ConfigFileParser.parsePackageConfigArrayToMap(this._packages),
-            components: ConfigFileParser.parseComponentConfigArrayToSet(componentsToSerialize),
+            packages: ConfigFileParser.toWritablePackageConfig(this._packages),
+            components: ConfigFileParser.toWritableComponentConfig(componentsToSerialize),
             variables: this._variables,
             cliVersion: this.cliVersion,
         };

@@ -1,14 +1,8 @@
 {
-    "packages": [
-        {
-            "name": "devenv-runtimes",
-            "version": "v3.0.0"
-        },
-        {
-            "name": "test-package",
-            "version": "test-version"
-        }
-    ],
+    "packages": {
+        "devenv-runtimes": "v3.0.0",
+        "test-package": "test-version"
+    },
     "variables": {
         "language": "python",
         "repoType": "app",

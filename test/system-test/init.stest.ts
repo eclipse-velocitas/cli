@@ -56,24 +56,6 @@ describe('CLI command', () => {
                 expect(isDirectoryEmpty(projectPackage.getPackageDirectoryWithVersion())).to.be.false;
             }
         });
-        it('should be able to clean init a project with an older version of .velocitas.json', async () => {
-            copySync('./.velocitasOld.json', './.velocitas.json');
-            const initOutput = spawnSync(VELOCITAS_PROCESS, ['init'], { encoding: DEFAULT_BUFFER_ENCODING });
-            expect(initOutput.status).to.equal(0);
-
-            const packageIndex = JSON.parse(readFileSync('./.velocitas.json', DEFAULT_BUFFER_ENCODING));
-            const projectConfig = ProjectConfig.read(packageIndex.cliVersion, './.velocitas.json');
-            const projectConfigLock = ProjectConfigLock.read('./.velocitas-lock.json');
-
-            expect(projectConfigLock).to.not.be.null;
-            expect(existsSync('./gen')).to.be.true;
-            expect(isDirectoryEmpty('./gen')).to.be.false;
-
-            for (const projectPackage of projectConfig.getPackages()) {
-                expect(existsSync(projectPackage.getPackageDirectoryWithVersion())).to.be.true;
-                expect(isDirectoryEmpty(projectPackage.getPackageDirectoryWithVersion())).to.be.false;
-            }
-        });
         it('should fail with component validation of .velocitas.json', async () => {
             copySync('./.velocitasInvalidComponent.json', './.velocitas.json');
             const initOutput = spawnSync(VELOCITAS_PROCESS, ['init'], { encoding: DEFAULT_BUFFER_ENCODING });

@@ -18,6 +18,18 @@ import { PackageConfig } from '../modules/package';
 import { ProjectConfigLock } from '../modules/project-config';
 import { CliFileSystem } from './fs-bridge';
 
+type DesiredConfigFilePackages = {
+    [name: string]: string;
+};
+type DesiredConfigFileComponents = string[];
+type DesiredConfigFileVariables = {
+    [name: string]: string;
+};
+const VARIABLE_SEPARATOR = '@';
+
+/**
+ * Parser for .velocitas.json files.
+ */
 export class ConfigFileParser {
     private _configFileData: any;
     private _ignoreLock: boolean;
@@ -27,42 +39,46 @@ export class ConfigFileParser {
     cliVersion: string;
 
     /**
-     * Converts an array of PackageConfig objects into a Map with repository names as keys and version numbers as values.
+     * Converts an array of PackageConfig objects into a writable Map for the configuration file.
      * @param packageConfig Array of PackageConfig objects.
      * @returns A Map containing repository names as keys and version numbers as values.
      */
-    static parsePackageConfigArrayToMap(packageConfig: PackageConfig[]): Map<string, any> {
+    static toWritablePackageConfig(packageConfig: PackageConfig[]): Map<string, any> {
         return new Map(packageConfig.map((pkg: PackageConfig) => [pkg.repo, pkg.version]));
     }
 
     /**
-     * Converts an array of ComponentConfig objects into a Set of component IDs.
+     * Converts an array of ComponentConfig objects into a writable string array for the configuration file.
      * @param componentConfig Array of ComponentConfig objects.
-     * @returns A Set containing the IDs of the components.
+     * @returns A string array containing the IDs of the components.
      */
-    static parseComponentConfigArrayToSet(componentConfig: ComponentConfig[]): string[] {
+    static toWritableComponentConfig(componentConfig: ComponentConfig[]): DesiredConfigFileComponents {
         return Array.from(new Set(componentConfig.map((component: ComponentConfig) => component.id)));
     }
 
     /**
-     * Parses project configuration variables and assigns them to the package configuration.
-     * @param projectConfigVariables Project configuration variables.
-     * @param packageConfig Package configuration to which the variables will be assigned.
+     * Parses configuration variables and assigns them to the given configuration.
+     * @param configToAssign Configuration to which the variables will be assigned.
      */
-    private _parseVariables(configToParse: PackageConfig | ComponentConfig): void {
+    private _assignVariablesToConfig(configToAssign: PackageConfig | ComponentConfig): void {
         for (const [variableKey, variableValue] of this.variables) {
-            if (configToParse instanceof PackageConfig && variableKey.includes(configToParse.repo)) {
-                const [parsedVariableKey] = variableKey.split('@');
-                configToParse.variables?.set(parsedVariableKey, variableValue);
+            if (configToAssign instanceof PackageConfig && variableKey.includes(configToAssign.repo)) {
+                const [parsedVariableKey] = variableKey.split(VARIABLE_SEPARATOR);
+                configToAssign.variables?.set(parsedVariableKey, variableValue);
             }
-            if (configToParse instanceof ComponentConfig && variableKey.includes(configToParse.id)) {
-                const [parsedVariableKey] = variableKey.split('@');
-                configToParse.variables?.set(parsedVariableKey, variableValue);
+            if (configToAssign instanceof ComponentConfig && variableKey.includes(configToAssign.id)) {
+                const [parsedVariableKey] = variableKey.split(VARIABLE_SEPARATOR);
+                configToAssign.variables?.set(parsedVariableKey, variableValue);
             }
         }
     }
 
-    private _parseVariablesFromConfig(configFileVariables: any): Map<string, any> {
+    /**
+     * Converts DesiredConfigFileVariables into a Map format.
+     * @param configFileVariables Configuration file variables to convert.
+     * @returns A Map representing the configuration file variables.
+     */
+    private _convertConfigFileVariablesToMap(configFileVariables: DesiredConfigFileVariables): Map<string, any> {
         if (!configFileVariables) {
             return new Map<string, any>();
         }
@@ -72,11 +88,15 @@ export class ConfigFileParser {
         return new Map<string, any>();
     }
 
-    private _handlePackages(ignoreLock: boolean) {
+    /**
+     * Processes all packageConfigs to assign variables and read versions from lock file.
+     * @param ignoreLock If true, ignores project configuration lock file.
+     */
+    private _handlePackages(ignoreLock: boolean): void {
         let projectConfigLock: ProjectConfigLock | null = null;
 
         for (let packageConfig of this.packages) {
-            this._parseVariables(packageConfig);
+            this._assignVariablesToConfig(packageConfig);
             if (!ignoreLock && ProjectConfigLock.isAvailable()) {
                 projectConfigLock = ProjectConfigLock.read();
             }
@@ -87,30 +107,30 @@ export class ConfigFileParser {
     }
 
     /**
-     * Converts a Map with repository names as keys and version numbers as values into an array of PackageConfig objects.
-     * @param packages Map containing repository names as keys and version numbers as values.
+     * Converts DesiredConfigFilePackages into an array of PackageConfig objects.
+     * @param configFilePackages Object containing repository names as keys and version numbers as values.
      * @returns An array of PackageConfig objects.
      */
-    private _parseConfigToPackageConfigArray(configFilePackages: any): PackageConfig[] {
-        const configArray: PackageConfig[] = [];
+    private _parseConfigToPackageConfigArray(configFilePackages: DesiredConfigFilePackages): PackageConfig[] {
+        const pkgCfgArray: PackageConfig[] = [];
         const packages = configFilePackages instanceof Map ? configFilePackages : new Map(Object.entries(configFilePackages));
 
         for (const [repoName, version] of packages) {
             const pkgCfg = new PackageConfig({ repo: repoName, version: version });
-            this._parseVariables(pkgCfg);
-            configArray.push(pkgCfg);
+            this._assignVariablesToConfig(pkgCfg);
+            pkgCfgArray.push(pkgCfg);
         }
-        this.packages = configArray;
+        this.packages = pkgCfgArray;
         this._handlePackages(this._ignoreLock);
-        return configArray;
+        return pkgCfgArray;
     }
 
     /**
-     * Converts a Set of component IDs into an array of ComponentConfig objects.
-     * @param components Set of component IDs.
+     * Converts DesiredConfigFileComponents into an array of ComponentConfig objects.
+     * @param configFileComponents String array of component IDs.
      * @returns An array of ComponentConfig objects.
      */
-    private _parseConfigToComponentConfigArray(configFileComponents: any): ComponentConfig[] {
+    private _parseConfigToComponentConfigArray(configFileComponents: DesiredConfigFileComponents): ComponentConfig[] {
         if (!configFileComponents) {
             return [];
         }
@@ -118,7 +138,7 @@ export class ConfigFileParser {
         const cmpCfgArray: ComponentConfig[] = configFileComponents.map((component: string) => {
             const cmpCfg = new ComponentConfig(component);
             if (this.variables) {
-                this._parseVariables(cmpCfg);
+                this._assignVariablesToConfig(cmpCfg);
             }
             return cmpCfg;
         });
@@ -129,7 +149,7 @@ export class ConfigFileParser {
         try {
             this._configFileData = JSON.parse(CliFileSystem.readFileSync(configFilePath as string));
             this._ignoreLock = ignoreLock;
-            this.variables = this._parseVariablesFromConfig(this._configFileData.variables);
+            this.variables = this._convertConfigFileVariablesToMap(this._configFileData.variables);
             this.packages = this._parseConfigToPackageConfigArray(this._configFileData.packages);
             this.components = this._parseConfigToComponentConfigArray(this._configFileData.components);
             this.cliVersion = this._configFileData.cliVersion ? this._configFileData.cliVersion : '';
