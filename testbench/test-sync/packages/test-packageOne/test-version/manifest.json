@@ -1,0 +1,14 @@
+{
+    "components": [
+        {
+            "id": "test-componentOne",
+            "type": "setup",
+            "files": [
+                {
+                    "src": "testFile.sh",
+                    "dst": "testFile1.sh"
+                }
+            ]
+        }
+    ]
+}

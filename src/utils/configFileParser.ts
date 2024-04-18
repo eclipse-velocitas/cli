@@ -154,7 +154,7 @@ export class ConfigFileParser {
             this.components = this._parseConfigToComponentConfigArray(this._configFileData.components);
             this.cliVersion = this._configFileData.cliVersion ? this._configFileData.cliVersion : '';
         } catch (error) {
-            throw new Error(`Error in parsing ${configFilePath}: ${(error as Error).message}`);
+            throw new Error(`Error in parsing ${configFilePath}: ${error}`);
         }
     }
 }
