@@ -43,7 +43,7 @@ export class ConfigFileParser {
      * @param packageConfig Array of PackageConfig objects.
      * @returns A Map containing repository names as keys and version numbers as values.
      */
-    static toWritablePackageConfig(packageConfig: PackageConfig[]): Map<string, any> {
+    static toWritablePackageConfig(packageConfig: PackageConfig[]): Map<string, string> {
         return new Map(packageConfig.map((pkg: PackageConfig) => [pkg.repo, pkg.version]));
     }
 

@@ -1,25 +1,22 @@
 # Project configuration
 
-The project configuration describes which packages your project is using and in which version. The versions of the referenced packages can be upgraded using the `upgrade` command. If you only want to see which new versions are available use `upgrade --dry-run` or `upgrade --dry-run --ignore-bounds`. Each package may expose variables which need to be set from the project configuration. If multiple different packages all expose the same named variable `foo`, setting this variable once in the project configuration will pass the value to all packages.
+The project configuration describes which packages your project is using and in which version. The versions of the referenced packages can be upgraded using the `upgrade` command. If you only want to see which new versions are available use `upgrade --dry-run` or `upgrade --dry-run --ignore-bounds`. Each package may expose variables which need to be set from the project configuration. If multiple different packages all expose the same named variable `foo`, setting this variable once in the project configuration will pass the value to all packages. If a package or even a component exposes a variable which is only needed within its scope it can be set with `"variableA@package-A": "variableA"`.
 
 Read more about variables [here](./features/VARIABLES.md).
 
 ```json
 {
-  "packages": [
-    {
-      "repo": "package-A",
-      "version": "v1.0.0"
-    },
-    {
-      "repo": "package-B",
-      "version": "v2.3.1-dev"
-    }
-  ],
+  "packages": {
+      "package-A": "v1.0.0",
+      "package-B": "v2.3.1-dev"
+  },
+  "components": [ "component-A", "component-B" ],
   "variables": {
     "repoUrl": "https://github.com/eclipse-velocitas/cli",
     "copyrightYear": 2023,
-    "autoGenerateVehicleModel": true
+    "autoGenerateVehicleModel": true,
+    "variableA@package-A": "variableA",
+    "variableB@component-B": "variableB",
   }
 }
 ```
@@ -32,24 +29,11 @@ By default, all components of a package will be used, but if desired the used co
 
 ```json
 {
-  "packages": [
-    {
-      "repo": "package-A",
-      "version": "v1.0.0"
-    },
-    {
-      "repo": "package-B",
-      "version": "v2.3.1-dev"
-    }
-  ],
-  "components": [
-    {
-      "id": "component-exposed-by-pkg-a"
-    },
-    {
-      "id": "component-exposed-by-pkg-b"
-    },
-  ],
+  "packages": {
+      "package-A": "v1.0.0",
+      "package-B": "v2.3.1-dev"
+  },
+  "components": [ "component-exposed-by-pkg-a", "component-exposed-by-pkg-b" ],
   "variables": {
     "repoUrl": "https://github.com/eclipse-velocitas/cli",
     "copyrightYear": 2023,
@@ -62,23 +46,25 @@ The project above will only use the components `component-exposed-by-pkg-a` and 
 
 ## File Structure
 
-### `packages` - Array[[`PackageConfig`](#packageconfig)]
+### `packages` - Map[string, string]
 
-Array of packages used in the project.
+A key-value configuration of packages, where key is the package [repo](#repo) and value is the [version](#version).
+
+### `components` - string[]
+
+An array of used components.
 
 ### `variables` - Map[string, any]
 
-Project-wide key-value variable configuration.
+Project-wide key-value [variable](#variables) configuration.
 
 # Types
 
-## `PackageConfig`
-
-### `repo` - string
+## `repo`
 
 The name of the package or URL to the package git repository. A simple name is currently resolved to `https://github.com/eclipse-velocitas/<name>`. Alternatively, you can also supply a fully qualified Git repo URL e.g. `https://<your-host>/<your-repo>.git` or `git@<your-host>/<your-repo>.git`. Credentials for HTTPs and SSH based git repos are provided by your local git configuration (CLI is using Git under the hood).
 
-### `version` - string
+## `version`
 
 The version of the package to use.
 | Literal | Behaviour | Example |
@@ -88,20 +74,10 @@ The version of the package to use.
 | branch (prefixed with an '@') | Refers to the latest commit in a specific branch | `"@main"` |
 | latest | Refers to the latest tag if available else to the highest version tag | `"latest"` |
 
-### `variables` - Map[string, any]
+## `variables`
 
-Package-wide variable configuration.
-
-### `components` - Array[[`ComponentConfig`](#componentconfig)]
-
-Per-component configuration.
-
-## `ComponentConfig`
-
-### `id` - string
-
-Unique ID of the component within the package.
-
-### `variables` - Map[string, any]
-
-Component-wide key-value variable configuration
+| Scope | Example |
+|-------|---------|
+| Global | `"projectVariable": "A project wide variable"` |
+| Package | `"packageVariable@pkg-a": "A package wide variable"` |
+| Component | `"componentVariable@component-exposed-by-pkg-a": "A component wide variable"` |

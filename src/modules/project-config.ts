@@ -252,13 +252,13 @@ export class ProjectConfig {
 }
 
 interface ProjectConfigLockAttributes {
-    packages: Map<string, any>;
+    packages: Map<string, string>;
 }
 
 export class ProjectConfigLock implements ProjectConfigLockAttributes {
-    packages: Map<string, any>;
+    packages: Map<string, string>;
 
-    constructor(packages: Map<string, any>) {
+    constructor(packages: Map<string, string>) {
         this.packages = packages;
     }
 
@@ -273,7 +273,7 @@ export class ProjectConfigLock implements ProjectConfigLockAttributes {
     static read(path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): ProjectConfigLock | null {
         try {
             const data = JSON.parse(CliFileSystem.readFileSync(path as string));
-            const packages = new Map(Object.entries(data.packages));
+            const packages = new Map<string, string>(Object.entries(data.packages));
             return new ProjectConfigLock(packages);
         } catch (error: any) {
             if (error.code === 'ENOENT') {
