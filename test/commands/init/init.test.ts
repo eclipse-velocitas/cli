@@ -15,7 +15,7 @@
 import { expect, test } from '@oclif/test';
 import * as gitModule from 'simple-git';
 import * as exec from '../../../src/modules/exec';
-import { ProjectConfigLock } from '../../../src/modules/project-config';
+import { ProjectConfigLock } from '../../../src/modules/project-config-lock';
 import { CliFileSystem } from '../../../src/utils/fs-bridge';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
 import { corePackageInfoMock, runtimePackageInfoMock, setupPackageInfoMock } from '../../utils/mockConfig';

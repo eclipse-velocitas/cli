@@ -19,8 +19,8 @@ import { cwd } from 'node:process';
 import sinon from 'sinon';
 import { ComponentConfig } from '../../src/modules/component';
 import { PackageConfig } from '../../src/modules/package';
-import { ConfigFileParser } from '../../src/utils/configFileParser';
 import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/utils/fs-bridge';
+import { ProjectConfigFileParser } from '../../src/utils/projectConfigFileParser';
 
 const configFileMock = {
     packages: {
@@ -61,7 +61,7 @@ const configFileLockPath = `${cwd()}/.velocitas-lock.json`;
 const configFilePathNoVariables = `${cwd()}/.velocitasNoVariables.json`;
 const configFilePathNoVariablesAndComponents = `${cwd()}/.velocitasNoVariablesAndComponents.json`;
 
-describe('ConfigFileParser', () => {
+describe('ProjectConfigFileParser', () => {
     before(() => {
         const mockFilesystem: MockFileSystemObj = {
             [configFilePath]: JSON.stringify(configFileMock),
@@ -73,7 +73,7 @@ describe('ConfigFileParser', () => {
     });
     describe('File Parsing', () => {
         it('should parse package configurations from the provided .velocitas.json file', () => {
-            const configFileObj = new ConfigFileParser(configFilePath, true);
+            const configFileObj = new ProjectConfigFileParser(configFilePath, true);
             expect(configFileObj.packages.every((pkg) => pkg instanceof PackageConfig)).to.be.true;
             expect(configFileObj.packages.length).to.equal(1);
             expect(configFileObj.packages[0].repo).to.equal('test-package');
@@ -81,26 +81,26 @@ describe('ConfigFileParser', () => {
         });
 
         it('should parse component configurations from the provided .velocitas.json file', () => {
-            const configFileObj = new ConfigFileParser(configFilePath, true);
+            const configFileObj = new ProjectConfigFileParser(configFilePath, true);
             expect(configFileObj.components.every((cmp) => cmp instanceof ComponentConfig)).to.be.true;
             expect(configFileObj.components.length).to.equal(1);
             expect(configFileObj.components[0].id).to.equal('test-component');
         });
 
         it('should assign variables to package configurations', () => {
-            const configFileObj = new ConfigFileParser(configFilePath, true);
+            const configFileObj = new ProjectConfigFileParser(configFilePath, true);
             const packageVariable = configFileObj.packages[0].variables.get('packageVariable');
             expect(packageVariable).to.equal('packageTest');
         });
 
         it('should assign variables to component configurations', () => {
-            const configFileObj = new ConfigFileParser(configFilePath, true);
+            const configFileObj = new ProjectConfigFileParser(configFilePath, true);
             const componentVariable = configFileObj.components[0].variables.get('componentVariable');
             expect(componentVariable).to.equal('componentTest');
         });
 
         it('should assign empty maps to every variables property if no variables are provided', () => {
-            const configFileObj = new ConfigFileParser(configFilePathNoVariables, true);
+            const configFileObj = new ProjectConfigFileParser(configFilePathNoVariables, true);
             expect(configFileObj.variables).to.be.an.instanceOf(Map);
             expect(configFileObj.variables.size).to.equal(0);
             expect(configFileObj.packages[0].variables).to.be.an.instanceOf(Map);
@@ -110,13 +110,13 @@ describe('ConfigFileParser', () => {
         });
 
         it('should assign an empty array to components configuration if no components are provided', () => {
-            const configFileObj = new ConfigFileParser(configFilePathNoVariablesAndComponents, true);
+            const configFileObj = new ProjectConfigFileParser(configFilePathNoVariablesAndComponents, true);
             expect(configFileObj.components).to.be.an('array');
             expect(configFileObj.components.length).to.equal(0);
         });
 
         it('should handle project configuration lock if available', () => {
-            const configFileObj = new ConfigFileParser(configFilePath, false);
+            const configFileObj = new ProjectConfigFileParser(configFilePath, false);
             expect(configFileObj.packages.every((pkg) => pkg instanceof PackageConfig)).to.be.true;
             expect(configFileObj.packages.length).to.equal(1);
             expect(configFileObj.packages[0].repo).to.equal('test-package');
@@ -124,7 +124,7 @@ describe('ConfigFileParser', () => {
         });
 
         it('should correctly store the CLI version from .velocitas.json file', () => {
-            const configFileObj = new ConfigFileParser(configFilePath, true);
+            const configFileObj = new ProjectConfigFileParser(configFilePath, true);
             expect(configFileObj.cliVersion).to.equal('v0.0.1');
         });
     });
@@ -132,8 +132,8 @@ describe('ConfigFileParser', () => {
     describe('Error handling', () => {
         it('should handle errors when parsing .velocitas.json file', () => {
             const readFileStub = sinon.stub(CliFileSystem, 'readFileSync').throws('Mocked error');
-            const configFileParser = () => new ConfigFileParser(configFilePath, true);
-            expect(configFileParser).to.throw(`Error in parsing ${configFilePath}: Mocked error`);
+            const projectConfigFileParser = () => new ProjectConfigFileParser(configFilePath, true);
+            expect(projectConfigFileParser).to.throw(`Error in parsing ${configFilePath}: Mocked error`);
             readFileStub.restore();
         });
     });
@@ -144,7 +144,7 @@ describe('ConfigFileParser', () => {
                 new PackageConfig({ repo: 'repo1', version: 'v1.0.0' }),
                 new PackageConfig({ repo: 'repo2', version: 'v2.0.0' }),
             ];
-            const writableMap = ConfigFileParser.toWritablePackageConfig(packageConfigs);
+            const writableMap = ProjectConfigFileParser.toWritablePackageConfig(packageConfigs);
             expect(writableMap).to.be.an.instanceOf(Map);
             expect(writableMap.size).to.equal(2);
             expect(writableMap.get('repo1')).to.equal('v1.0.0');
@@ -152,7 +152,7 @@ describe('ConfigFileParser', () => {
         });
 
         it('should handle empty array input', () => {
-            const writableMap = ConfigFileParser.toWritablePackageConfig([]);
+            const writableMap = ProjectConfigFileParser.toWritablePackageConfig([]);
             expect(writableMap).to.be.an.instanceOf(Map);
             expect(writableMap.size).to.equal(0);
         });
@@ -165,14 +165,14 @@ describe('ConfigFileParser', () => {
                 new ComponentConfig('component2'),
                 new ComponentConfig('component1'),
             ];
-            const writableArray = ConfigFileParser.toWritableComponentConfig(componentConfigs);
+            const writableArray = ProjectConfigFileParser.toWritableComponentConfig(componentConfigs);
             expect(writableArray).to.be.an('array');
             expect(writableArray.length).to.equal(2);
             expect(writableArray).to.include.members(['component1', 'component2']);
         });
 
         it('should handle empty array input', () => {
-            const writableArray = ConfigFileParser.toWritableComponentConfig([]);
+            const writableArray = ProjectConfigFileParser.toWritableComponentConfig([]);
             expect(writableArray).to.be.an('array');
             expect(writableArray.length).to.equal(0);
         });

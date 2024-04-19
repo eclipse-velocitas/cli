@@ -16,7 +16,8 @@ import { Command, Flags, ux } from '@oclif/core';
 import { APP_MANIFEST_PATH_VARIABLE, AppManifest } from '../../modules/app-manifest';
 import { ComponentContext, ExecSpec } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
-import { ProjectConfig, ProjectConfigLock } from '../../modules/project-config';
+import { ProjectConfig } from '../../modules/project-config';
+import { ProjectConfigLock } from '../../modules/project-config-lock';
 import { resolveVersionIdentifier } from '../../modules/semver';
 import { createEnvVars } from '../../modules/variables';
 

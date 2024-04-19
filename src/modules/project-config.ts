@@ -15,8 +15,8 @@
 import { PathLike } from 'node:fs';
 import { resolve } from 'node:path';
 import { cwd } from 'node:process';
-import { ConfigFileParser } from '../utils/configFileParser';
 import { CliFileSystem } from '../utils/fs-bridge';
+import { ProjectConfigFileParser } from '../utils/projectConfigFileParser';
 import { DEFAULT_APP_MANIFEST_PATH } from './app-manifest';
 import { ComponentConfig, ComponentContext } from './component';
 import { mapReplacer } from './helpers';
@@ -25,10 +25,8 @@ import { PackageIndex } from './package-index';
 import { getLatestVersion } from './semver';
 import { VariableCollection } from './variables';
 
-export const DEFAULT_CONFIG_FILE_NAME = '.velocitas.json';
-export const DEFAULT_CONFIG_LOCKFILE_NAME = '.velocitas-lock.json';
-export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), DEFAULT_CONFIG_FILE_NAME);
-export const DEFAULT_CONFIG_LOCKFILE_PATH = resolve(cwd(), DEFAULT_CONFIG_LOCKFILE_NAME);
+const DEFAULT_CONFIG_FILE_NAME = '.velocitas.json';
+const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), DEFAULT_CONFIG_FILE_NAME);
 
 export interface ProjectConfigAttributes {
     packages: PackageConfig[];
@@ -65,7 +63,7 @@ export class ProjectConfig {
     static read(cliVersion: string, path: PathLike = DEFAULT_CONFIG_FILE_PATH, ignoreLock: boolean = false): ProjectConfig {
         let config: ProjectConfig;
         try {
-            config = new ProjectConfig(cliVersion, new ConfigFileParser(path, ignoreLock));
+            config = new ProjectConfig(cliVersion, new ProjectConfigFileParser(path, ignoreLock));
         } catch (error) {
             throw new Error(`Error in parsing ${DEFAULT_CONFIG_FILE_NAME}: ${(error as Error).message}`);
         }
@@ -110,8 +108,7 @@ export class ProjectConfig {
             packages: packagesObject,
         };
 
-        const configString = `${JSON.stringify(projectConfigAttributes, null, 4)}\n`;
-        return configString;
+        return `${JSON.stringify(projectConfigAttributes, null, 4)}\n`;
     }
 
     /**
@@ -129,8 +126,8 @@ export class ProjectConfig {
         }
 
         const projectConfigAttributes = {
-            packages: ConfigFileParser.toWritablePackageConfig(this._packages),
-            components: ConfigFileParser.toWritableComponentConfig(componentsToSerialize),
+            packages: ProjectConfigFileParser.toWritablePackageConfig(this._packages),
+            components: ProjectConfigFileParser.toWritableComponentConfig(componentsToSerialize),
             variables: this._variables,
             cliVersion: this.cliVersion,
         };
@@ -248,66 +245,5 @@ export class ProjectConfig {
 
     getVariableCollection(componentContext: ComponentContext): VariableCollection {
         return VariableCollection.build(this.getComponents(), this.getVariableMappings(), componentContext);
-    }
-}
-
-interface ProjectConfigLockAttributes {
-    packages: Map<string, string>;
-}
-
-export class ProjectConfigLock implements ProjectConfigLockAttributes {
-    packages: Map<string, string>;
-
-    constructor(packages: Map<string, string>) {
-        this.packages = packages;
-    }
-
-    static isAvailable = (path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH) => CliFileSystem.existsSync(path);
-
-    /**
-     * Reads the locked project configuration from file.
-     * @param path The path to the lock file. Defaults to DEFAULT_CONFIG_LOCKFILE_PATH if not provided.
-     * @returns An instance of ProjectConfigLock if the lock file exists and is readable, or null if the file is not present.
-     * @throws Error if there's an issue reading the lock file other than it not being present.
-     */
-    static read(path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): ProjectConfigLock | null {
-        try {
-            const data = JSON.parse(CliFileSystem.readFileSync(path as string));
-            const packages = new Map<string, string>(Object.entries(data.packages));
-            return new ProjectConfigLock(packages);
-        } catch (error: any) {
-            if (error.code === 'ENOENT') {
-                return null;
-            } else {
-                throw new Error(`Error reading lock file: ${error.message}`);
-            }
-        }
-    }
-
-    /**
-     * Writes the locked project configuration to file.
-     * @param projectConfig Project configuration to get the packages for the lock file.
-     * @param path Path of the file to write the configuration to. Defaults to DEFAULT_CONFIG_LOCKFILE_PATH.
-     */
-    static write(projectConfig: ProjectConfig, path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): void {
-        try {
-            CliFileSystem.writeFileSync(path, projectConfig.toLockString());
-        } catch (error) {
-            throw new Error(`Error writing .velocitas-lock.json: ${error}`);
-        }
-    }
-
-    /**
-     * Finds the version of the specified package from the lock file.
-     * @param packageName Name of the package to find the version for.
-     * @returns The version of the specified package if found.
-     * @throws Error if no package version is found.
-     */
-    public findVersion(packageName: string): string {
-        const packageVersion = this.packages.get(packageName);
-        if (!packageVersion) {
-            throw new Error(`Package '${packageName}' not found in lock file.`);
-        }
-        return packageVersion;
     }
 }

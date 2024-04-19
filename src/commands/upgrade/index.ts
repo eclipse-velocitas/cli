@@ -14,7 +14,8 @@
 
 import { Command, Flags } from '@oclif/core';
 import { PackageConfig } from '../../modules/package';
-import { ProjectConfig, ProjectConfigLock } from '../../modules/project-config';
+import { ProjectConfig } from '../../modules/project-config';
+import { ProjectConfigLock } from '../../modules/project-config-lock';
 import { getLatestVersion, incrementVersionRange, resolveVersionIdentifier } from '../../modules/semver';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import Init from '../init';

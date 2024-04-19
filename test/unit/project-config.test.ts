@@ -17,7 +17,8 @@ import 'mocha';
 import { homedir } from 'node:os';
 import { cwd } from 'node:process';
 import sinon from 'sinon';
-import { ProjectConfig, ProjectConfigLock } from '../../src/modules/project-config';
+import { ProjectConfig } from '../../src/modules/project-config';
+import { ProjectConfigLock } from '../../src/modules/project-config-lock';
 import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/utils/fs-bridge';
 
 describe('project-config - module', () => {

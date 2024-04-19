@@ -15,7 +15,7 @@
 import { PathLike } from 'node:fs';
 import { ComponentConfig } from '../modules/component';
 import { PackageConfig } from '../modules/package';
-import { ProjectConfigLock } from '../modules/project-config';
+import { ProjectConfigLock } from '../modules/project-config-lock';
 import { CliFileSystem } from './fs-bridge';
 
 type DesiredConfigFilePackages = {
@@ -25,12 +25,12 @@ type DesiredConfigFileComponents = string[];
 type DesiredConfigFileVariables = {
     [name: string]: string;
 };
-const VARIABLE_SEPARATOR = '@';
+const VARIABLE_SCOPE_SEPARATOR = '@';
 
 /**
  * Parser for .velocitas.json files.
  */
-export class ConfigFileParser {
+export class ProjectConfigFileParser {
     private _configFileData: any;
     private _ignoreLock: boolean;
     packages: PackageConfig[];
@@ -63,11 +63,11 @@ export class ConfigFileParser {
     private _assignVariablesToConfig(configToAssign: PackageConfig | ComponentConfig): void {
         for (const [variableKey, variableValue] of this.variables) {
             if (configToAssign instanceof PackageConfig && variableKey.includes(configToAssign.repo)) {
-                const [parsedVariableKey] = variableKey.split(VARIABLE_SEPARATOR);
+                const [parsedVariableKey] = variableKey.split(VARIABLE_SCOPE_SEPARATOR);
                 configToAssign.variables?.set(parsedVariableKey, variableValue);
             }
             if (configToAssign instanceof ComponentConfig && variableKey.includes(configToAssign.id)) {
-                const [parsedVariableKey] = variableKey.split(VARIABLE_SEPARATOR);
+                const [parsedVariableKey] = variableKey.split(VARIABLE_SCOPE_SEPARATOR);
                 configToAssign.variables?.set(parsedVariableKey, variableValue);
             }
         }

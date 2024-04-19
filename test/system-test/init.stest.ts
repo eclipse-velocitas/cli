@@ -19,7 +19,8 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
 import { ProjectCache } from '../../src/modules/project-cache';
-import { ProjectConfig, ProjectConfigLock } from '../../src/modules/project-config';
+import { ProjectConfig } from '../../src/modules/project-config';
+import { ProjectConfigLock } from '../../src/modules/project-config-lock';
 import { TEST_ROOT, VELOCITAS_HOME, VELOCITAS_PROCESS } from '../utils/systemTestConfig';
 
 const isDirectoryEmpty = (directoryPath: string): boolean => {
