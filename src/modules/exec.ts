@@ -18,38 +18,15 @@ import { join, resolve } from 'node:path';
 import { ExecSpec, ProgramSpec } from './component';
 import { ProjectCache } from './project-cache';
 import { ProjectConfig } from './project-config';
-
-const CACHE_OUTPUT_REGEX: RegExp =
-    /(\w+)\s*=\s*(\[((\'.*?\',\s*|\".*?\",\s*|\w+,\s*|\'.*?\'(?=\])|\".*?\"(?=\])|\w+(?=\]))*\])|(\'.*?\'|\".*?\"|\w+))\s+\>\>\s+VELOCITAS_CACHE/;
-
-function stdOutParser(projectCache: ProjectCache, line: string) {
-    const match = CACHE_OUTPUT_REGEX.exec(line);
-    if (match && match.length > 0) {
-        const [_ignored, key, value] = match;
-        const cleanedValue = value.replace(/['"]/g, '');
-        if (cleanedValue.startsWith('[')) {
-            const arrayPart = cleanedValue.substring(1, cleanedValue.length - 1);
-            const array = arrayPart.split(',');
-            const trimmedArray = array.map((str) => str.trim());
-            projectCache.set(key, trimmedArray);
-        } else {
-            projectCache.set(key, cleanedValue);
-        }
-    }
-}
+import { stdOutParser } from './stdout-parser';
 
 const lineCapturer = (projectCache: ProjectCache, writeStdout: boolean, data: string) => {
     if (writeStdout) {
         process.stdout.write(data);
     }
-    for (let line of data.toString().split('\n')) {
-        let lineTrimmed = (line as string).trim();
-
-        if (lineTrimmed.length === 0) {
-            continue;
-        }
-        stdOutParser(projectCache, lineTrimmed);
-    }
+    data.toString()
+        .split('\n')
+        .forEach((value) => stdOutParser(projectCache, value));
 };
 
 export function setSpawnImplementation(func: (command: string, args: string | string[], options: any) => IPty) {
