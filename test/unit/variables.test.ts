@@ -16,7 +16,7 @@ import { expect } from 'chai';
 import 'mocha';
 import { ComponentConfig, ComponentContext, ComponentManifest } from '../../src/modules/component';
 import { PackageConfig } from '../../src/modules/package';
-import { ProjectConfig } from '../../src/modules/project-config';
+import { ProjectConfig } from '../../src/modules/projectConfig/projectConfig';
 import { ScopeIdentifier, VariableCollection } from '../../src/modules/variables';
 
 let projectConfig: ProjectConfig;

@@ -12,21 +12,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { PathLike } from 'node:fs';
-import { resolve } from 'node:path';
-import { cwd } from 'node:process';
-import { CliFileSystem } from '../utils/fs-bridge';
-import { ProjectConfigFileParser } from '../utils/projectConfigFileParser';
-import { DEFAULT_APP_MANIFEST_PATH } from './app-manifest';
-import { ComponentConfig, ComponentContext } from './component';
-import { mapReplacer } from './helpers';
-import { PackageConfig } from './package';
-import { PackageIndex } from './package-index';
-import { getLatestVersion } from './semver';
-import { VariableCollection } from './variables';
-
-const DEFAULT_CONFIG_FILE_NAME = '.velocitas.json';
-const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), DEFAULT_CONFIG_FILE_NAME);
+import { DEFAULT_APP_MANIFEST_PATH } from '../app-manifest';
+import { ComponentConfig, ComponentContext } from '../component';
+import { PackageConfig } from '../package';
+import { PackageIndex } from '../package-index';
+import { getLatestVersion } from '../semver';
+import { VariableCollection } from '../variables';
+import { ProjectConfigWriter } from './projectConfigFileWriter';
 
 export interface ProjectConfigAttributes {
     packages: PackageConfig[];
@@ -60,18 +52,6 @@ export class ProjectConfig {
         this.cliVersion = config?.cliVersion ? config.cliVersion : cliVersion;
     }
 
-    static read(cliVersion: string, path: PathLike = DEFAULT_CONFIG_FILE_PATH, ignoreLock: boolean = false): ProjectConfig {
-        let config: ProjectConfig;
-        try {
-            config = new ProjectConfig(cliVersion, new ProjectConfigFileParser(path, ignoreLock));
-        } catch (error) {
-            throw new Error(`Error in parsing ${DEFAULT_CONFIG_FILE_NAME}: ${(error as Error).message}`);
-        }
-        return config;
-    }
-
-    static isAvailable = (path: PathLike = DEFAULT_CONFIG_FILE_PATH) => CliFileSystem.existsSync(path);
-
     static async create(usedComponents: Set<string>, packageIndex: PackageIndex, cliVersion: string) {
         const projectConfig = new ProjectConfig(`v${cliVersion}`);
         const usedPackageRepos = new Set<string>();
@@ -92,47 +72,8 @@ export class ProjectConfig {
         }
         projectConfig.getVariableMappings().set('appManifestPath', DEFAULT_APP_MANIFEST_PATH);
         projectConfig.getVariableMappings().set('githubRepoId', '<myrepo>');
-        projectConfig.write();
-    }
-
-    /**
-     * Creates a string out of the project configuration in format for the lock file.
-     * @returns A string for writing the ProjectConfigLock.
-     */
-    toLockString(): string {
-        const packagesObject: { [key: string]: string } = {};
-        this.getPackages().forEach((packageConfig: PackageConfig) => {
-            packagesObject[`${packageConfig.repo}`] = packageConfig.version;
-        });
-        const projectConfigAttributes = {
-            packages: packagesObject,
-        };
-
-        return `${JSON.stringify(projectConfigAttributes, null, 4)}\n`;
-    }
-
-    /**
-     * Write the project configuration to file.
-     *
-     * @param path Path of the file to write the configuration to.
-     */
-    write(path: PathLike = DEFAULT_CONFIG_FILE_PATH): void {
-        // if we find an "old" project configuration with no components explicitly mentioned
-        // we persist all components we can find.
-        let componentsToSerialize: ComponentConfig[] = this._components;
-
-        if (!componentsToSerialize || componentsToSerialize.length === 0) {
-            componentsToSerialize = this.getComponents().map((cc) => cc.config);
-        }
-
-        const projectConfigAttributes = {
-            packages: ProjectConfigFileParser.toWritablePackageConfig(this._packages),
-            components: ProjectConfigFileParser.toWritableComponentConfig(componentsToSerialize),
-            variables: this._variables,
-            cliVersion: this.cliVersion,
-        };
-        const configString = `${JSON.stringify(projectConfigAttributes, mapReplacer, 4)}\n`;
-        CliFileSystem.writeFileSync(path, configString);
+        const projectConfigWriter = new ProjectConfigWriter();
+        projectConfigWriter.write(projectConfig);
     }
 
     /**
@@ -175,7 +116,7 @@ export class ProjectConfig {
      * @param onlyUsed Only include components used by the project. Default: true.
      * @returns A list of all components used by the project.
      */
-    getComponents(onlyUsed: boolean = true): ComponentContext[] {
+    getComponentContexts(onlyUsed: boolean = true): ComponentContext[] {
         const componentContexts: ComponentContext[] = [];
         const usedComponents = this._components;
 
@@ -220,7 +161,7 @@ export class ProjectConfig {
      * @returns The context the component is used in.
      */
     findComponentByName(componentId: string): ComponentContext {
-        let result = this.getComponents().find((compCtx: ComponentContext) => compCtx.manifest.id === componentId);
+        let result = this.getComponentContexts().find((compCtx: ComponentContext) => compCtx.manifest.id === componentId);
 
         if (!result) {
             throw Error(`Cannot find component with id '${componentId}'!`);
@@ -237,6 +178,13 @@ export class ProjectConfig {
     }
 
     /**
+     * @returns all used components by the project.
+     */
+    getComponents(): ComponentConfig[] {
+        return this._components;
+    }
+
+    /**
      * @returns all declared variable mappings on project level.
      */
     getVariableMappings(): Map<string, any> {
@@ -244,6 +192,6 @@ export class ProjectConfig {
     }
 
     getVariableCollection(componentContext: ComponentContext): VariableCollection {
-        return VariableCollection.build(this.getComponents(), this.getVariableMappings(), componentContext);
+        return VariableCollection.build(this.getComponentContexts(), this.getVariableMappings(), componentContext);
     }
 }

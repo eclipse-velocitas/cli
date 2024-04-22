@@ -16,8 +16,9 @@ import { Command, Flags, ux } from '@oclif/core';
 import { APP_MANIFEST_PATH_VARIABLE, AppManifest } from '../../modules/app-manifest';
 import { ComponentContext, ExecSpec } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
-import { ProjectConfig } from '../../modules/project-config';
-import { ProjectConfigLock } from '../../modules/project-config-lock';
+import { ProjectConfig } from '../../modules/projectConfig/projectConfig';
+import { MultiFormatConfigReader, ProjectConfigLockReader } from '../../modules/projectConfig/projectConfigFileReader';
+import { ProjectConfigLockWriter, ProjectConfigWriter } from '../../modules/projectConfig/projectConfigFileWriter';
 import { resolveVersionIdentifier } from '../../modules/semver';
 import { createEnvVars } from '../../modules/variables';
 
@@ -65,17 +66,20 @@ export default class Init extends Command {
         }
 
         this.createProjectLockFile(projectConfig, flags.verbose);
+        const projectConfigWriter = new ProjectConfigWriter();
+        projectConfigWriter.write(projectConfig);
     }
 
     initializeOrReadProject(): ProjectConfig {
         let projectConfig: ProjectConfig;
 
-        if (!ProjectConfig.isAvailable()) {
+        if (!MultiFormatConfigReader.isAvailable()) {
             this.log('... Directory is no velocitas project. Creating .velocitas.json at the root of your repository.');
             projectConfig = new ProjectConfig(`v${this.config.version}`);
-            projectConfig.write();
+            const projectConfigWriter = new ProjectConfigWriter();
+            projectConfigWriter.write(projectConfig);
         } else {
-            projectConfig = ProjectConfig.read(`v${this.config.version}`, undefined, true);
+            projectConfig = MultiFormatConfigReader.read(`v${this.config.version}`, undefined, true);
         }
         return projectConfig;
     }
@@ -129,7 +133,7 @@ export default class Init extends Command {
     }
 
     async runPostInitHooks(projectConfig: ProjectConfig, appManifest: any, verbose: boolean) {
-        for (const componentContext of projectConfig.getComponents()) {
+        for (const componentContext of projectConfig.getComponentContexts()) {
             if (!componentContext.manifest.onPostInit || componentContext.manifest.onPostInit.length === 0) {
                 continue;
             }
@@ -153,9 +157,9 @@ export default class Init extends Command {
     }
 
     createProjectLockFile(projectConfig: ProjectConfig, verbose: boolean): void {
-        if (verbose && !ProjectConfigLock.isAvailable()) {
+        if (verbose && !ProjectConfigLockReader.isLockAvailable()) {
             this.log('... No .velocitas-lock.json found. Creating it at the root of your repository.');
         }
-        ProjectConfigLock.write(projectConfig);
+        ProjectConfigLockWriter.write(projectConfig);
     }
 }

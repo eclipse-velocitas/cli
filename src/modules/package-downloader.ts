@@ -16,6 +16,7 @@ import { posix as pathPosix } from 'node:path';
 import { CheckRepoActions, SimpleGit, simpleGit } from 'simple-git';
 import { CliFileSystem } from '../utils/fs-bridge';
 import { PackageConfig } from './package';
+import { BRANCH_PREFIX } from './semver';
 
 export class PackageDownloader {
     packageConfig: PackageConfig;
@@ -40,7 +41,9 @@ export class PackageDownloader {
     }
 
     async checkoutVersion(): Promise<void> {
-        await this.git.checkout(this.packageConfig.version);
+        await this.git.checkout(
+            this.packageConfig.version.startsWith(BRANCH_PREFIX) ? this.packageConfig.version.substring(1) : this.packageConfig.version,
+        );
     }
 
     async downloadPackage(option: { checkVersionOnly: boolean }): Promise<SimpleGit> {

@@ -13,7 +13,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Args, Command } from '@oclif/core';
-import { ProjectConfig } from '../../modules/project-config';
+import { ComponentContext } from '../../modules/component';
+import { MultiFormatConfigReader } from '../../modules/projectConfig/projectConfigFileReader';
+import { ProjectConfigWriter } from '../../modules/projectConfig/projectConfigFileWriter';
 
 export default class Add extends Command {
     static description = 'Add project components.';
@@ -27,8 +29,10 @@ export default class Add extends Command {
     async run(): Promise<void> {
         const { args } = await this.parse(Add);
 
-        const projectConfig = ProjectConfig.read(`v${this.config.version}`);
-        const foundComponent = projectConfig.getComponents(false).find((compContext) => compContext.manifest.id === args.id);
+        const projectConfig = MultiFormatConfigReader.read(`v${this.config.version}`);
+        const foundComponent = projectConfig
+            .getComponentContexts(false)
+            .find((compContext: ComponentContext) => compContext.manifest.id === args.id);
 
         if (!foundComponent) {
             throw Error(
@@ -41,6 +45,7 @@ export default class Add extends Command {
         }
 
         projectConfig.addComponent(foundComponent?.manifest.id);
-        projectConfig.write();
+        const projectConfigWriter = new ProjectConfigWriter();
+        projectConfigWriter.write(projectConfig);
     }
 }

@@ -36,7 +36,7 @@ describe('resolveVersionIdentifier', () => {
     };
 
     it('should resolve to a branch if versionIdentifier starts with "@"', () => {
-        expect(resolveVersionIdentifier(versions, '@myBranch')).to.equal('myBranch');
+        expect(resolveVersionIdentifier(versions, '@myBranch')).to.equal('@myBranch');
     });
 
     it('should resolve to the latest version if versionIdentifier is "latest"', () => {

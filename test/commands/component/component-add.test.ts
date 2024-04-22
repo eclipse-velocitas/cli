@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
-import { ProjectConfig } from '../../../src/modules/project-config';
+import { MultiFormatConfigReader } from '../../../src/modules/projectConfig/projectConfigFileReader';
 import { mockFolders } from '../../utils/mockfs';
 
 describe('component add', () => {
@@ -24,8 +24,8 @@ describe('component add', () => {
         .command(['component add', 'unused-component'])
         .it('adds an unused component', (ctx) => {
             expect(
-                ProjectConfig.read('')
-                    .getComponents()
+                MultiFormatConfigReader.read('')
+                    .getComponentContexts()
                     .map((componentCtx) => componentCtx.manifest.id),
             ).to.contain('unused-component');
         });

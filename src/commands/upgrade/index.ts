@@ -14,8 +14,10 @@
 
 import { Command, Flags } from '@oclif/core';
 import { PackageConfig } from '../../modules/package';
-import { ProjectConfig } from '../../modules/project-config';
-import { ProjectConfigLock } from '../../modules/project-config-lock';
+import { ProjectConfig } from '../../modules/projectConfig/projectConfig';
+import { MultiFormatConfigReader, ProjectConfigLockReader } from '../../modules/projectConfig/projectConfigFileReader';
+import { ProjectConfigWriter } from '../../modules/projectConfig/projectConfigFileWriter';
+import { ProjectConfigLock } from '../../modules/projectConfig/projectConfigLock';
 import { getLatestVersion, incrementVersionRange, resolveVersionIdentifier } from '../../modules/semver';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import Init from '../init';
@@ -45,15 +47,14 @@ export default class Upgrade extends Command {
 
     async run(): Promise<void> {
         const { flags } = await this.parse(Upgrade);
-        let projectConfigLock: ProjectConfigLock | null = ProjectConfigLock.read();
+        let projectConfigLock: ProjectConfigLock | null = ProjectConfigLockReader.read();
 
         if (!projectConfigLock) {
             throw new Error(`No .velocitas-lock.json found. Please 'velocitas init' first!`);
         }
 
         this.log(`Checking .velocitas.json for updates!`);
-        const projectConfig = ProjectConfig.read(`v${this.config.version}`, undefined, true);
-
+        const projectConfig = MultiFormatConfigReader.read(`v${this.config.version}`, undefined, true);
         let isAnyPackageUpdated: boolean = false;
         try {
             for (const packageConfig of projectConfig.getPackages()) {
@@ -94,7 +95,8 @@ export default class Upgrade extends Command {
             return false;
         } else {
             packageConfig.setPackageVersion(incrementVersionRange(initialVersionSpecifier, matchedVersion));
-            projectConfig.write();
+            const projectConfigWriter = new ProjectConfigWriter();
+            projectConfigWriter.write(projectConfig);
             return true;
         }
     }

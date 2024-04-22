@@ -19,8 +19,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
 import { ProjectCache } from '../../src/modules/project-cache';
-import { ProjectConfig } from '../../src/modules/project-config';
-import { ProjectConfigLock } from '../../src/modules/project-config-lock';
+import { MultiFormatConfigReader, ProjectConfigLockReader } from '../../src/modules/projectConfig/projectConfigFileReader';
 import { TEST_ROOT, VELOCITAS_HOME, VELOCITAS_PROCESS } from '../utils/systemTestConfig';
 
 const isDirectoryEmpty = (directoryPath: string): boolean => {
@@ -45,8 +44,8 @@ describe('CLI command', () => {
             expect(initOutput.status).to.equal(0);
 
             const packageIndex = JSON.parse(readFileSync('./.velocitas.json', DEFAULT_BUFFER_ENCODING));
-            const projectConfig = ProjectConfig.read(packageIndex.cliVersion, './.velocitas.json');
-            const projectConfigLock = ProjectConfigLock.read('./.velocitas-lock.json');
+            const projectConfig = MultiFormatConfigReader.read(packageIndex.cliVersion, './.velocitas.json');
+            const projectConfigLock = ProjectConfigLockReader.read('./.velocitas-lock.json');
 
             expect(projectConfigLock).to.not.be.null;
             expect(existsSync(join(ProjectCache.getCacheDir(), 'vehicle_model'))).to.be.true;

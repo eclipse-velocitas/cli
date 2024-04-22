@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
-import { ProjectConfig } from '../../../src/modules/project-config';
+import { MultiFormatConfigReader } from '../../../src/modules/projectConfig/projectConfigFileReader';
 import { mockFolders } from '../../utils/mockfs';
 
 describe('component remove', () => {
@@ -24,8 +24,8 @@ describe('component remove', () => {
         .command(['component remove', 'test-runtime-local'])
         .it('removes a used component', (ctx) => {
             expect(
-                ProjectConfig.read('')
-                    .getComponents()
+                MultiFormatConfigReader.read('')
+                    .getComponentContexts()
                     .map((componentCtx) => componentCtx.manifest.id),
             ).to.not.contain('test-runtime-local');
         });

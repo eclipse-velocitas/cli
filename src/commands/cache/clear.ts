@@ -14,7 +14,7 @@
 
 import { Command } from '@oclif/core';
 import { ProjectCache } from '../../modules/project-cache';
-import { ProjectConfig } from '../../modules/project-config';
+import { MultiFormatConfigReader } from '../../modules/projectConfig/projectConfigFileReader';
 
 export default class Clear extends Command {
     static description = "Clean a project's cache.";
@@ -26,7 +26,7 @@ export default class Clear extends Command {
 
         // although we are not reading the project config, we want to
         // ensure the command is run in a project directory only.
-        ProjectConfig.read(`v${this.config.version}`);
+        MultiFormatConfigReader.read(`v${this.config.version}`);
         const cache = ProjectCache.read();
         cache.clear();
         cache.write();

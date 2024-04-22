@@ -15,7 +15,7 @@
 import { expect, test } from '@oclif/test';
 import * as gitModule from 'simple-git';
 import * as exec from '../../../src/modules/exec';
-import { ProjectConfigLock } from '../../../src/modules/project-config-lock';
+import { ProjectConfigLockReader } from '../../../src/modules/projectConfig/projectConfigFileReader';
 import { CliFileSystem } from '../../../src/utils/fs-bridge';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
 import { corePackageInfoMock, runtimePackageInfoMock, setupPackageInfoMock } from '../../utils/mockConfig';
@@ -47,7 +47,7 @@ describe('init', () => {
                     `${userHomeDir}/.velocitas/packages/${setupPackageInfoMock.repo}/${setupPackageInfoMock.resolvedVersion}`,
                 ),
             ).to.be.true;
-            expect(ProjectConfigLock.isAvailable()).to.be.true;
+            expect(ProjectConfigLockReader.isLockAvailable()).to.be.true;
         });
 
     test.do(() => {
@@ -88,7 +88,7 @@ describe('init', () => {
                     `${userHomeDir}/.velocitas/packages/${corePackageInfoMock.repo}/${corePackageInfoMock.resolvedVersion}`,
                 ),
             ).to.be.true;
-            expect(ProjectConfigLock.isAvailable()).to.be.true;
+            expect(ProjectConfigLockReader.isLockAvailable()).to.be.true;
         });
 
     test.do(() => {
@@ -113,7 +113,7 @@ describe('init', () => {
                 '... Directory is no velocitas project. Creating .velocitas.json at the root of your repository.',
             );
             expect(CliFileSystem.existsSync(`${process.cwd()}/.velocitas.json`)).to.be.true;
-            expect(ProjectConfigLock.isAvailable()).to.be.true;
+            expect(ProjectConfigLockReader.isLockAvailable()).to.be.true;
         });
 
     test.do(() => {

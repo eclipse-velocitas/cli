@@ -16,7 +16,7 @@ import { Command, Flags } from '@oclif/core';
 import { AppManifest, AppManifestInterfaceAttributes } from '../../modules/app-manifest';
 import { InteractiveMode } from '../../modules/create-interactive';
 import { CoreComponent, CoreOptions, DescribedId, ExtensionComponent, PackageIndex, Parameter } from '../../modules/package-index';
-import { ProjectConfig } from '../../modules/project-config';
+import { ProjectConfig } from '../../modules/projectConfig/projectConfig';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import Exec from '../exec';
 // eslint-disable-next-line @typescript-eslint/naming-convention

@@ -15,7 +15,7 @@
 import { Args, Command, Flags } from '@oclif/core';
 import { join } from 'node:path';
 import { PackageConfig } from '../../modules/package';
-import { ProjectConfig } from '../../modules/project-config';
+import { MultiFormatConfigReader } from '../../modules/projectConfig/projectConfigFileReader';
 
 export default class Package extends Command {
     static description = 'Prints information about packages';
@@ -47,7 +47,7 @@ export default class Package extends Command {
     async run(): Promise<void> {
         const { args, flags } = await this.parse(Package);
 
-        const projectConfig = ProjectConfig.read(`v${this.config.version}`);
+        const projectConfig = MultiFormatConfigReader.read(`v${this.config.version}`);
 
         let packagesToPrint: PackageConfig[] = [];
 

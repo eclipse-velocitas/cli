@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Command, Flags } from '@oclif/core';
-import { ProjectConfig } from '../../modules/project-config';
+import { MultiFormatConfigReader } from '../../modules/projectConfig/projectConfigFileReader';
 
 export default class List extends Command {
     static description = 'List project components.';
@@ -35,10 +35,10 @@ export default class List extends Command {
     async run(): Promise<void> {
         const { flags } = await this.parse(List);
 
-        const projectConfig = ProjectConfig.read(`v${this.config.version}`);
+        const projectConfig = MultiFormatConfigReader.read(`v${this.config.version}`);
         const onlyUsed = !flags.all && !flags.unused;
 
-        for (const componentContext of projectConfig.getComponents(onlyUsed)) {
+        for (const componentContext of projectConfig.getComponentContexts(onlyUsed)) {
             if (flags.unused && componentContext.usedInProject) {
                 continue;
             }

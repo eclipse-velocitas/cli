@@ -16,7 +16,7 @@ import { Args, Command, Flags } from '@oclif/core';
 import { APP_MANIFEST_PATH_VARIABLE, AppManifest } from '../../modules/app-manifest';
 import { ExecSpec } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
-import { ProjectConfig } from '../../modules/project-config';
+import { MultiFormatConfigReader } from '../../modules/projectConfig/projectConfigFileReader';
 import { createEnvVars } from '../../modules/variables';
 
 export default class Exec extends Command {
@@ -75,7 +75,7 @@ export default class Exec extends Command {
         const programArgsAndFlags = this._extractProgramArgsAndFlags();
         const { args, flags } = await this.parse(Exec);
 
-        const projectConfig = ProjectConfig.read(`v${this.config.version}`);
+        const projectConfig = MultiFormatConfigReader.read(`v${this.config.version}`);
 
         const execSpec: ExecSpec = {
             ref: args.ref,

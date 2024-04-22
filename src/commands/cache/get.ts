@@ -15,7 +15,7 @@
 import { Args, Command } from '@oclif/core';
 import { mapReplacer } from '../../modules/helpers';
 import { ProjectCache } from '../../modules/project-cache';
-import { ProjectConfig } from '../../modules/project-config';
+import { MultiFormatConfigReader } from '../../modules/projectConfig/projectConfigFileReader';
 
 export default class Get extends Command {
     static description = 'Get the complete cache contents as JSON string or the value of a single key.';
@@ -36,7 +36,7 @@ bar`,
 
         // although we are not reading the project config, we want to
         // ensure the command is run in a project directory only.
-        ProjectConfig.read(`v${this.config.version}`);
+        MultiFormatConfigReader.read(`v${this.config.version}`);
 
         const cache = ProjectCache.read();
 

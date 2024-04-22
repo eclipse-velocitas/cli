@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Command } from '@oclif/core';
-import { ProjectConfig } from '../../modules/project-config';
+import { MultiFormatConfigReader } from '../../modules/projectConfig/projectConfigFileReader';
 import { installComponent } from '../../modules/setup';
 
 export default class Sync extends Command {
@@ -28,9 +28,9 @@ Syncing Velocitas components!
 
     async run(): Promise<void> {
         this.log(`Syncing Velocitas components!`);
-        const projectConfig = ProjectConfig.read(`v${this.config.version}`);
+        const projectConfig = MultiFormatConfigReader.read(`v${this.config.version}`);
 
-        for (const component of projectConfig.getComponents()) {
+        for (const component of projectConfig.getComponentContexts()) {
             if (!component.manifest.files || component.manifest.files.length === 0) {
                 continue;
             }
