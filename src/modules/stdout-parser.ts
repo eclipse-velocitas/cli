@@ -16,7 +16,7 @@ import { info } from 'console';
 import { ProjectCache } from './project-cache';
 
 const CACHE_OUTPUT_REGEX: RegExp =
-    /(\w+)\s*=\s*(\[((\'(\/*\w+)*\',\s*|(\"(\/*\w+)*\",\s*)|(\/*\w+)*,\s*|\'(\/*\w+)*\'(?=\])|\"(\/*\w+)*\"(?=\])|(\/*\w+)*(?=\]))*\])|(\'.*?\'|\".*?\"|\w+))\s+\>\>\s+VELOCITAS_CACHE/;
+    /(\w+)\s*=\s*(\[((\'(\/*\w+)*\'\s*,\s*|(\"(\/*\w+)*\"\s*,\s*)|(\/*\w+)*\s*,\s*|\'(\/*\w+)*\'(?=\])|\"(\/*\w+)*\"(?=\])|(\/*\w+)*(?=\]))*\])|(\'.*?\'|\".*?\"|\w+))\s+\>\>\s+VELOCITAS_CACHE/;
 
 export function stdOutParser(projectCache: ProjectCache, line: string) {
     let lineTrimmed = (line as string).trim();
@@ -26,10 +26,8 @@ export function stdOutParser(projectCache: ProjectCache, line: string) {
     }
     const match = CACHE_OUTPUT_REGEX.exec(line);
     if (match && match.length > 0) {
-        const [_ignored, key, value] = match;
+        const [ignored, key, value] = match;
         const cleanedValue = value.replace(/['"]/g, '');
-        info(cleanedValue);
-        info(key);
         if (cleanedValue.startsWith('[') && cleanedValue.endsWith(']')) {
             const arrayPart = cleanedValue.substring(1, cleanedValue.length - 1);
             const array = arrayPart.split(',');

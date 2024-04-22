@@ -19,19 +19,6 @@ import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/util
 import { getCacheData } from '../helpers/cache';
 
 describe('stdOutParser - module', () => {
-    var matches = new Map<string, any>([
-        ['test_1 = "/this/is/path/one" >> VELOCITAS_CACHE', '/this/is/path/one'],
-        ["test_2 = '/this/is/path/one' >> VELOCITAS_CACHE", '/this/is/path/one'],
-        ['test_3 = test3 >> VELOCITAS_CACHE', 'test3'],
-        ['test_4 = ["/this/is/path/one", "/this/is/path/two"] >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
-        ['test_5 = ["/this/is/path/one","/this/is/path/two"]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
-        ['test_6 = ["/this/is/path/one",    "/this/is/path/two"]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
-        ['test_7 =["/this/is/path/one", "/this/is/path/two"]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
-        ['test_8=["/this/is/path/one", "/this/is/path/two"]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
-        ["test_9 = ['/this/is/path/one', /this/is/path/two]  >> VELOCITAS_CACHE", ['/this/is/path/one', '/this/is/path/two']],
-        ['test_10 = [/this/is/path/one, "/this/is/path/two"]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
-        ['test_11 = [/this/is/path/one, /this/is/path/two]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
-    ]);
 
     before(() => {
         const projectCacheDir = ProjectCache.getCacheDir();
@@ -40,30 +27,49 @@ describe('stdOutParser - module', () => {
         };
         CliFileSystem.setImpl(new MockFileSystem(mockFilesystem));
     });
-    for (let [element, result] of matches) {
-        it('should match and set project cache correct', () => {
-            let id = element.split('=')[0].trim();
-            const projectCache = ProjectCache.read();
-            stdOutParser(projectCache, element);
-            expect(JSON.stringify(projectCache.get(id))).to.equal(JSON.stringify(result));
-        });
-    }
 
-    var noMatches = new Map<string, any>([
-        ['test_1 = "/this/is/path/one >> VELOCITAS_CACHE', {}],
-        ["test_2 = '/this/is/path/one >> VELOCITAS_CACHE", {}],
-        ['test_3 = /this/is/path/one"this/test >> VELOCITAS_CACHE', {}],
-        ['test_4 = ["/this/is/path/one", /this/is/path/two"]', {}],
-        ['test_5 = ["/this/is/path/one""/this/is/path/two"]  >> VELOCITAS_CACHE', {}],
-        ['"test_6" = ["/this/is/path/one", "/this/is/path/two"]  >> VELOCITAS_CACHE', {}],
-        ['test_7 = [/this/is/path/one""/this/is/path/two"]  >> VELOCITAS_CACHE', {}],
-        ["test_8 = ['/this/is/path/one''/this/is/path/two']  >> VELOCITAS_CACHE", {}],
-    ]);
-    noMatches.forEach((result, element) => {
-        it('should not match for wrong inputs', async () => {
-            const projectCache = ProjectCache.read();
-            stdOutParser(projectCache, element);
-            expect(JSON.stringify(getCacheData())).to.equal(JSON.stringify(result));
+    describe('valid inputs', () => {
+        const matches = new Map<string, any>([
+            ['test_1 = "/this/is/path/one" >> VELOCITAS_CACHE', '/this/is/path/one'],
+            ["test_2 = '/this/is/path/one' >> VELOCITAS_CACHE", '/this/is/path/one'],
+            ['test_3 = test3 >> VELOCITAS_CACHE', 'test3'],
+            ['test_4 = ["/this/is/path/one", "/this/is/path/two"] >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
+            ['test_5 = ["/this/is/path/one","/this/is/path/two"]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
+            ['test_6 = ["/this/is/path/one",    "/this/is/path/two"]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
+            ['test_7 =["/this/is/path/one", "/this/is/path/two"]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
+            ['test_8=["/this/is/path/one", "/this/is/path/two"]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
+            ["test_9 = ['/this/is/path/one', /this/is/path/two]  >> VELOCITAS_CACHE", ['/this/is/path/one', '/this/is/path/two']],
+            ['test_10 = [/this/is/path/one, "/this/is/path/two"]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
+            ['test_11 = [/this/is/path/one, /this/is/path/two]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
+        ]);
+
+        matches.forEach((result, element) => {
+            it('should match and set project cache correct', () => {
+                let id = element.split('=')[0].trim();
+                const projectCache = ProjectCache.read();
+                stdOutParser(projectCache, element);
+                expect(JSON.stringify(projectCache.get(id))).to.equal(JSON.stringify(result));
+            });
+        });
+    });
+
+    describe('invalid inputs', () => {
+        const noMatches = new Map<string, any>([
+            ['test_1 = "/this/is/path/one >> VELOCITAS_CACHE', {}],
+            ["test_2 = '/this/is/path/one >> VELOCITAS_CACHE", {}],
+            ['test_3 = /this/is/path/one"this/test >> VELOCITAS_CACHE', {}],
+            ['test_4 = ["/this/is/path/one", /this/is/path/two"]', {}],
+            ['test_5 = ["/this/is/path/one""/this/is/path/two"]  >> VELOCITAS_CACHE', {}],
+            ['"test_6" = ["/this/is/path/one", "/this/is/path/two"]  >> VELOCITAS_CACHE', {}],
+            ['test_7 = [/this/is/path/one""/this/is/path/two"]  >> VELOCITAS_CACHE', {}],
+            ["test_8 = ['/this/is/path/one''/this/is/path/two']  >> VELOCITAS_CACHE", {}],
+        ]);
+        noMatches.forEach((result, element) => {
+            it('should not match for wrong inputs', async () => {
+                const projectCache = ProjectCache.read();
+                stdOutParser(projectCache, element);
+                expect(JSON.stringify(getCacheData())).to.equal(JSON.stringify(result));
+            });
         });
     });
 });
