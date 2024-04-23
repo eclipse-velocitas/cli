@@ -79,11 +79,10 @@ export class ProjectConfigReader implements IProjectConfigReader {
      */
     private _assignVariablesToConfig(configToAssign: PackageConfig | ComponentConfig): void {
         for (const [variableKey, variableValue] of this.variables) {
-            if (configToAssign instanceof PackageConfig && variableKey.includes(configToAssign.repo)) {
-                const [parsedVariableKey] = variableKey.split(VARIABLE_SCOPE_SEPARATOR);
-                configToAssign.variables?.set(parsedVariableKey, variableValue);
-            }
-            if (configToAssign instanceof ComponentConfig && variableKey.includes(configToAssign.id)) {
+            if (
+                (configToAssign instanceof PackageConfig && variableKey.includes(configToAssign.repo)) ||
+                (configToAssign instanceof ComponentConfig && variableKey.includes(configToAssign.id))
+            ) {
                 const [parsedVariableKey] = variableKey.split(VARIABLE_SCOPE_SEPARATOR);
                 configToAssign.variables?.set(parsedVariableKey, variableValue);
             }
@@ -200,7 +199,7 @@ export class ProjectConfigReader implements IProjectConfigReader {
  */
 export class LegacyProjectConfigReader implements IProjectConfigReader {
     /**
-     * Parses legacy project configuration into an array of PackageConfig objects.
+     * Parses legacy package configurations into an array of PackageConfig objects.
      * @param configFilePackages Array containing configuration for packages.
      * @param ignoreLock If true, ignores project configuration lock file.
      * @returns An array of PackageConfig objects.
@@ -209,7 +208,26 @@ export class LegacyProjectConfigReader implements IProjectConfigReader {
         const configArray: PackageConfig[] = [];
         ReaderUtil.parseLockFileVersions(configFilePackages, ignoreLock);
         configFilePackages.forEach((packageConfig: PackageConfig) => {
+            packageConfig.variables = ReaderUtil.convertConfigFileVariablesToMap(packageConfig.variables);
             configArray.push(new PackageConfig(packageConfig));
+        });
+        return configArray;
+    }
+
+    /**
+     * Parses legacy component configurations into an array of ComponentConfig objects.
+     * @param configFileComponents Array containing configuration for components.
+     * @returns An array of ComponentConfig objects.
+     */
+    private _parseLegacyComponentConfig(configFileComponents: ComponentConfig[]): ComponentConfig[] {
+        const configArray: ComponentConfig[] = [];
+        if (!configFileComponents) {
+            return configArray;
+        }
+        configFileComponents.forEach((componentConfig: ComponentConfig) => {
+            const cmpCfg = new ComponentConfig(componentConfig.id);
+            cmpCfg.variables = ReaderUtil.convertConfigFileVariablesToMap(componentConfig.variables);
+            configArray.push(cmpCfg);
         });
         return configArray;
     }
@@ -226,7 +244,7 @@ export class LegacyProjectConfigReader implements IProjectConfigReader {
         const configFileData = JSON.parse(CliFileSystem.readFileSync(path as string));
         const config: ProjectConfigAttributes = {
             packages: this._parseLegacyPackageConfig(configFileData.packages, ignoreLock),
-            components: configFileData.components,
+            components: this._parseLegacyComponentConfig(configFileData.components),
             variables: ReaderUtil.convertConfigFileVariablesToMap(configFileData.variables),
             cliVersion: configFileData.cliVersion ? configFileData.cliVersion : cliVersion,
         };

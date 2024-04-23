@@ -153,7 +153,6 @@ export class ProjectConfig {
      * Throws an error if a component is not found in any package manifest.
      */
     validateUsedComponents(): void {
-        // Check for components in usedComponents that couldn't be found in any componentManifest
         this._components.forEach((compCfg: ComponentConfig) => {
             const foundInManifest = this.getPackages().some((packageConfig) =>
                 packageConfig.readPackageManifest().components.some((componentManifest) => componentManifest.id === compCfg.id),

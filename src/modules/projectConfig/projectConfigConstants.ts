@@ -20,7 +20,7 @@ export type DesiredConfigFilePackages = {
 };
 export type DesiredConfigFileComponents = string[];
 export type DesiredConfigFileVariables = {
-    [name: string]: string;
+    [name: string]: any;
 };
 
 const DEFAULT_CONFIG_FILE_NAME = '.velocitas.json';
