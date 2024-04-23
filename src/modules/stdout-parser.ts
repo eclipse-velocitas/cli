@@ -12,7 +12,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { info } from 'console';
 import { ProjectCache } from './project-cache';
 
 const CACHE_OUTPUT_REGEX: RegExp =

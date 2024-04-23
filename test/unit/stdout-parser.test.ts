@@ -43,8 +43,8 @@ describe('stdOutParser - module', () => {
             ['test_11 = [/this/is/path/one, /this/is/path/two]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
         ]);
 
-        matches.forEach((result, element) => {
-            it('should match and set project cache correct', () => {
+        it('should match and set project cache correct', () => {
+            matches.forEach((result, element) => {
                 let id = element.split('=')[0].trim();
                 const projectCache = ProjectCache.read();
                 stdOutParser(projectCache, element);
@@ -64,8 +64,9 @@ describe('stdOutParser - module', () => {
             ['test_7 = [/this/is/path/one""/this/is/path/two"]  >> VELOCITAS_CACHE', {}],
             ["test_8 = ['/this/is/path/one''/this/is/path/two']  >> VELOCITAS_CACHE", {}],
         ]);
-        noMatches.forEach((result, element) => {
-            it('should not match for wrong inputs', async () => {
+
+        it('should not match for wrong inputs', async () => {
+            noMatches.forEach((result, element) => {
                 const projectCache = ProjectCache.read();
                 stdOutParser(projectCache, element);
                 expect(JSON.stringify(getCacheData())).to.equal(JSON.stringify(result));
