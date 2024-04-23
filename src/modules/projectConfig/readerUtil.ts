@@ -17,6 +17,9 @@ import { DesiredConfigFileVariables } from './projectConfigConstants';
 import { ProjectConfigIO } from './projectConfigIO';
 import { ProjectConfigLock } from './projectConfigLock';
 
+/**
+ * Utility functions for reading project configuration files.
+ */
 export namespace ReaderUtil {
     /**
      * Converts DesiredConfigFileVariables into a Map format.
@@ -24,10 +27,7 @@ export namespace ReaderUtil {
      * @returns A Map representing the configuration file variables.
      */
     export function convertConfigFileVariablesToMap(configFileVariables: DesiredConfigFileVariables): Map<string, any> {
-        if (!configFileVariables) {
-            return new Map<string, any>();
-        }
-        if (!(configFileVariables instanceof Map)) {
+        if (configFileVariables && !(configFileVariables instanceof Map)) {
             return new Map<string, any>(Object.entries(configFileVariables));
         }
         return new Map<string, any>();

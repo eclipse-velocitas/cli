@@ -18,7 +18,6 @@ import { PackageConfig } from '../package';
 import { PackageIndex } from '../package-index';
 import { getLatestVersion } from '../semver';
 import { VariableCollection } from '../variables';
-import { ProjectConfigIO } from './projectConfigIO';
 
 export interface ProjectConfigAttributes {
     packages: PackageConfig[];
@@ -43,6 +42,7 @@ export class ProjectConfig {
     /**
      * Create a new project configuration.
      *
+     * @param cliVersion The version of the CLI used by the project.
      * @param config The options to use when creating the configuration. May be undefined.
      */
     constructor(cliVersion: string, config?: ProjectConfigAttributes) {
@@ -52,7 +52,14 @@ export class ProjectConfig {
         this.cliVersion = config?.cliVersion ? config.cliVersion : cliVersion;
     }
 
-    static async create(usedComponents: Set<string>, packageIndex: PackageIndex, cliVersion: string) {
+    /**
+     * Creates a new project configuration based on the provided components, package index, and CLI version.
+     * @param usedComponents A set of component IDs used in the project.
+     * @param packageIndex A package index object.
+     * @param cliVersion The version of the CLI.
+     * @returns A created ProjectConfig instance.
+     */
+    static async create(usedComponents: Set<string>, packageIndex: PackageIndex, cliVersion: string): Promise<ProjectConfig> {
         const projectConfig = new ProjectConfig(`v${cliVersion}`);
         const usedPackageRepos = new Set<string>();
         for (const usedComponent of usedComponents) {
@@ -72,13 +79,12 @@ export class ProjectConfig {
         }
         projectConfig.getVariableMappings().set('appManifestPath', DEFAULT_APP_MANIFEST_PATH);
         projectConfig.getVariableMappings().set('githubRepoId', '<myrepo>');
-        ProjectConfigIO.write(projectConfig);
+        return projectConfig;
     }
 
     /**
-     * Return the configuration of a component.
+     * Returns the configuration of a component.
      *
-     * @param projectConfig The project configuration.
      * @param componentId   The ID of the component.
      * @returns The configuration of the component.
      */
@@ -91,7 +97,7 @@ export class ProjectConfig {
     }
 
     /**
-     * Add a component from a referenced package to the project.
+     * Adds a component from a referenced package to the project.
      *
      * @param id ID of the component to add to the project.
      */
@@ -100,7 +106,7 @@ export class ProjectConfig {
     }
 
     /**
-     * Remove a used component from the project.
+     * Removes a used component from the project.
      *
      * @param id ID of the component to remove from the project.
      */
@@ -109,7 +115,7 @@ export class ProjectConfig {
     }
 
     /**
-     * Return all components used by the project. If the project specifies no components explicitly,
+     * Returns the contexts of all components used by the project. If the project specifies no components explicitly,
      * all components are used by default.
      *
      * @param onlyUsed Only include components used by the project. Default: true.
@@ -142,7 +148,11 @@ export class ProjectConfig {
         return componentContexts;
     }
 
-    validateUsedComponents() {
+    /**
+     * Validates the used components by checking if each component is found in any package manifest.
+     * Throws an error if a component is not found in any package manifest.
+     */
+    validateUsedComponents(): void {
         // Check for components in usedComponents that couldn't be found in any componentManifest
         this._components.forEach((compCfg: ComponentConfig) => {
             const foundInManifest = this.getPackages().some((packageConfig) =>
@@ -155,7 +165,7 @@ export class ProjectConfig {
     }
 
     /**
-     * Find a single component by its ID.
+     * Finds a single component by its ID.
      * @param componentId   The component ID to find.
      * @returns The context the component is used in.
      */
@@ -190,6 +200,11 @@ export class ProjectConfig {
         return this._variables;
     }
 
+    /**
+     * Gets a variable collection for the specified component context.
+     * @param componentContext The context of the component for which the variable collection is obtained.
+     * @returns A variable collection containing variables from the project configuration and component context.
+     */
     getVariableCollection(componentContext: ComponentContext): VariableCollection {
         return VariableCollection.build(this.getComponentContexts(), this.getVariableMappings(), componentContext);
     }

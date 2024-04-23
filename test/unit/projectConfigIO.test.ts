@@ -60,7 +60,7 @@ const configFileLockPath = `${cwd()}/.velocitas-lock.json`;
 const configFilePathNoVariables = `${cwd()}/.velocitasNoVariables.json`;
 const configFilePathNoVariablesAndComponents = `${cwd()}/.velocitasNoVariablesAndComponents.json`;
 
-describe('ProjectConfigFileReader', () => {
+describe('projectConfigIO - module', () => {
     before(() => {
         const mockFilesystem: MockFileSystemObj = {
             [configFilePath]: JSON.stringify(configFileMock),
@@ -137,40 +137,4 @@ describe('ProjectConfigFileReader', () => {
             readFileStub.restore();
         });
     });
-    // describe('toWritablePackageConfig', () => {
-    //     it('should convert an array of PackageConfig objects into a writable Map', () => {
-    //         const packageConfigs = [
-    //             new PackageConfig({ repo: 'repo1', version: 'v1.0.0' }),
-    //             new PackageConfig({ repo: 'repo2', version: 'v2.0.0' }),
-    //         ];
-    //         const writableMap = ProjectConfigFileParser.toWritablePackageConfig(packageConfigs);
-    //         expect(writableMap).to.be.an.instanceOf(Map);
-    //         expect(writableMap.size).to.equal(2);
-    //         expect(writableMap.get('repo1')).to.equal('v1.0.0');
-    //         expect(writableMap.get('repo2')).to.equal('v2.0.0');
-    //     });
-    //     it('should handle empty array input', () => {
-    //         const writableMap = ProjectConfigFileParser.toWritablePackageConfig([]);
-    //         expect(writableMap).to.be.an.instanceOf(Map);
-    //         expect(writableMap.size).to.equal(0);
-    //     });
-    // });
-    // describe('toWritableComponentConfig', () => {
-    //     it('should convert an array of ComponentConfig objects into a writable string array', () => {
-    //         const componentConfigs = [
-    //             new ComponentConfig('component1'),
-    //             new ComponentConfig('component2'),
-    //             new ComponentConfig('component1'),
-    //         ];
-    //         const writableArray = ProjectConfigFileParser.toWritableComponentConfig(componentConfigs);
-    //         expect(writableArray).to.be.an('array');
-    //         expect(writableArray.length).to.equal(2);
-    //         expect(writableArray).to.include.members(['component1', 'component2']);
-    //     });
-    //     it('should handle empty array input', () => {
-    //         const writableArray = ProjectConfigFileParser.toWritableComponentConfig([]);
-    //         expect(writableArray).to.be.an('array');
-    //         expect(writableArray.length).to.equal(0);
-    //     });
-    // });
 });

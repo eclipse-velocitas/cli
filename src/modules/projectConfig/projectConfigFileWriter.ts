@@ -29,6 +29,22 @@ interface IProjectConfigWriter {
  */
 export class ProjectConfigWriter implements IProjectConfigWriter {
     /**
+     * Creates a string out of the project configuration in format for the lock file.
+     * @returns A string for writing the ProjectConfigLock.
+     */
+    static toLockString(projectConfig: ProjectConfig): string {
+        const packagesObject: { [key: string]: string } = {};
+        projectConfig.getPackages().forEach((packageConfig: PackageConfig) => {
+            packagesObject[`${packageConfig.repo}`] = packageConfig.version;
+        });
+        const projectConfigAttributes = {
+            packages: packagesObject,
+        };
+
+        return `${JSON.stringify(projectConfigAttributes, null, 4)}\n`;
+    }
+
+    /**
      * Converts an array of PackageConfig objects into a writable Map for the configuration file.
      * @param packageConfig Array of PackageConfig objects.
      * @returns A Map containing repository names as keys and version identifiers as values.
@@ -44,22 +60,6 @@ export class ProjectConfigWriter implements IProjectConfigWriter {
      */
     private _toWritableComponentConfig(componentConfig: ComponentConfig[]): string[] {
         return Array.from(new Set(componentConfig.map((component: ComponentConfig) => component.id)));
-    }
-
-    /**
-     * Creates a string out of the project configuration in format for the lock file.
-     * @returns A string for writing the ProjectConfigLock.
-     */
-    toLockString(projectConfig: ProjectConfig): string {
-        const packagesObject: { [key: string]: string } = {};
-        projectConfig.getPackages().forEach((packageConfig: PackageConfig) => {
-            packagesObject[`${packageConfig.repo}`] = packageConfig.version;
-        });
-        const projectConfigAttributes = {
-            packages: packagesObject,
-        };
-
-        return `${JSON.stringify(projectConfigAttributes, null, 4)}\n`;
     }
 
     /**
@@ -87,6 +87,9 @@ export class ProjectConfigWriter implements IProjectConfigWriter {
     }
 }
 
+/**
+ * Writer for .velocitas-lock.json files.
+ */
 export class ProjectConfigLockWriter implements IProjectConfigWriter {
     /**
      * Writes the locked project configuration to file.
@@ -95,8 +98,7 @@ export class ProjectConfigLockWriter implements IProjectConfigWriter {
      */
     write(projectConfig: ProjectConfig, path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): void {
         try {
-            const projectConfigWriter = new ProjectConfigWriter();
-            CliFileSystem.writeFileSync(path, projectConfigWriter.toLockString(projectConfig));
+            CliFileSystem.writeFileSync(path, ProjectConfigWriter.toLockString(projectConfig));
         } catch (error) {
             throw new Error(`Error writing .velocitas-lock.json: ${error}`);
         }

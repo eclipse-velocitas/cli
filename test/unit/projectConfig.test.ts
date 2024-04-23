@@ -20,7 +20,7 @@ import sinon from 'sinon';
 import { ProjectConfigIO } from '../../src/modules/projectConfig/projectConfigIO';
 import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/utils/fs-bridge';
 
-describe('project-config - module', () => {
+describe('projectConfig - module', () => {
     const packageManifestPath = `${homedir()}/.velocitas/packages/pkg1/v1.0.0/manifest.json`;
     const validProjectConfigPath = `${cwd()}/.velocitasValid.json`;
     const validProjectConfigLockPath = `${cwd()}/.velocitasValid-lock.json`;

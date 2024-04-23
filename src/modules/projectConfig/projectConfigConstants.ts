@@ -23,9 +23,10 @@ export type DesiredConfigFileVariables = {
     [name: string]: string;
 };
 
-export const DEFAULT_CONFIG_FILE_NAME = '.velocitas.json';
+const DEFAULT_CONFIG_FILE_NAME = '.velocitas.json';
 export const DEFAULT_CONFIG_FILE_PATH = resolve(cwd(), DEFAULT_CONFIG_FILE_NAME);
-export const DEFAULT_CONFIG_LOCKFILE_NAME = '.velocitas-lock.json';
+
+const DEFAULT_CONFIG_LOCKFILE_NAME = '.velocitas-lock.json';
 export const DEFAULT_CONFIG_LOCKFILE_PATH = resolve(cwd(), DEFAULT_CONFIG_LOCKFILE_NAME);
 
 export const VARIABLE_SCOPE_SEPARATOR = '@';

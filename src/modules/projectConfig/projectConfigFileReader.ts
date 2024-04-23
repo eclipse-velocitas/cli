@@ -33,7 +33,7 @@ interface IProjectConfigReader {
 
 export class MultiFormatConfigReader implements IProjectConfigReader {
     /**
-     * Reads the project configuration using multiple format readers.
+     * Reads the project configuration using readers for multiple formats.
      * @param cliVersion The version of the CLI.
      * @param path The path to the configuration file.
      * @param ignoreLock Whether to ignore the project configuration lock file.
@@ -51,8 +51,8 @@ export class MultiFormatConfigReader implements IProjectConfigReader {
                 if (config !== null) {
                     break;
                 }
-            } catch (e: any) {
-                console.warn(`Warning: Reading ${path} using ${reader.constructor.name}: ${e.message}`);
+            } catch (error: any) {
+                console.warn(`Warning: Reading ${path} using ${reader.constructor.name}: ${error.message}`);
             }
         }
 
@@ -126,7 +126,7 @@ export class ProjectConfigReader implements IProjectConfigReader {
 
     /**
      * Converts DesiredConfigFilePackages into an array of PackageConfig objects.
-     * @param configFilePackages Object containing repository names as keys and version numbers as values.
+     * @param configFilePackages Object containing repository names as keys and version strings as values.
      * @param ignoreLock If true, ignores project configuration lock file.
      * @returns An array of PackageConfig objects.
      */
@@ -167,6 +167,14 @@ export class ProjectConfigReader implements IProjectConfigReader {
         return cmpCfgArray;
     }
 
+    /**
+     * Reads the project configuration.
+     * @param cliVersion The version of the CLI.
+     * @param path The path to the configuration file.
+     * @param ignoreLock Whether to ignore the project configuration lock file.
+     * @returns The project configuration.
+     * @throws Error if unable to read the configuration file in any format.
+     */
     read(cliVersion: string, path: PathLike = DEFAULT_CONFIG_FILE_PATH, ignoreLock: boolean = false): ProjectConfig {
         try {
             const configFileData = JSON.parse(CliFileSystem.readFileSync(path as string));
@@ -187,6 +195,9 @@ export class ProjectConfigReader implements IProjectConfigReader {
     }
 }
 
+/**
+ * Reader for legacy .velocitas.json files in old format.
+ */
 export class LegacyProjectConfigReader implements IProjectConfigReader {
     /**
      * Parses legacy project configuration into an array of PackageConfig objects.
@@ -203,6 +214,14 @@ export class LegacyProjectConfigReader implements IProjectConfigReader {
         return configArray;
     }
 
+    /**
+     * Reads the legacy project configuration in old format.
+     * @param cliVersion The version of the CLI.
+     * @param path The path to the configuration file.
+     * @param ignoreLock Whether to ignore the project configuration lock file.
+     * @returns The project configuration.
+     * @throws Error if unable to read the configuration file in any format.
+     */
     read(cliVersion: string, path: PathLike = DEFAULT_CONFIG_FILE_PATH, ignoreLock: boolean = false): ProjectConfig {
         const configFileData = JSON.parse(CliFileSystem.readFileSync(path as string));
         const config: ProjectConfigAttributes = {
@@ -215,6 +234,9 @@ export class LegacyProjectConfigReader implements IProjectConfigReader {
     }
 }
 
+/**
+ * Reader for .velocitas-lock.json files.
+ */
 export class ProjectConfigLockReader {
     /**
      * Reads the locked project configuration from file.
