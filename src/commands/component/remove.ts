@@ -13,8 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Args, Command } from '@oclif/core';
-import { MultiFormatConfigReader } from '../../modules/projectConfig/projectConfigFileReader';
-import { ProjectConfigWriter } from '../../modules/projectConfig/projectConfigFileWriter';
+import { ProjectConfigIO } from '../../modules/projectConfig/projectConfigIO';
 
 export default class Remove extends Command {
     static description = 'Remove project components.';
@@ -28,7 +27,7 @@ export default class Remove extends Command {
     async run(): Promise<void> {
         const { args } = await this.parse(Remove);
 
-        const projectConfig = MultiFormatConfigReader.read(`v${this.config.version}`);
+        const projectConfig = ProjectConfigIO.read(`v${this.config.version}`);
 
         const foundComponent = projectConfig.getComponentContexts(false).find((compContext) => compContext.manifest.id === args.id);
 
@@ -43,7 +42,6 @@ export default class Remove extends Command {
         }
 
         projectConfig.removeComponent(foundComponent?.manifest.id);
-        const projectConfigWriter = new ProjectConfigWriter();
-        projectConfigWriter.write(projectConfig);
+        ProjectConfigIO.write(projectConfig);
     }
 }

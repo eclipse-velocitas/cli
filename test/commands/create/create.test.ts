@@ -17,7 +17,7 @@ import * as gitModule from 'simple-git';
 import { AppManifest } from '../../../src/modules/app-manifest';
 import * as exec from '../../../src/modules/exec';
 import { CoreComponent, ExtensionComponent } from '../../../src/modules/package-index';
-import { MultiFormatConfigReader } from '../../../src/modules/projectConfig/projectConfigFileReader';
+import { ProjectConfigIO } from '../../../src/modules/projectConfig/projectConfigIO';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
 import { corePackageInfoMock, packageIndexMock, runtimePackageInfoMock } from '../../utils/mockConfig';
 import { mockFolders } from '../../utils/mockfs';
@@ -80,9 +80,9 @@ describe('create', () => {
         .command(['create', '-n', TEST_APP_NAME, '-c', TEST_COMPONENT_CORE_ID])
         .it('creates a project with provided flags and generates .velocitas.json and AppManifest', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_NON_INTERACTIVE_STDOUT);
-            expect(MultiFormatConfigReader.isAvailable()).to.be.true;
+            expect(ProjectConfigIO.isConfigAvailable()).to.be.true;
             expect(AppManifest.read()).to.not.be.undefined;
-            const velocitasConfig = MultiFormatConfigReader.read('v0.0.0');
+            const velocitasConfig = ProjectConfigIO.read('v0.0.0');
             expect(velocitasConfig.getPackages()[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
             expect(velocitasConfig.getPackages()[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
             expect(velocitasConfig.getPackages()[1].repo).to.be.equal(TEST_PACKAGE_URI);
@@ -149,9 +149,9 @@ describe('create', () => {
             'creates a project in interactive mode without example and generates .velocitas.json and AppManifest without defaults',
             (ctx) => {
                 expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT(TEST_APP_NAME, TEST_COMPONENT_EXTENSION_ID));
-                expect(MultiFormatConfigReader.isAvailable()).to.be.true;
+                expect(ProjectConfigIO.isConfigAvailable()).to.be.true;
                 expect(AppManifest.read()).to.not.be.undefined;
-                const velocitasConfig = MultiFormatConfigReader.read('v0.0.0');
+                const velocitasConfig = ProjectConfigIO.read('v0.0.0');
                 expect(velocitasConfig.getPackages()[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
                 expect(velocitasConfig.getPackages()[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
                 expect(velocitasConfig.getPackages()[1].repo).to.be.equal(TEST_PACKAGE_URI);
@@ -188,9 +188,9 @@ describe('create', () => {
         .command(['create'])
         .it('creates a project in interactive mode without example and generates .velocitas.json and AppManifest correctly', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT(TEST_APP_NAME));
-            expect(MultiFormatConfigReader.isAvailable()).to.be.true;
+            expect(ProjectConfigIO.isConfigAvailable()).to.be.true;
             expect(AppManifest.read()).to.not.be.undefined;
-            const velocitasConfig = MultiFormatConfigReader.read('v0.0.0');
+            const velocitasConfig = ProjectConfigIO.read('v0.0.0');
             expect(velocitasConfig.getPackages()[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
             expect(velocitasConfig.getPackages()[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
             expect(velocitasConfig.getPackages()[1].repo).to.be.equal(TEST_PACKAGE_URI);
@@ -227,10 +227,10 @@ describe('create', () => {
         .command(['create'])
         .it('creates a project in interactive mode with example and generates .velocitas.json and AppManifest correctly', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT(TEST_COMPONENT_CORE_EXAMPLE));
-            expect(MultiFormatConfigReader.isAvailable()).to.be.true;
+            expect(ProjectConfigIO.isConfigAvailable()).to.be.true;
             expect(AppManifest.read()).to.not.be.undefined;
 
-            const velocitasConfig = MultiFormatConfigReader.read('v0.0.0');
+            const velocitasConfig = ProjectConfigIO.read('v0.0.0');
             expect(velocitasConfig.getPackages()[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
             expect(velocitasConfig.getPackages()[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
             expect(velocitasConfig.getPackages()[1].repo).to.be.equal(TEST_PACKAGE_URI);

@@ -18,7 +18,7 @@ import { PackageConfig } from '../package';
 import { PackageIndex } from '../package-index';
 import { getLatestVersion } from '../semver';
 import { VariableCollection } from '../variables';
-import { ProjectConfigWriter } from './projectConfigFileWriter';
+import { ProjectConfigIO } from './projectConfigIO';
 
 export interface ProjectConfigAttributes {
     packages: PackageConfig[];
@@ -43,7 +43,7 @@ export class ProjectConfig {
     /**
      * Create a new project configuration.
      *
-     * @param config The options to use when creating the confugration. May be undefined.
+     * @param config The options to use when creating the configuration. May be undefined.
      */
     constructor(cliVersion: string, config?: ProjectConfigAttributes) {
         this._packages = config?.packages ? config.packages : [];
@@ -72,8 +72,7 @@ export class ProjectConfig {
         }
         projectConfig.getVariableMappings().set('appManifestPath', DEFAULT_APP_MANIFEST_PATH);
         projectConfig.getVariableMappings().set('githubRepoId', '<myrepo>');
-        const projectConfigWriter = new ProjectConfigWriter();
-        projectConfigWriter.write(projectConfig);
+        ProjectConfigIO.write(projectConfig);
     }
 
     /**

@@ -14,7 +14,7 @@
 
 import { Args, Command } from '@oclif/core';
 import { ProjectCache } from '../../modules/project-cache';
-import { MultiFormatConfigReader } from '../../modules/projectConfig/projectConfigFileReader';
+import { ProjectConfigIO } from '../../modules/projectConfig/projectConfigIO';
 
 export default class Set extends Command {
     static description = 'Set the cache value of an entry.';
@@ -31,7 +31,7 @@ export default class Set extends Command {
 
         // although we are not reading the project config, we want to
         // ensure the command is run in a project directory only.
-        MultiFormatConfigReader.read(`v${this.config.version}`);
+        ProjectConfigIO.read(`v${this.config.version}`);
 
         const cache = ProjectCache.read();
         cache.set(args.key, args.value);

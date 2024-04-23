@@ -17,8 +17,7 @@ import { APP_MANIFEST_PATH_VARIABLE, AppManifest } from '../../modules/app-manif
 import { ComponentContext, ExecSpec } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { ProjectConfig } from '../../modules/projectConfig/projectConfig';
-import { MultiFormatConfigReader, ProjectConfigLockReader } from '../../modules/projectConfig/projectConfigFileReader';
-import { ProjectConfigLockWriter, ProjectConfigWriter } from '../../modules/projectConfig/projectConfigFileWriter';
+import { ProjectConfigIO } from '../../modules/projectConfig/projectConfigIO';
 import { resolveVersionIdentifier } from '../../modules/semver';
 import { createEnvVars } from '../../modules/variables';
 
@@ -66,20 +65,17 @@ export default class Init extends Command {
         }
 
         this.createProjectLockFile(projectConfig, flags.verbose);
-        const projectConfigWriter = new ProjectConfigWriter();
-        projectConfigWriter.write(projectConfig);
     }
 
     initializeOrReadProject(): ProjectConfig {
         let projectConfig: ProjectConfig;
 
-        if (!MultiFormatConfigReader.isAvailable()) {
+        if (!ProjectConfigIO.isConfigAvailable()) {
             this.log('... Directory is no velocitas project. Creating .velocitas.json at the root of your repository.');
             projectConfig = new ProjectConfig(`v${this.config.version}`);
-            const projectConfigWriter = new ProjectConfigWriter();
-            projectConfigWriter.write(projectConfig);
+            ProjectConfigIO.write(projectConfig);
         } else {
-            projectConfig = MultiFormatConfigReader.read(`v${this.config.version}`, undefined, true);
+            projectConfig = ProjectConfigIO.read(`v${this.config.version}`, undefined, true);
         }
         return projectConfig;
     }
@@ -157,9 +153,9 @@ export default class Init extends Command {
     }
 
     createProjectLockFile(projectConfig: ProjectConfig, verbose: boolean): void {
-        if (verbose && !ProjectConfigLockReader.isLockAvailable()) {
+        if (verbose && !ProjectConfigIO.isLockAvailable()) {
             this.log('... No .velocitas-lock.json found. Creating it at the root of your repository.');
         }
-        ProjectConfigLockWriter.write(projectConfig);
+        ProjectConfigIO.writeLock(projectConfig);
     }
 }

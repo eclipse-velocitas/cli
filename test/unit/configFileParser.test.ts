@@ -18,7 +18,7 @@ import { cwd } from 'node:process';
 import sinon from 'sinon';
 import { ComponentConfig } from '../../src/modules/component';
 import { PackageConfig } from '../../src/modules/package';
-import { MultiFormatConfigReader } from '../../src/modules/projectConfig/projectConfigFileReader';
+import { ProjectConfigIO } from '../../src/modules/projectConfig/projectConfigIO';
 import { CliFileSystem, MockFileSystem, MockFileSystemObj } from '../../src/utils/fs-bridge';
 
 const configFileMock = {
@@ -72,7 +72,7 @@ describe('ProjectConfigFileReader', () => {
     });
     describe('File Parsing', () => {
         it('should parse package configurations from the provided .velocitas.json file', () => {
-            const configFileObj = MultiFormatConfigReader.read('', configFilePath, true);
+            const configFileObj = ProjectConfigIO.read('', configFilePath, true);
             const projectConfigPackages = configFileObj.getPackages();
             expect(projectConfigPackages.every((pkg) => pkg instanceof PackageConfig)).to.be.true;
             expect(projectConfigPackages.length).to.equal(1);
@@ -80,26 +80,26 @@ describe('ProjectConfigFileReader', () => {
             expect(projectConfigPackages[0].version).to.equal('v0.0.1');
         });
         it('should parse component configurations from the provided .velocitas.json file', () => {
-            const configFileObj = MultiFormatConfigReader.read('', configFilePath, true);
+            const configFileObj = ProjectConfigIO.read('', configFilePath, true);
             const projectConfigComponents = configFileObj.getComponents();
             expect(projectConfigComponents.every((cmp) => cmp instanceof ComponentConfig)).to.be.true;
             expect(projectConfigComponents.length).to.equal(1);
             expect(projectConfigComponents[0].id).to.equal('test-component');
         });
         it('should assign variables to package configurations', () => {
-            const configFileObj = MultiFormatConfigReader.read('', configFilePath, true);
+            const configFileObj = ProjectConfigIO.read('', configFilePath, true);
             const projectConfigPackages = configFileObj.getPackages();
             const packageVariable = projectConfigPackages[0].variables.get('packageVariable');
             expect(packageVariable).to.equal('packageTest');
         });
         it('should assign variables to component configurations', () => {
-            const configFileObj = MultiFormatConfigReader.read('', configFilePath, true);
+            const configFileObj = ProjectConfigIO.read('', configFilePath, true);
             const projectConfigComponents = configFileObj.getComponents();
             const componentVariable = projectConfigComponents[0].variables.get('componentVariable');
             expect(componentVariable).to.equal('componentTest');
         });
         it('should assign empty maps to every variables property if no variables are provided', () => {
-            const configFileObj = MultiFormatConfigReader.read('', configFilePathNoVariables, true);
+            const configFileObj = ProjectConfigIO.read('', configFilePathNoVariables, true);
             const projectConfigPackages = configFileObj.getPackages();
             const projectConfigComponents = configFileObj.getComponents();
             const projectConfigVariables = configFileObj.getVariableMappings();
@@ -111,13 +111,13 @@ describe('ProjectConfigFileReader', () => {
             expect(projectConfigComponents[0].variables.size).to.equal(0);
         });
         it('should assign an empty array to components configuration if no components are provided', () => {
-            const configFileObj = MultiFormatConfigReader.read('', configFilePathNoVariablesAndComponents, true);
+            const configFileObj = ProjectConfigIO.read('', configFilePathNoVariablesAndComponents, true);
             const projectConfigComponents = configFileObj.getComponents();
             expect(projectConfigComponents).to.be.an('array');
             expect(projectConfigComponents.length).to.equal(0);
         });
         it('should handle project configuration lock if available', () => {
-            const configFileObj = MultiFormatConfigReader.read('', configFilePath, false);
+            const configFileObj = ProjectConfigIO.read('', configFilePath, false);
             const projectConfigPackages = configFileObj.getPackages();
             expect(projectConfigPackages.every((pkg) => pkg instanceof PackageConfig)).to.be.true;
             expect(projectConfigPackages.length).to.equal(1);
@@ -125,14 +125,14 @@ describe('ProjectConfigFileReader', () => {
             expect(projectConfigPackages[0].version).to.equal('v0.0.2');
         });
         it('should correctly store the CLI version from .velocitas.json file', () => {
-            const configFileObj = MultiFormatConfigReader.read('', configFilePath, true);
+            const configFileObj = ProjectConfigIO.read('', configFilePath, true);
             expect(configFileObj.cliVersion).to.equal('v0.0.1');
         });
     });
     describe('Error handling', () => {
         it('should handle errors when parsing .velocitas.json file', () => {
             const readFileStub = sinon.stub(CliFileSystem, 'readFileSync').throws();
-            const projectConfigFileReader = () => MultiFormatConfigReader.read('', configFilePath, true);
+            const projectConfigFileReader = () => ProjectConfigIO.read('', configFilePath, true);
             expect(projectConfigFileReader).to.throw(`Unable to read ${configFilePath}: unknown format!`);
             readFileStub.restore();
         });

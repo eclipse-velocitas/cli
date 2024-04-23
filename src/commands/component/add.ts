@@ -14,8 +14,7 @@
 
 import { Args, Command } from '@oclif/core';
 import { ComponentContext } from '../../modules/component';
-import { MultiFormatConfigReader } from '../../modules/projectConfig/projectConfigFileReader';
-import { ProjectConfigWriter } from '../../modules/projectConfig/projectConfigFileWriter';
+import { ProjectConfigIO } from '../../modules/projectConfig/projectConfigIO';
 
 export default class Add extends Command {
     static description = 'Add project components.';
@@ -29,7 +28,7 @@ export default class Add extends Command {
     async run(): Promise<void> {
         const { args } = await this.parse(Add);
 
-        const projectConfig = MultiFormatConfigReader.read(`v${this.config.version}`);
+        const projectConfig = ProjectConfigIO.read(`v${this.config.version}`);
         const foundComponent = projectConfig
             .getComponentContexts(false)
             .find((compContext: ComponentContext) => compContext.manifest.id === args.id);
@@ -45,7 +44,6 @@ export default class Add extends Command {
         }
 
         projectConfig.addComponent(foundComponent?.manifest.id);
-        const projectConfigWriter = new ProjectConfigWriter();
-        projectConfigWriter.write(projectConfig);
+        ProjectConfigIO.write(projectConfig);
     }
 }

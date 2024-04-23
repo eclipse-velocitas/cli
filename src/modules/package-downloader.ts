@@ -42,7 +42,9 @@ export class PackageDownloader {
 
     async checkoutVersion(): Promise<void> {
         await this.git.checkout(
-            this.packageConfig.version.startsWith(BRANCH_PREFIX) ? this.packageConfig.version.substring(1) : this.packageConfig.version,
+            this.packageConfig.version.startsWith(BRANCH_PREFIX)
+                ? this.packageConfig.version.substring(BRANCH_PREFIX.length)
+                : this.packageConfig.version,
         );
     }
 

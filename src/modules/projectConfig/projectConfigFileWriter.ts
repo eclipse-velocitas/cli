@@ -93,16 +93,12 @@ export class ProjectConfigLockWriter implements IProjectConfigWriter {
      * @param projectConfig Project configuration to get the packages for the lock file.
      * @param path Path of the file to write the configuration to. Defaults to DEFAULT_CONFIG_LOCKFILE_PATH.
      */
-    static write(projectConfig: ProjectConfig, path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): void {
+    write(projectConfig: ProjectConfig, path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): void {
         try {
             const projectConfigWriter = new ProjectConfigWriter();
             CliFileSystem.writeFileSync(path, projectConfigWriter.toLockString(projectConfig));
         } catch (error) {
             throw new Error(`Error writing .velocitas-lock.json: ${error}`);
         }
-    }
-
-    write(projectConfig: ProjectConfig, path: PathLike): void {
-        ProjectConfigLockWriter.write(projectConfig, path);
     }
 }

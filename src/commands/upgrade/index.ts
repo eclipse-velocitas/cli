@@ -15,8 +15,7 @@
 import { Command, Flags } from '@oclif/core';
 import { PackageConfig } from '../../modules/package';
 import { ProjectConfig } from '../../modules/projectConfig/projectConfig';
-import { MultiFormatConfigReader, ProjectConfigLockReader } from '../../modules/projectConfig/projectConfigFileReader';
-import { ProjectConfigWriter } from '../../modules/projectConfig/projectConfigFileWriter';
+import { ProjectConfigIO } from '../../modules/projectConfig/projectConfigIO';
 import { ProjectConfigLock } from '../../modules/projectConfig/projectConfigLock';
 import { getLatestVersion, incrementVersionRange, resolveVersionIdentifier } from '../../modules/semver';
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -47,14 +46,14 @@ export default class Upgrade extends Command {
 
     async run(): Promise<void> {
         const { flags } = await this.parse(Upgrade);
-        let projectConfigLock: ProjectConfigLock | null = ProjectConfigLockReader.read();
+        let projectConfigLock: ProjectConfigLock | null = ProjectConfigIO.readLock();
 
         if (!projectConfigLock) {
             throw new Error(`No .velocitas-lock.json found. Please 'velocitas init' first!`);
         }
 
         this.log(`Checking .velocitas.json for updates!`);
-        const projectConfig = MultiFormatConfigReader.read(`v${this.config.version}`, undefined, true);
+        const projectConfig = ProjectConfigIO.read(`v${this.config.version}`, undefined, true);
         let isAnyPackageUpdated: boolean = false;
         try {
             for (const packageConfig of projectConfig.getPackages()) {
@@ -95,8 +94,7 @@ export default class Upgrade extends Command {
             return false;
         } else {
             packageConfig.setPackageVersion(incrementVersionRange(initialVersionSpecifier, matchedVersion));
-            const projectConfigWriter = new ProjectConfigWriter();
-            projectConfigWriter.write(projectConfig);
+            ProjectConfigIO.write(projectConfig);
             return true;
         }
     }

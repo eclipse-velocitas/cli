@@ -16,29 +16,22 @@ import { PathLike } from 'node:fs';
 import { CliFileSystem } from '../../utils/fs-bridge';
 import { ComponentConfig } from '../component';
 import { PackageConfig } from '../package';
-import { ProjectConfig } from './projectConfig';
+import { ProjectConfig, ProjectConfigAttributes } from './projectConfig';
 import {
     DEFAULT_CONFIG_FILE_PATH,
     DEFAULT_CONFIG_LOCKFILE_PATH,
     DesiredConfigFileComponents,
     DesiredConfigFilePackages,
-    DesiredConfigFileVariables,
     VARIABLE_SCOPE_SEPARATOR,
 } from './projectConfigConstants';
 import { ProjectConfigLock } from './projectConfigLock';
+import { ReaderUtil } from './readerUtil';
 
 interface IProjectConfigReader {
     read(cliVersion: string, path: PathLike, ignoreLock: boolean): ProjectConfig;
 }
 
 export class MultiFormatConfigReader implements IProjectConfigReader {
-    /**
-     * Checks if a configuration file exists at the given path.
-     * @param path The path to the configuration file.
-     * @returns True if the configuration file exists, otherwise false.
-     */
-    static isAvailable = (path: PathLike = DEFAULT_CONFIG_FILE_PATH) => CliFileSystem.existsSync(path);
-
     /**
      * Reads the project configuration using multiple format readers.
      * @param cliVersion The version of the CLI.
@@ -47,7 +40,7 @@ export class MultiFormatConfigReader implements IProjectConfigReader {
      * @returns The project configuration.
      * @throws Error if unable to read the configuration file in any format.
      */
-    static read(cliVersion: string, path: PathLike = DEFAULT_CONFIG_FILE_PATH, ignoreLock: boolean = false): ProjectConfig {
+    read(cliVersion: string, path: PathLike = DEFAULT_CONFIG_FILE_PATH, ignoreLock: boolean = false): ProjectConfig {
         const projectConfigReaders: IProjectConfigReader[] = [new ProjectConfigReader(), new LegacyProjectConfigReader()];
 
         let config: ProjectConfig | null = null;
@@ -69,17 +62,12 @@ export class MultiFormatConfigReader implements IProjectConfigReader {
 
         return config;
     }
-
-    read(cliVersion: string, path: PathLike = DEFAULT_CONFIG_FILE_PATH, ignoreLock: boolean = false): ProjectConfig {
-        return MultiFormatConfigReader.read(cliVersion, path, ignoreLock);
-    }
 }
 
 /**
  * Reader for .velocitas.json files.
  */
 export class ProjectConfigReader implements IProjectConfigReader {
-    private _ignoreLock: boolean = false;
     packages: PackageConfig[] = [];
     components: ComponentConfig[] = [];
     variables: Map<string, any> = new Map<string, any>();
@@ -98,39 +86,6 @@ export class ProjectConfigReader implements IProjectConfigReader {
             if (configToAssign instanceof ComponentConfig && variableKey.includes(configToAssign.id)) {
                 const [parsedVariableKey] = variableKey.split(VARIABLE_SCOPE_SEPARATOR);
                 configToAssign.variables?.set(parsedVariableKey, variableValue);
-            }
-        }
-    }
-
-    /**
-     * Converts DesiredConfigFileVariables into a Map format.
-     * @param configFileVariables Configuration file variables to convert.
-     * @returns A Map representing the configuration file variables.
-     */
-    private _convertConfigFileVariablesToMap(configFileVariables: DesiredConfigFileVariables): Map<string, any> {
-        if (!configFileVariables) {
-            return new Map<string, any>();
-        }
-        if (!(configFileVariables instanceof Map)) {
-            return new Map<string, any>(Object.entries(configFileVariables));
-        }
-        return new Map<string, any>();
-    }
-
-    /**
-     * Processes all packageConfigs to assign variables and read versions from lock file.
-     * @param ignoreLock If true, ignores project configuration lock file.
-     */
-    private _handlePackages(ignoreLock: boolean): void {
-        let projectConfigLock: ProjectConfigLock | null = null;
-
-        for (let packageConfig of this.packages) {
-            this._assignVariablesToConfig(packageConfig);
-            if (!ignoreLock && ProjectConfigLockReader.isLockAvailable()) {
-                projectConfigLock = ProjectConfigLockReader.read();
-            }
-            if (projectConfigLock) {
-                packageConfig.version = projectConfigLock.findVersion(packageConfig.repo);
             }
         }
     }
@@ -172,9 +127,10 @@ export class ProjectConfigReader implements IProjectConfigReader {
     /**
      * Converts DesiredConfigFilePackages into an array of PackageConfig objects.
      * @param configFilePackages Object containing repository names as keys and version numbers as values.
+     * @param ignoreLock If true, ignores project configuration lock file.
      * @returns An array of PackageConfig objects.
      */
-    private _parseConfigToPackageConfigArray(configFilePackages: DesiredConfigFilePackages): PackageConfig[] {
+    private _parseConfigToPackageConfigArray(configFilePackages: DesiredConfigFilePackages, ignoreLock: boolean): PackageConfig[] {
         const pkgCfgArray: PackageConfig[] = [];
         if (!this._isValidConfigFilePackages(configFilePackages)) {
             throw new Error('Config File Packages are not in the expected format');
@@ -185,8 +141,7 @@ export class ProjectConfigReader implements IProjectConfigReader {
             this._assignVariablesToConfig(pkgCfg);
             pkgCfgArray.push(pkgCfg);
         }
-        this.packages = pkgCfgArray;
-        this._handlePackages(this._ignoreLock);
+        ReaderUtil.parseLockFileVersions(pkgCfgArray, ignoreLock);
         return pkgCfgArray;
     }
 
@@ -215,12 +170,16 @@ export class ProjectConfigReader implements IProjectConfigReader {
     read(cliVersion: string, path: PathLike = DEFAULT_CONFIG_FILE_PATH, ignoreLock: boolean = false): ProjectConfig {
         try {
             const configFileData = JSON.parse(CliFileSystem.readFileSync(path as string));
-            this._ignoreLock = ignoreLock;
-            this.variables = this._convertConfigFileVariablesToMap(configFileData.variables);
-            this.packages = this._parseConfigToPackageConfigArray(configFileData.packages);
+            this.variables = ReaderUtil.convertConfigFileVariablesToMap(configFileData.variables);
+            this.packages = this._parseConfigToPackageConfigArray(configFileData.packages, ignoreLock);
             this.components = this._parseConfigToComponentConfigArray(configFileData.components);
             this.cliVersion = configFileData.cliVersion ? configFileData.cliVersion : cliVersion;
-            const config = { packages: this.packages, components: this.components, variables: this.variables, cliVersion: this.cliVersion };
+            const config: ProjectConfigAttributes = {
+                packages: this.packages,
+                components: this.components,
+                variables: this.variables,
+                cliVersion: this.cliVersion,
+            };
             return new ProjectConfig(cliVersion, config);
         } catch (error) {
             throw error;
@@ -230,28 +189,15 @@ export class ProjectConfigReader implements IProjectConfigReader {
 
 export class LegacyProjectConfigReader implements IProjectConfigReader {
     /**
-     * Converts DesiredConfigFileVariables into a Map format.
-     * @param configFileVariables Configuration file variables to convert.
-     * @returns A Map representing the configuration file variables.
-     */
-    private _convertConfigFileVariablesToMap(configFileVariables: DesiredConfigFileVariables): Map<string, any> {
-        if (!configFileVariables) {
-            return new Map<string, any>();
-        }
-        if (!(configFileVariables instanceof Map)) {
-            return new Map<string, any>(Object.entries(configFileVariables));
-        }
-        return new Map<string, any>();
-    }
-
-    /**
-     * Converts DesiredConfigFilePackages into an array of PackageConfig objects.
-     * @param configFilePackages Object containing repository names as keys and version numbers as values.
+     * Parses legacy project configuration into an array of PackageConfig objects.
+     * @param configFilePackages Array containing configuration for packages.
+     * @param ignoreLock If true, ignores project configuration lock file.
      * @returns An array of PackageConfig objects.
      */
-    private _parsePackageConfig(packages: PackageConfig[]): PackageConfig[] {
+    private _parseLegacyPackageConfig(configFilePackages: PackageConfig[], ignoreLock: boolean): PackageConfig[] {
         const configArray: PackageConfig[] = [];
-        packages.forEach((packageConfig: PackageConfig) => {
+        ReaderUtil.parseLockFileVersions(configFilePackages, ignoreLock);
+        configFilePackages.forEach((packageConfig: PackageConfig) => {
             configArray.push(new PackageConfig(packageConfig));
         });
         return configArray;
@@ -259,10 +205,10 @@ export class LegacyProjectConfigReader implements IProjectConfigReader {
 
     read(cliVersion: string, path: PathLike = DEFAULT_CONFIG_FILE_PATH, ignoreLock: boolean = false): ProjectConfig {
         const configFileData = JSON.parse(CliFileSystem.readFileSync(path as string));
-        const config = {
-            packages: this._parsePackageConfig(configFileData.packages),
+        const config: ProjectConfigAttributes = {
+            packages: this._parseLegacyPackageConfig(configFileData.packages, ignoreLock),
             components: configFileData.components,
-            variables: this._convertConfigFileVariablesToMap(configFileData.variables),
+            variables: ReaderUtil.convertConfigFileVariablesToMap(configFileData.variables),
             cliVersion: configFileData.cliVersion ? configFileData.cliVersion : cliVersion,
         };
         return new ProjectConfig(cliVersion, config);
@@ -270,15 +216,13 @@ export class LegacyProjectConfigReader implements IProjectConfigReader {
 }
 
 export class ProjectConfigLockReader {
-    static isLockAvailable = (path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH) => CliFileSystem.existsSync(path);
-
     /**
      * Reads the locked project configuration from file.
      * @param path The path to the lock file. Defaults to DEFAULT_CONFIG_LOCKFILE_PATH if not provided.
      * @returns An instance of ProjectConfigLock if the lock file exists and is readable, or null if the file is not present.
      * @throws Error if there's an issue reading the lock file other than it not being present.
      */
-    static read(path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): ProjectConfigLock | null {
+    read(path: PathLike = DEFAULT_CONFIG_LOCKFILE_PATH): ProjectConfigLock | null {
         try {
             const data = JSON.parse(CliFileSystem.readFileSync(path as string));
             const packages = new Map<string, string>(Object.entries(data.packages));
