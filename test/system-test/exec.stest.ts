@@ -70,7 +70,6 @@ describe('CLI command', () => {
 
         it('should be able to let programs get cache values', () => {
             const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component', 'get-cache'], { encoding: DEFAULT_BUFFER_ENCODING });
-
             expect(result.stdout).to.contain('my_cache_key');
             expect(result.stdout).to.contain('my_cache_value');
             expect(result.stdout).to.contain('foo');
@@ -81,6 +80,14 @@ describe('CLI command', () => {
             expect(result.stdout).to.contain('random');
             expect(result.stdout).to.not.contain('var');
             expect(result.stdout).to.not.contain('asdc');
+            expect(result.stdout).to.contain('arr1');
+            expect(result.stdout).to.contain("['/path/test1', '/path/test2']");
+            expect(result.stdout).to.contain('arr2');
+            expect(result.stdout).to.contain("['/path/test1', '/path/test2']");
+            expect(result.stdout).to.contain('arr3');
+            expect(result.stdout).to.contain("['/path/test1', '/path/test2']");
+            expect(result.stdout).to.contain('arr4');
+            expect(result.stdout).to.contain("['/path/test1', '/path/test2']");
         });
 
         it('should be able to run programs which read from stdin', () => {
