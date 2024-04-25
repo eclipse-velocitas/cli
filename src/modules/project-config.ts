@@ -141,7 +141,7 @@ export class ProjectConfig {
         let componentsToSerialize: ComponentConfig[] = this._components;
 
         if (!componentsToSerialize || componentsToSerialize.length === 0) {
-            componentsToSerialize = this.getComponentsFromInstalledPackages(false).map((cc) => cc.config);
+            componentsToSerialize = this.getComponents(false, true).map((cc) => cc.config);
         }
 
         const projectConfigOptions: ProjectConfigOptions = {
@@ -169,12 +169,52 @@ export class ProjectConfig {
     }
 
     /**
-     * Adds a new packageConfig to the project.
+     * @param onlyInstalled only retrieves the installed packages for the project. Defaults to false.
+     * @returns all used packages by the project.
+     */
+    getPackages(onlyInstalled: boolean = false): PackageConfig[] {
+        if (onlyInstalled) {
+            return this._packages.filter((pkg) => pkg.isPackageInstalled());
+        }
+
+        return this._packages;
+    }
+
+    getPackageConfig(packageName: string, onlyInstalled: boolean = false): PackageConfig | undefined {
+        return this.getPackages().find((config) => config.getPackageName() === packageName);
+    }
+
+    /**
+     * Adds a new packageConfig to the project. Multiple packages with the same name and version will not be added. However adding
+     * a package which has a different version will update the version.
      *
      * @param packageConfig the packageConfig to add.
+     * @returns true if the package was added successfully, false otherwise.
      */
-    addPackage(packageConfig: PackageConfig) {
-        this._packages.push(packageConfig);
+    addPackageConfig(packageConfig: PackageConfig): boolean {
+        const existingPackage = this.getPackages().find((config) => config.getPackageName() === packageConfig.getPackageName());
+
+        if (!existingPackage) {
+            this._packages.push(packageConfig);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Updates the version of the packageConfig with the same packageName as provided.
+     *
+     * @param packageConfig the updated packageConfig.
+     * @returns true if the packageVersion was successfully updated, false otherwise.
+     */
+    updatePackageConfig(packageConfig: PackageConfig): boolean {
+        const existingPackage = this.getPackages().find((config) => config.getPackageName() === packageConfig.getPackageName());
+
+        if (existingPackage?.version !== packageConfig.version) {
+            existingPackage?.setPackageVersion(packageConfig.version);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -204,7 +244,7 @@ export class ProjectConfig {
      * @returns A list of all components used by the project.
      */
     getComponents(onlyUsed: boolean = true, onlyInstalled: boolean = false): ComponentContext[] {
-        let componentContexts: ComponentContext[] = [];
+        const componentContexts: ComponentContext[] = [];
 
         let packageConfigs = this._packages;
         if (onlyInstalled) {
@@ -213,27 +253,10 @@ export class ProjectConfig {
 
         for (const packageConfig of packageConfigs) {
             const components = this.getComponentsForPackageConfig(packageConfig, onlyUsed);
-            componentContexts = componentContexts.concat(components);
+            componentContexts.push(...components);
         }
 
         return componentContexts;
-    }
-
-    /**
-     * Return all components from installed packages.
-     *
-     * @param onlyUsed Only include components used by the project. Default: true.
-     * @returns A list of components from all installed packages.
-     */
-    getComponentsFromInstalledPackages(onlyUsed: boolean = true): ComponentContext[] {
-        return this._packages
-            .map((pkg) => {
-                if (pkg.isPackageInstalled()) {
-                    return this.getComponentsForPackageConfig(pkg, onlyUsed);
-                }
-                return Array<ComponentContext>();
-            })
-            .flat();
     }
 
     /**
@@ -287,29 +310,13 @@ export class ProjectConfig {
      * @returns The context the component is used in.
      */
     findComponentByName(componentId: string): ComponentContext {
-        let result = this.getComponentsFromInstalledPackages().find((compCtx: ComponentContext) => compCtx.manifest.id === componentId);
+        let result = this.getComponents(undefined, true).find((compCtx: ComponentContext) => compCtx.manifest.id === componentId);
 
         if (!result) {
             throw Error(`Cannot find component with id '${componentId}'!`);
         }
 
         return result;
-    }
-
-    /**
-     * @param onlyInstalled only retrieves the installed packages for the project. Defaults to false.
-     * @returns all used packages by the project.
-     */
-    getPackages(onlyInstalled: boolean = false): PackageConfig[] {
-        if (onlyInstalled) {
-            return this._packages.filter((pkg) => pkg.isPackageInstalled());
-        }
-
-        return this._packages;
-    }
-
-    addPackageConfig(packageConfig: PackageConfig) {
-        this._packages.push(packageConfig);
     }
 
     /**
@@ -320,7 +327,7 @@ export class ProjectConfig {
     }
 
     getVariableCollection(currentComponentContext: ComponentContext): VariableCollection {
-        return VariableCollection.build(this.getComponentsFromInstalledPackages(), this.getVariableMappings(), currentComponentContext);
+        return VariableCollection.build(this.getComponents(undefined, true), this.getVariableMappings(), currentComponentContext);
     }
 }
 

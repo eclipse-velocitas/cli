@@ -150,7 +150,7 @@ describe('init', () => {
         .stdout()
         .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
-        .command(['init', '--package', `${installedCorePackage.repo}@${installedCorePackage.version}`])
+        .command(['init', '--package', `${installedCorePackage.repo}`, '--specifier', `${installedCorePackage.version}`])
         .it('correctly downloads the defined package if a version is specified', (ctx) => {
             expect(ctx.stdout).to.contain(`... Downloading package: '${installedCorePackage.repo}:${installedCorePackage.version}'`);
             expect(
@@ -164,7 +164,7 @@ describe('init', () => {
         .stdout()
         .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
-        .command(['init', '--package', `${installedCorePackage.repo}@v10.5.2`])
+        .command(['init', '--package', `${installedCorePackage.repo}`, '--specifier', 'v10.5.2'])
         .catch((err) => {
             expect(err.message).to.contain(`Can't find matching version for v10.5.2.`);
         })
