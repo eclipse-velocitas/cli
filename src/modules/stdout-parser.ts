@@ -15,7 +15,7 @@
 import { ProjectCache } from './project-cache';
 
 const CACHE_OUTPUT_REGEX: RegExp =
-    /(\w+)\s*=\s*(\[((\'(\/*\w+)*\'\s*,\s*|(\"(\/*\w+)*\"\s*,\s*)|(\/*\w+)*\s*,\s*|\'(\/*\w+)*\'(?=\])|\"(\/*\w+)*\"(?=\])|(\/*\w+)*(?=\]))*\])|(\'.*?\'|\".*?\"|\w+))\s+\>\>\s+VELOCITAS_CACHE/;
+    /(\w+)\s*=\s*(\[((?:'[^']*'\s*,\s*|"[^"]*"\s*,\s*|[^\[\],]*\s*,\s*|'[^']*'(?=\])|"[^"]*"(?=\])|[^\[\],]*(?=\]))*)\]|'[^']*'|"[^"]*"|\w+)\s+\>\>\s+VELOCITAS_CACHE/;
 
 export function stdOutParser(projectCache: ProjectCache, line: string) {
     let lineTrimmed = (line as string).trim();

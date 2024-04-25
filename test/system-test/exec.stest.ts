@@ -85,7 +85,7 @@ describe('CLI command', () => {
             expect(result.stdout).to.contain('arr2');
             expect(result.stdout).to.contain("['/path/test1', '/path/test2']");
             expect(result.stdout).to.contain('arr3');
-            expect(result.stdout).to.contain("['/path/test1', '/path/test2']");
+            expect(result.stdout).to.contain("['./path-one/test1', '/path/test2']");
             expect(result.stdout).to.contain('arr4');
             expect(result.stdout).to.contain("['/path/test1', '/path/test2']");
         });
