@@ -40,6 +40,21 @@ echo "myKey=myValue >> VELOCITAS_CACHE"
 print("myKey=myValue >> VELOCITAS_CACHE")
 ```
 
+#### String array support
+The cache write supports string array values as well. The elements need to be double quoted and comma separated.
+
+Examples:
+
+**Bash**
+```bash
+echo 'myKey=["myValue", "myValue2"] >> VELOCITAS_CACHE'
+```
+
+**Python 3**
+```python
+print('myKey=["myValue", "myValue2"] >> VELOCITAS_CACHE')
+```
+
 ### Reading values
 
 To read values from the cache, programs may read the `VELOCITAS_CACHE_DATA` environment variable. It contains a the entire cache data as JSON-string.

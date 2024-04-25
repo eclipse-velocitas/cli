@@ -18,26 +18,15 @@ import { join, resolve } from 'node:path';
 import { ExecSpec, ProgramSpec } from './component';
 import { ProjectCache } from './project-cache';
 import { ProjectConfig } from './projectConfig/projectConfig';
-
-const CACHE_OUTPUT_REGEX: RegExp = /(\w+)\s*=\s*(\'.*?\'|\".*?\"|\w+)\s+\>\>\s+VELOCITAS_CACHE/;
+import { stdOutParser } from './stdout-parser';
 
 const lineCapturer = (projectCache: ProjectCache, writeStdout: boolean, data: string) => {
     if (writeStdout) {
         process.stdout.write(data);
     }
-    for (let line of data.toString().split('\n')) {
-        let lineTrimmed = (line as string).trim();
-
-        if (lineTrimmed.length === 0) {
-            continue;
-        }
-        const result = CACHE_OUTPUT_REGEX.exec(lineTrimmed);
-        if (result && result.length > 0) {
-            const key = result[1];
-            const value = result[2].replaceAll("'", '').replaceAll('"', '');
-            projectCache.set(key, value);
-        }
-    }
+    data.toString()
+        .split('\n')
+        .forEach((value) => stdOutParser(projectCache, value));
 };
 
 export function setSpawnImplementation(func: (command: string, args: string | string[], options: any) => IPty) {
