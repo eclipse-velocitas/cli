@@ -38,9 +38,13 @@ describe('stdOutParser - module', () => {
             ['test_6 = ["/this/is/path/one",    "/this/is/path/two"]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
             ['test_7 =["/this/is/path/one", "/this/is/path/two"]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
             ['test_8=["/this/is/path/one", "/this/is/path/two"]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
-            ["test_9 = ['/this/is/path/one', /this/is/path/two]  >> VELOCITAS_CACHE", ['/this/is/path/one', '/this/is/path/two']],
+            [
+                "test_9 = ['./this-this/is/path/one', /this/is/path/two]  >> VELOCITAS_CACHE",
+                ['./this-this/is/path/one', '/this/is/path/two'],
+            ],
             ['test_10 = [/this/is/path/one, "/this/is/path/two"]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
-            ['test_11 = [/this/is/path/one, /this/is/path/two]  >> VELOCITAS_CACHE', ['/this/is/path/one', '/this/is/path/two']],
+            ['test_11 = [/this-this/is/path/one, /this/is/path/two]  >> VELOCITAS_CACHE', ['/this-this/is/path/one', '/this/is/path/two']],
+            ['test_12 = [/this-this/is/path/one , /this/is/path/two]  >> VELOCITAS_CACHE', ['/this-this/is/path/one', '/this/is/path/two']],
         ]);
 
         it('should match and set project cache correct', () => {
@@ -60,9 +64,11 @@ describe('stdOutParser - module', () => {
             ['test_3 = /this/is/path/one"this/test >> VELOCITAS_CACHE', {}],
             ['test_4 = ["/this/is/path/one", /this/is/path/two"]', {}],
             ['test_5 = ["/this/is/path/one""/this/is/path/two"]  >> VELOCITAS_CACHE', {}],
-            ['"test_6" = ["/this/is/path/one", "/this/is/path/two"]  >> VELOCITAS_CACHE', {}],
-            ['test_7 = [/this/is/path/one""/this/is/path/two"]  >> VELOCITAS_CACHE', {}],
-            ["test_8 = ['/this/is/path/one''/this/is/path/two']  >> VELOCITAS_CACHE", {}],
+            ['test_6 = ["/this/is/path/one", "/this/is/path/two"]  >> VELOCITAS_CACHE', {}],
+            ['"test_7" = ["/this/is"/path/one", "/this/is/path/two"]  >> VELOCITAS_CACHE', {}],
+            ['test_8 = [/this/is/path/one""/this/is/path/two"]  >> VELOCITAS_CACHE', {}],
+            ["test_9 = ['/this/is/path/one''/this/is/path/two']  >> VELOCITAS_CACHE", {}],
+            ["test_10 = ['/this/is/'path/one','/this/is/path/two']  >> VELOCITAS_CACHE", {}],
         ]);
 
         it('should not match for wrong inputs', async () => {
