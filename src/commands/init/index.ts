@@ -26,6 +26,7 @@ interface InitFlags {
     force: boolean;
     ['no-hooks']: boolean;
     package: string;
+    specifier: string;
 }
 
 export default class Init extends Command {
@@ -44,7 +45,7 @@ export default class Init extends Command {
         ... Package 'devenv-runtimes:vx.x.x' added to .velocitas.json
         ... Downloading package: 'devenv-runtimes:vx.x.x'
         ... > Running post init hook for ...'`,
-        `$ velocitas init -p devenv-runtimes@v3.0.0
+        `$ velocitas init -p devenv-runtimes -s v3.0.0
         Initializing Velocitas packages ...
         ... Package 'devenv-runtimes:v3.0.0' added to .velocitas.json
         ... Downloading package: 'devenv-runtimes:v3.0.0'
@@ -69,10 +70,18 @@ export default class Init extends Command {
             char: 'p',
             aliases: ['package'],
             description: `Specify a specific package for initialisation. For standard packages the name can be used, e.g.: devenv-runtimes. 
-                For custom packages a git URL can be used, e.g: https://github.com/eclipse-velocitas/devenv-github-workflows.git. 
-                In both cases a specific version can be used by adding a tag or commit hash, e.g: devenv-runtimes@v3.0.0 / devenv-runtimes@123abc45`,
+            For custom packages a git URL can be used, e.g: https://github.com/eclipse-velocitas/devenv-github-workflows.git.`,
             required: false,
             default: '',
+        }),
+        specifier: Flags.string({
+            char: 's',
+            aliases: ['specifier'],
+            description: `The specifier can be used to provide a specific version of the package to be used. 
+            A git tag (e.g. 'v3.0.0') or commit hash (e.g. '123abc45') can be provided as input`,
+            required: false,
+            default: '',
+            dependsOn: ['package'],
         }),
     };
 
@@ -110,7 +119,8 @@ export default class Init extends Command {
     }
 
     private async _handleSinglePackageInit(projectConfig: ProjectConfig, flags: InitFlags): Promise<PackageConfig> {
-        const packageConfig = await this._parsePackageConfig(flags);
+        const packageConfig = new PackageConfig({ repo: flags.package, version: flags.specifier });
+        await this._resolveVersion(packageConfig, flags.verbose);
 
         const existingPackage = projectConfig.getPackageConfig(packageConfig.getPackageName());
         if (existingPackage) {
@@ -126,24 +136,6 @@ export default class Init extends Command {
         await this._ensurePackagesAreDownloaded([packageConfig], flags);
         this._finalizeSinglePackageInit(packageConfig, projectConfig);
 
-        return packageConfig;
-    }
-
-    private async _parsePackageConfig(flags: InitFlags): Promise<PackageConfig> {
-        const packageName = flags.package;
-        const hasRequestedVersion = packageName.lastIndexOf('@') > -1;
-
-        let repo: string;
-        let requestedVersion: string;
-        if (hasRequestedVersion) {
-            repo = packageName.substring(0, packageName.indexOf('@'));
-            requestedVersion = packageName.substring(packageName.indexOf('@') + 1);
-        } else {
-            repo = packageName;
-            requestedVersion = '';
-        }
-        const packageConfig = new PackageConfig({ repo: repo, version: requestedVersion });
-        await this._resolveVersion(packageConfig, flags.verbose);
         return packageConfig;
     }
 
