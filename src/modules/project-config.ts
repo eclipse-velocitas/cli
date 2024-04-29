@@ -181,10 +181,10 @@ export class ProjectConfig {
     }
 
     /**
-     * Searches through all / only the installed packageConfigs for the packageConfig with the specified name and returns it. If no packageConfig is found undefined is returned. 
+     * Searches through all / only the installed packageConfigs for the packageConfig with the specified name and returns it. If no packageConfig is found undefined is returned.
      * @param packageName the packageName of the packageConfig to retrieve for.
      * @param onlyInstalled the packages to search through. true if we search the packageConfig only in the installed packages or false if all packages are searched through.
-     * @returns the found packageConfig or undefined if none could be found. 
+     * @returns the found packageConfig or undefined if none could be found.
      */
     getPackageConfig(packageName: string, onlyInstalled: boolean = false): PackageConfig | undefined {
         return this.getPackages(onlyInstalled).find((config) => config.getPackageName() === packageName);
