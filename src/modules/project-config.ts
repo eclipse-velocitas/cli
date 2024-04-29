@@ -192,7 +192,7 @@ export class ProjectConfig {
     }
 
     /**
-     * Adds a new packageConfig to the project. This method  Won't add a new package if a package with the
+     * Adds a new packageConfig to the project. This method won't add a new package if a package with the
      * same name already exists. Different versions are not taken into consideration. If updating the
      * version of a packageConfig is required use #updatePackageConfig.
      *

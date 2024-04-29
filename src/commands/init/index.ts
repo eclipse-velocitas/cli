@@ -116,8 +116,12 @@ export default class Init extends Command {
                 `... Updating '${requestedPackageConfig.getPackageName()}' to version '${requestedPackageConfig.version}' in .velocitas.json`,
             );
         } else {
-            projectConfig.addPackageConfig(requestedPackageConfig);
-            this.log(`... Package '${requestedPackageConfig.getPackageName()}:${requestedPackageConfig.version}' added to .velocitas.json`);
+            const isAdded = projectConfig.addPackageConfig(requestedPackageConfig);
+            if (isAdded) {
+                this.log(
+                    `... Package '${requestedPackageConfig.getPackageName()}:${requestedPackageConfig.version}' added to .velocitas.json`,
+                );
+            }
         }
 
         await this._ensurePackagesAreDownloaded([requestedPackageConfig], flags);
