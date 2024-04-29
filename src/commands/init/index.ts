@@ -16,9 +16,18 @@ import { Command, Flags, ux } from '@oclif/core';
 import { APP_MANIFEST_PATH_VARIABLE, AppManifest } from '../../modules/app-manifest';
 import { ComponentContext, ExecSpec } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
+import { PackageConfig } from '../../modules/package';
 import { ProjectConfig, ProjectConfigLock } from '../../modules/project-config';
 import { resolveVersionIdentifier } from '../../modules/semver';
 import { createEnvVars } from '../../modules/variables';
+
+interface InitFlags {
+    verbose: boolean;
+    force: boolean;
+    ['no-hooks']: boolean;
+    package: string;
+    specifier: string;
+}
 
 export default class Init extends Command {
     static description = 'Initializes Velocitas Vehicle App';
@@ -31,6 +40,16 @@ export default class Init extends Command {
         ... Downloading package: 'devenv-runtimes:vx.x.x'
         ... Downloading package: 'devenv-github-templates:vx.x.x'
         ... Downloading package: 'devenv-github-workflows:vx.x.x'`,
+        `$ velocitas init -p devenv-runtimes
+        Initializing Velocitas packages ...
+        ... Package 'devenv-runtimes:vx.x.x' added to .velocitas.json
+        ... Downloading package: 'devenv-runtimes:vx.x.x'
+        ... > Running post init hook for ...'`,
+        `$ velocitas init -p devenv-runtimes -s v3.0.0
+        Initializing Velocitas packages ...
+        ... Package 'devenv-runtimes:v3.0.0' added to .velocitas.json
+        ... Downloading package: 'devenv-runtimes:v3.0.0'
+        ... > Running post init hook for ...`,
     ];
 
     static flags = {
@@ -47,26 +66,87 @@ export default class Init extends Command {
             required: false,
             default: false,
         }),
+        package: Flags.string({
+            char: 'p',
+            aliases: ['package'],
+            description: `Package to initialize`,
+            required: false,
+            default: '',
+        }),
+        specifier: Flags.string({
+            char: 's',
+            aliases: ['specifier'],
+            description: `Version specifier for the specified package`,
+            required: false,
+            default: '',
+            dependsOn: ['package'],
+        }),
     };
 
     async run(): Promise<void> {
-        const { flags } = await this.parse(Init);
+        const { flags }: { flags: InitFlags } = await this.parse(Init);
         this.log(`Initializing Velocitas packages ...`);
-        const projectConfig = this.initializeOrReadProject();
+        const projectConfig = this._initializeOrReadProject();
 
-        const appManifestData = AppManifest.read(projectConfig.getVariableMappings().get(APP_MANIFEST_PATH_VARIABLE));
+        if (flags.package) {
+            await this._handleSinglePackageInit(projectConfig, flags);
+        } else {
+            await this._handleCompletePackageInit(projectConfig, flags);
+        }
 
-        await this.ensurePackagesAreDownloaded(projectConfig, flags.force, flags.verbose);
+        this._createProjectLockFile(projectConfig, flags.verbose);
+    }
+
+    private async _handleCompletePackageInit(projectConfig: ProjectConfig, flags: InitFlags) {
+        await this._ensurePackagesAreDownloaded(projectConfig.getPackages(), flags);
         projectConfig.validateUsedComponents();
 
         if (!flags['no-hooks']) {
-            await this.runPostInitHooks(projectConfig, appManifestData, flags.verbose);
+            await this._runPostInitHooks(projectConfig.getComponents(), projectConfig, flags.verbose);
         }
-
-        this.createProjectLockFile(projectConfig, flags.verbose);
     }
 
-    initializeOrReadProject(): ProjectConfig {
+    private async _handleSinglePackageInit(projectConfig: ProjectConfig, flags: InitFlags): Promise<void> {
+        const requestedPackageConfig = new PackageConfig({ repo: flags.package, version: flags.specifier });
+        await this._resolveVersion(requestedPackageConfig, flags.verbose);
+
+        const packageUpdated = projectConfig.updatePackageConfig(requestedPackageConfig);
+        if (packageUpdated) {
+            this.log(
+                `... Updating '${requestedPackageConfig.getPackageName()}' to version '${requestedPackageConfig.version}' in .velocitas.json`,
+            );
+        } else {
+            const isAdded = projectConfig.addPackageConfig(requestedPackageConfig);
+            if (isAdded) {
+                this.log(
+                    `... Package '${requestedPackageConfig.getPackageName()}:${requestedPackageConfig.version}' added to .velocitas.json`,
+                );
+            }
+        }
+
+        await this._ensurePackagesAreDownloaded([requestedPackageConfig], flags);
+        this._finalizeSinglePackageInit(requestedPackageConfig, projectConfig);
+
+        if (!flags['no-hooks']) {
+            await this._runPostInitHooks(projectConfig.getComponentsForPackageConfig(requestedPackageConfig), projectConfig, flags.verbose);
+        }
+    }
+
+    private _finalizeSinglePackageInit(requestedPackageConfig: PackageConfig, projectConfig: ProjectConfig): void {
+        const providedComponents = requestedPackageConfig.readPackageManifest().components;
+        const enabledComponentIds = projectConfig.getComponents(undefined, true).map((comp) => comp.config.id);
+        const areComponentsExisting = providedComponents.some((comp) => enabledComponentIds.includes(comp.id));
+
+        if (!areComponentsExisting) {
+            providedComponents.forEach((providedComponent) => {
+                projectConfig.addComponent(providedComponent.id);
+            });
+        }
+
+        projectConfig.write();
+    }
+
+    private _initializeOrReadProject(): ProjectConfig {
         let projectConfig: ProjectConfig;
 
         if (!ProjectConfig.isAvailable()) {
@@ -79,30 +159,34 @@ export default class Init extends Command {
         return projectConfig;
     }
 
-    async ensurePackagesAreDownloaded(projectConfig: ProjectConfig, force: boolean, verbose: boolean) {
-        for (const packageConfig of projectConfig.getPackages()) {
-            const packageVersions = await packageConfig.getPackageVersions();
-            const packageVersion = resolveVersionIdentifier(packageVersions, packageConfig.version);
+    private async _resolveVersion(packageConfig: PackageConfig, verbose: boolean): Promise<void> {
+        const packageVersions = await packageConfig.getPackageVersions();
+        const packageVersion = resolveVersionIdentifier(packageVersions, packageConfig.version);
 
-            if (verbose) {
-                this.log(`... Resolved '${packageConfig.getPackageName()}:${packageConfig.version}' to version: '${packageVersion}'`);
-            }
+        if (verbose) {
+            this.log(`... Resolved '${packageConfig.getPackageName()}:${packageConfig.version}' to version: '${packageVersion}'`);
+        }
 
-            packageConfig.setPackageVersion(packageVersion);
+        packageConfig.setPackageVersion(packageVersion);
+    }
 
-            if (!force && packageConfig.isPackageInstalled()) {
+    private async _ensurePackagesAreDownloaded(packageConfigs: PackageConfig[], flags: InitFlags) {
+        for (const packageConfig of packageConfigs) {
+            await this._resolveVersion(packageConfig, flags.verbose);
+
+            if (!flags.force && packageConfig.isPackageInstalled()) {
                 this.log(`... '${packageConfig.getPackageName()}:${packageConfig.version}' already installed.`);
                 continue;
             }
 
             this.log(`... Downloading package: '${packageConfig.getPackageName()}:${packageConfig.version}'`);
-            await packageConfig.downloadPackageVersion(verbose);
+            await packageConfig.downloadPackageVersion(flags.verbose);
         }
     }
 
-    async runSinglePostInitHook(
+    private async _runSinglePostInitHook(
         execSpec: ExecSpec,
-        componentContext: ComponentContext,
+        currentComponentContext: ComponentContext,
         projectConfig: ProjectConfig,
         appManifest: any,
         verbose: boolean,
@@ -114,11 +198,11 @@ export default class Init extends Command {
             this.log(message);
         }
         const envVars = createEnvVars(
-            componentContext.packageConfig.getPackageDirectoryWithVersion(),
-            projectConfig.getVariableCollection(componentContext),
+            currentComponentContext.packageConfig.getPackageDirectoryWithVersion(),
+            projectConfig.getVariableCollection(currentComponentContext),
             appManifest,
         );
-        await runExecSpec(execSpec, componentContext.manifest.id, projectConfig, envVars, {
+        await runExecSpec(execSpec, currentComponentContext.manifest.id, projectConfig, envVars, {
             writeStdout: verbose,
             verbose: verbose,
         });
@@ -127,8 +211,10 @@ export default class Init extends Command {
         }
     }
 
-    async runPostInitHooks(projectConfig: ProjectConfig, appManifest: any, verbose: boolean) {
-        for (const componentContext of projectConfig.getComponents()) {
+    private async _runPostInitHooks(components: ComponentContext[], projectConfig: ProjectConfig, verbose: boolean): Promise<void> {
+        const appManifest = AppManifest.read(projectConfig.getVariableMappings().get(APP_MANIFEST_PATH_VARIABLE));
+
+        for (const componentContext of components) {
             if (!componentContext.manifest.onPostInit || componentContext.manifest.onPostInit.length === 0) {
                 continue;
             }
@@ -137,7 +223,7 @@ export default class Init extends Command {
 
             for (const execSpec of componentContext.manifest.onPostInit) {
                 try {
-                    await this.runSinglePostInitHook(execSpec, componentContext, projectConfig, appManifest, verbose);
+                    await this._runSinglePostInitHook(execSpec, componentContext, projectConfig, appManifest, verbose);
                 } catch (e) {
                     if (e instanceof ExecExitError) {
                         throw e;
@@ -151,7 +237,7 @@ export default class Init extends Command {
         }
     }
 
-    createProjectLockFile(projectConfig: ProjectConfig, verbose: boolean): void {
+    private _createProjectLockFile(projectConfig: ProjectConfig, verbose: boolean): void {
         if (verbose && !ProjectConfigLock.isAvailable()) {
             this.log('... No .velocitas-lock.json found. Creating it at the root of your repository.');
         }

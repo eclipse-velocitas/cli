@@ -309,12 +309,14 @@ Initializes Velocitas Vehicle App
 
 ```
 USAGE
-  $ velocitas init [-v] [-f] [--no-hooks]
+  $ velocitas init [-p PACKAGE] [-s VERSION_SPECIFIER] [-v] [-f] [--no-hooks]
 
 FLAGS
-  -f, --force    Force (re-)download packages
-  -v, --verbose  Enable verbose logging
-  --no-hooks     Skip post init hooks
+  -p, --package   Package to initialize
+  -s, --specifier Version specifier for the specified package
+  -f, --force     Force (re-)download packages
+  -v, --verbose   Enable verbose logging
+  --no-hooks      Skip post init hooks
 
 DESCRIPTION
   Initializes Velocitas Vehicle App
@@ -327,6 +329,18 @@ EXAMPLES
   ... Downloading package: 'devenv-runtimes:vx.x.x'
   ... Downloading package: 'devenv-github-templates:vx.x.x'
   ... Downloading package: 'devenv-github-workflows:vx.x.x'
+
+  $ velocitas init -p devenv-runtimes
+  Initializing Velocitas packages ...
+  ... Package 'devenv-runtimes:vx.x.x' added to .velocitas.json
+  ... Downloading package: 'devenv-runtimes:vx.x.x'
+  ... > Running post init hook for ...'
+
+  $ velocitas init -p devenv-runtimes -s v3.0.0
+  Initializing Velocitas packages ...
+  ... Package 'devenv-runtimes:v3.0.0' added to .velocitas.json
+  ... Downloading package: 'devenv-runtimes:v3.0.0'
+  ... > Running post init hook for ...
 ```
 
 _See code: [src/commands/init/index.ts](src/commands/init/index.ts)_
