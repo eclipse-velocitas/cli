@@ -69,16 +69,14 @@ export default class Init extends Command {
         package: Flags.string({
             char: 'p',
             aliases: ['package'],
-            description: `Specify a specific package for initialisation. For standard packages the name can be used, e.g.: devenv-runtimes. 
-            For custom packages a git URL can be used, e.g: https://github.com/eclipse-velocitas/devenv-github-workflows.git.`,
+            description: `Package to initialize`,
             required: false,
             default: '',
         }),
         specifier: Flags.string({
             char: 's',
             aliases: ['specifier'],
-            description: `The specifier can be used to provide a specific version of the package to be used. 
-            A git tag (e.g. 'v3.0.0') or commit hash (e.g. '123abc45') can be provided as input`,
+            description: `Version specifier for the specified package`,
             required: false,
             default: '',
             dependsOn: ['package'],
