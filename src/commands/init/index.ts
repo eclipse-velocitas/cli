@@ -88,7 +88,6 @@ export default class Init extends Command {
         this.log(`Initializing Velocitas packages ...`);
         const projectConfig = this._initializeOrReadProject();
 
-
         if (flags.package) {
             await this._handleSinglePackageInit(projectConfig, flags);
         } else {
@@ -107,13 +106,15 @@ export default class Init extends Command {
         }
     }
 
-    private async _handleSinglePackageInit(projectConfig: ProjectConfig, flags: InitFlags) {
+    private async _handleSinglePackageInit(projectConfig: ProjectConfig, flags: InitFlags): Promise<void> {
         const requestedPackageConfig = new PackageConfig({ repo: flags.package, version: flags.specifier });
         await this._resolveVersion(requestedPackageConfig, flags.verbose);
 
         const packageUpdated = projectConfig.updatePackageConfig(requestedPackageConfig);
         if (packageUpdated) {
-            this.log(`... Updating '${requestedPackageConfig.getPackageName()}' to version '${requestedPackageConfig.version}' in .velocitas.json`);
+            this.log(
+                `... Updating '${requestedPackageConfig.getPackageName()}' to version '${requestedPackageConfig.version}' in .velocitas.json`,
+            );
         } else {
             projectConfig.addPackageConfig(requestedPackageConfig);
             this.log(`... Package '${requestedPackageConfig.getPackageName()}:${requestedPackageConfig.version}' added to .velocitas.json`);
@@ -123,17 +124,14 @@ export default class Init extends Command {
         this._finalizeSinglePackageInit(requestedPackageConfig, projectConfig);
 
         if (!flags['no-hooks']) {
-            let components = projectConfig.getComponentsForPackageConfig(requestedPackageConfig);
-            await this._runPostInitHooks(components, projectConfig, flags.verbose);
+            await this._runPostInitHooks(projectConfig.getComponentsForPackageConfig(requestedPackageConfig), projectConfig, flags.verbose);
         }
     }
 
     private _finalizeSinglePackageInit(requestedPackageConfig: PackageConfig, projectConfig: ProjectConfig): void {
         const providedComponents = requestedPackageConfig.readPackageManifest().components;
-        const areComponentsExisting = providedComponents.some((comp) => {
-            const enabledComponents = projectConfig.getComponents(undefined, true).map((comp) => comp.config.id);
-            return enabledComponents.indexOf(comp.id) > -1;
-        });
+        const enabledComponentIds = projectConfig.getComponents(undefined, true).map((comp) => comp.config.id);
+        const areComponentsExisting = providedComponents.some((comp) => enabledComponentIds.includes(comp.id));
 
         if (!areComponentsExisting) {
             providedComponents.forEach((providedComponent) => {
