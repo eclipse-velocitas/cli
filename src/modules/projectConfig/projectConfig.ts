@@ -121,27 +121,45 @@ export class ProjectConfig {
      * @param onlyUsed Only include components used by the project. Default: true.
      * @returns A list of all components used by the project.
      */
-    getComponentContexts(onlyUsed: boolean = true): ComponentContext[] {
+    getComponentContexts(onlyUsed: boolean = true, onlyInstalled: boolean = false): ComponentContext[] {
+        const componentContexts: ComponentContext[] = [];
+
+        let packageConfigs = this.getPackages(onlyInstalled);
+        for (const packageConfig of packageConfigs) {
+            const components = this.getComponentContextsForPackageConfig(packageConfig, onlyUsed);
+            componentContexts.push(...components);
+        }
+
+        return componentContexts;
+    }
+
+    /**
+     * Return all components used by the specified packageConfig. If the project specifies no components explicitly,
+     * all components are used by default.
+     *
+     * @param packageConfig packageConfig to search the components for.
+     * @param onlyUsed Only include components used by the project. Default: true.
+     * @returns A list of all components used by this particular packageConfig.
+     */
+    getComponentContextsForPackageConfig(packageConfig: PackageConfig, onlyUsed: boolean = true): ComponentContext[] {
         const componentContexts: ComponentContext[] = [];
         const usedComponents = this._components;
 
-        for (const packageConfig of this.getPackages()) {
-            const packageManifest = packageConfig.readPackageManifest();
+        const packageManifest = packageConfig.readPackageManifest();
 
-            for (const componentManifest of packageManifest.components) {
-                const isComponentUsedByProject =
-                    usedComponents.length === 0 ||
-                    usedComponents.find((compCfg: ComponentConfig) => compCfg.id === componentManifest.id) !== undefined;
-                if (!onlyUsed || isComponentUsedByProject) {
-                    componentContexts.push(
-                        new ComponentContext(
-                            packageConfig,
-                            componentManifest,
-                            this.getComponentConfig(componentManifest.id),
-                            isComponentUsedByProject,
-                        ),
-                    );
-                }
+        for (const componentManifest of packageManifest.components) {
+            const isComponentUsedByProject =
+                usedComponents.length === 0 ||
+                usedComponents.find((compCfg: ComponentConfig) => compCfg.id === componentManifest.id) !== undefined;
+            if (!onlyUsed || isComponentUsedByProject) {
+                componentContexts.push(
+                    new ComponentContext(
+                        packageConfig,
+                        componentManifest,
+                        this.getComponentConfig(componentManifest.id),
+                        isComponentUsedByProject,
+                    ),
+                );
             }
         }
 
@@ -154,7 +172,7 @@ export class ProjectConfig {
      */
     validateUsedComponents(): void {
         this._components.forEach((compCfg: ComponentConfig) => {
-            const foundInManifest = this.getPackages().some((packageConfig) =>
+            const foundInManifest = this.getPackages(true).some((packageConfig) =>
                 packageConfig.readPackageManifest().components.some((componentManifest) => componentManifest.id === compCfg.id),
             );
             if (!foundInManifest) {
@@ -169,7 +187,7 @@ export class ProjectConfig {
      * @returns The context the component is used in.
      */
     findComponentByName(componentId: string): ComponentContext {
-        let result = this.getComponentContexts().find((compCtx: ComponentContext) => compCtx.manifest.id === componentId);
+        let result = this.getComponentContexts(undefined, true).find((compCtx: ComponentContext) => compCtx.manifest.id === componentId);
 
         if (!result) {
             throw Error(`Cannot find component with id '${componentId}'!`);
@@ -179,10 +197,60 @@ export class ProjectConfig {
     }
 
     /**
+     * @param onlyInstalled only retrieves the installed packages for the project. Defaults to false.
      * @returns all used packages by the project.
      */
-    getPackages(): PackageConfig[] {
+    getPackages(onlyInstalled: boolean = false): PackageConfig[] {
+        if (onlyInstalled) {
+            return this._packages.filter((pkg) => pkg.isPackageInstalled());
+        }
+
         return this._packages;
+    }
+
+    /**
+     * Searches through all / only the installed packageConfigs for the packageConfig with the specified
+     * name and returns it. If no packageConfig is found undefined is returned.
+     * @param packageName the packageName of the packageConfig to retrieve for.
+     * @param onlyInstalled true if searching only in the installed packages or false if all packages should be searched through.
+     * @returns the found packageConfig or undefined if none could be found.
+     */
+    getPackageConfig(packageName: string, onlyInstalled: boolean = false): PackageConfig | undefined {
+        return this.getPackages(onlyInstalled).find((config) => config.getPackageName() === packageName);
+    }
+
+    /**
+     * Adds a new packageConfig to the project. This method won't add a new package if a package with the
+     * same name already exists. Different versions are not taken into consideration. If updating the
+     * version of a packageConfig is required use #updatePackageConfig.
+     *
+     * @param packageConfig the packageConfig to add.
+     * @returns true if the package was added successfully, false otherwise.
+     */
+    addPackageConfig(packageConfig: PackageConfig): boolean {
+        const existingPackage = this.getPackageConfig(packageConfig.getPackageName());
+
+        if (!existingPackage) {
+            this._packages.push(packageConfig);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Updates the version of the packageConfig with the same packageName as provided.
+     *
+     * @param packageConfig the updated packageConfig.
+     * @returns true if the packageVersion was successfully updated, false otherwise.
+     */
+    updatePackageConfig(packageConfig: PackageConfig): boolean {
+        const existingPackage = this.getPackageConfig(packageConfig.getPackageName());
+
+        if (existingPackage && existingPackage.version !== packageConfig.version) {
+            existingPackage?.setPackageVersion(packageConfig.version);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -204,7 +272,7 @@ export class ProjectConfig {
      * @param componentContext The context of the component for which the variable collection is obtained.
      * @returns A variable collection containing variables from the project configuration and component context.
      */
-    getVariableCollection(componentContext: ComponentContext): VariableCollection {
-        return VariableCollection.build(this.getComponentContexts(), this.getVariableMappings(), componentContext);
+    getVariableCollection(currentComponentContext: ComponentContext): VariableCollection {
+        return VariableCollection.build(this.getComponentContexts(undefined, true), this.getVariableMappings(), currentComponentContext);
     }
 }

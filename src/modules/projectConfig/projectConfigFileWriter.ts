@@ -73,7 +73,7 @@ export class ProjectConfigWriter implements IProjectConfigWriter {
         let componentsToSerialize: ComponentConfig[] = projectConfig.getComponents();
 
         if (!componentsToSerialize || componentsToSerialize.length === 0) {
-            componentsToSerialize = projectConfig.getComponentContexts().map((cc) => cc.config);
+            componentsToSerialize = projectConfig.getComponentContexts(false, true).map((cc) => cc.config);
         }
 
         const projectConfigAttributes = {

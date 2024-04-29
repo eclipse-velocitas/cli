@@ -96,7 +96,7 @@ describe('init', () => {
     })
         .stdout()
         .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
-        .command(['init', '-v', '--no-hooks'])
+        .command(['init', '-v'])
         .it('should log warning when no AppManifest.json is found', (ctx) => {
             console.error(ctx.stdout);
             expect(ctx.stdout).to.contain('*** Info ***: No AppManifest found');
@@ -126,4 +126,70 @@ describe('init', () => {
         .it('runs post-init hooks', (ctx) => {
             expect(ctx.stdout).to.contain(`... > Running post init hook for 'test-runtime-local'`);
         });
+
+    test.do(() => {
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
+    })
+        .stdout()
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
+        .command(['init', '--no-hooks'])
+        .it('does not run post-init hooks when called with --no-hooks parameter', (ctx) => {
+            expect(ctx.stdout).to.not.contain(`... > Running post init hook`);
+        });
+
+    test.do(() => {
+        mockFolders({ velocitasConfig: true, packageIndex: true });
+    })
+        .stdout()
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
+        .command(['init', '--package', 'devenv-runtime'])
+        .it('adds a new entry to .velocitas.json if the package does not exist', (ctx) => {
+            expect(ctx.stdout).to.contain(`... Package 'devenv-runtime:v1.1.1' added to .velocitas.json`);
+        });
+
+    test.do(() => {
+        mockFolders({ velocitasConfig: true, packageIndex: true });
+    })
+        .stdout()
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
+        .command(['init', '--package', `${corePackageInfoMock.repo}`])
+        .it('downloads correctly the latest package if no version is specified', (ctx) => {
+            expect(ctx.stdout).to.contain(`... Downloading package: '${corePackageInfoMock.repo}:${corePackageInfoMock.resolvedVersion}'`);
+            expect(
+                CliFileSystem.existsSync(
+                    `${userHomeDir}/.velocitas/packages/${corePackageInfoMock.repo}/${corePackageInfoMock.resolvedVersion}`,
+                ),
+            ).to.be.true;
+        });
+
+    test.do(() => {
+        mockFolders({ velocitasConfig: true, packageIndex: true });
+    })
+        .stdout()
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
+        .command(['init', '--package', `${corePackageInfoMock.repo}`, '--specifier', `${corePackageInfoMock.versionIdentifier}`])
+        .it('correctly downloads the defined package if a version is specified', (ctx) => {
+            expect(ctx.stdout).to.contain(`... Downloading package: '${corePackageInfoMock.repo}:${corePackageInfoMock.resolvedVersion}'`);
+            expect(
+                CliFileSystem.existsSync(
+                    `${userHomeDir}/.velocitas/packages/${corePackageInfoMock.repo}/${corePackageInfoMock.resolvedVersion}`,
+                ),
+            ).to.be.true;
+        });
+
+    test.do(() => {
+        mockFolders({ velocitasConfig: true, packageIndex: true });
+    })
+        .stdout()
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
+        .command(['init', '--package', `${corePackageInfoMock.repo}`, '--specifier', 'v10.5.2'])
+        .catch((err) => {
+            expect(err.message).to.contain(`Can't find matching version for v10.5.2.`);
+        })
+        .it('throws an error if an invalid version is specified', (ctx) => {});
 });
