@@ -181,9 +181,10 @@ export class ProjectConfig {
     }
 
     /**
-     * Searches through all / only the installed packageConfigs for the packageConfig with the specified name and returns it. If no packageConfig is found undefined is returned.
+     * Searches through all / only the installed packageConfigs for the packageConfig with the specified
+     * name and returns it. If no packageConfig is found undefined is returned.
      * @param packageName the packageName of the packageConfig to retrieve for.
-     * @param onlyInstalled the packages to search through. true if we search the packageConfig only in the installed packages or false if all packages are searched through.
+     * @param onlyInstalled true if searching only in the installed packages or false if all packages should be searched through.
      * @returns the found packageConfig or undefined if none could be found.
      */
     getPackageConfig(packageName: string, onlyInstalled: boolean = false): PackageConfig | undefined {
@@ -191,8 +192,9 @@ export class ProjectConfig {
     }
 
     /**
-     * Adds a new packageConfig to the project. Multiple packages with the same name and version will not be added. However adding
-     * a package which has a different version will update the version.
+     * Adds a new packageConfig to the project. This method  Won't add a new package if a package with the
+     * same name already exists. Different versions are not taken into consideration. If updating the
+     * version of a packageConfig is required use #updatePackageConfig.
      *
      * @param packageConfig the packageConfig to add.
      * @returns true if the package was added successfully, false otherwise.
