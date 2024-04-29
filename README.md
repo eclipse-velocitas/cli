@@ -312,7 +312,7 @@ USAGE
   $ velocitas init [-p PACKAGE] [-s VERSION_SPECIFIER] [-v] [-f] [--no-hooks]
 
 FLAGS
-  -p, --package   Package to initialize 
+  -p, --package   Package to initialize
   -s, --specifier Version specifier for the specified package
   -f, --force     Force (re-)download packages
   -v, --verbose   Enable verbose logging

@@ -10,14 +10,6 @@
             "args": ["init"]
         },
         {
-            "type": "node",
-            "request": "launch",
-            "name": "Debug CLI - init with package and version",
-            "cwd": "${workspaceFolder}/vehicle-app-repo",
-            "program": "${workspaceFolder}/bin/dev",
-            "args": ["init", "-p", "devenv-runtimes@v3.0.0"]
-        },
-        {
             "name": "Run tests",
             "type": "node",
             "request": "launch",

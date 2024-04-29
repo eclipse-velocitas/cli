@@ -88,7 +88,7 @@ describe('init', () => {
     })
         .stdout()
         .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
-        .command(['init', '-v', '--no-hooks'])
+        .command(['init', '-v'])
         .it('should log warning when no AppManifest.json is found', (ctx) => {
             console.error(ctx.stdout);
             expect(ctx.stdout).to.contain('*** Info ***: No AppManifest found');
@@ -117,6 +117,17 @@ describe('init', () => {
         .command(['init'])
         .it('runs post-init hooks', (ctx) => {
             expect(ctx.stdout).to.contain(`... > Running post init hook for 'test-runtime-local'`);
+        });
+
+    test.do(() => {
+        mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
+    })
+        .stdout()
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
+        .command(['init', '--no-hooks'])
+        .it('does not run post-init hooks when called with --no-hooks parameter', (ctx) => {
+            expect(ctx.stdout).to.not.contain(`... > Running post init hook`);
         });
 
     test.do(() => {

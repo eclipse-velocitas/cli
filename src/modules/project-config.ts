@@ -180,8 +180,14 @@ export class ProjectConfig {
         return this._packages;
     }
 
+    /**
+     * Searches through all / only the installed packageConfigs for the packageConfig with the specified name and returns it. If no packageConfig is found undefined is returned. 
+     * @param packageName the packageName of the packageConfig to retrieve for.
+     * @param onlyInstalled the packages to search through. true if we search the packageConfig only in the installed packages or false if all packages are searched through.
+     * @returns the found packageConfig or undefined if none could be found. 
+     */
     getPackageConfig(packageName: string, onlyInstalled: boolean = false): PackageConfig | undefined {
-        return this.getPackages().find((config) => config.getPackageName() === packageName);
+        return this.getPackages(onlyInstalled).find((config) => config.getPackageName() === packageName);
     }
 
     /**
@@ -192,7 +198,7 @@ export class ProjectConfig {
      * @returns true if the package was added successfully, false otherwise.
      */
     addPackageConfig(packageConfig: PackageConfig): boolean {
-        const existingPackage = this.getPackages().find((config) => config.getPackageName() === packageConfig.getPackageName());
+        const existingPackage = this.getPackageConfig(packageConfig.getPackageName());
 
         if (!existingPackage) {
             this._packages.push(packageConfig);
@@ -208,9 +214,9 @@ export class ProjectConfig {
      * @returns true if the packageVersion was successfully updated, false otherwise.
      */
     updatePackageConfig(packageConfig: PackageConfig): boolean {
-        const existingPackage = this.getPackages().find((config) => config.getPackageName() === packageConfig.getPackageName());
+        const existingPackage = this.getPackageConfig(packageConfig.getPackageName());
 
-        if (existingPackage?.version !== packageConfig.version) {
+        if (existingPackage && existingPackage.version !== packageConfig.version) {
             existingPackage?.setPackageVersion(packageConfig.version);
             return true;
         }
@@ -246,11 +252,7 @@ export class ProjectConfig {
     getComponents(onlyUsed: boolean = true, onlyInstalled: boolean = false): ComponentContext[] {
         const componentContexts: ComponentContext[] = [];
 
-        let packageConfigs = this._packages;
-        if (onlyInstalled) {
-            packageConfigs = packageConfigs.filter((pkg) => pkg.isPackageInstalled());
-        }
-
+        let packageConfigs = this.getPackages(onlyInstalled);
         for (const packageConfig of packageConfigs) {
             const components = this.getComponentsForPackageConfig(packageConfig, onlyUsed);
             componentContexts.push(...components);

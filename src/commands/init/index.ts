@@ -86,26 +86,13 @@ export default class Init extends Command {
     async run(): Promise<void> {
         const { flags }: { flags: InitFlags } = await this.parse(Init);
         this.log(`Initializing Velocitas packages ...`);
-        let requestedPackageConfig: PackageConfig;
         const projectConfig = this._initializeOrReadProject();
 
-        const appManifestData = AppManifest.read(projectConfig.getVariableMappings().get(APP_MANIFEST_PATH_VARIABLE));
 
         if (flags.package) {
-            requestedPackageConfig = await this._handleSinglePackageInit(projectConfig, flags);
+            await this._handleSinglePackageInit(projectConfig, flags);
         } else {
             await this._handleCompletePackageInit(projectConfig, flags);
-        }
-
-        if (!flags['no-hooks']) {
-            let components: ComponentContext[];
-            if (flags.package) {
-                components = projectConfig.getComponentsForPackageConfig(requestedPackageConfig!);
-            } else {
-                components = projectConfig.getComponents();
-            }
-
-            await this._runPostInitHooks(components, projectConfig, appManifestData, flags.verbose);
         }
 
         this._createProjectLockFile(projectConfig, flags.verbose);
@@ -114,27 +101,31 @@ export default class Init extends Command {
     private async _handleCompletePackageInit(projectConfig: ProjectConfig, flags: InitFlags) {
         await this._ensurePackagesAreDownloaded(projectConfig.getPackages(), flags);
         projectConfig.validateUsedComponents();
+
+        if (!flags['no-hooks']) {
+            await this._runPostInitHooks(projectConfig.getComponents(), projectConfig, flags.verbose);
+        }
     }
 
-    private async _handleSinglePackageInit(projectConfig: ProjectConfig, flags: InitFlags): Promise<PackageConfig> {
-        const packageConfig = new PackageConfig({ repo: flags.package, version: flags.specifier });
-        await this._resolveVersion(packageConfig, flags.verbose);
+    private async _handleSinglePackageInit(projectConfig: ProjectConfig, flags: InitFlags) {
+        const requestedPackageConfig = new PackageConfig({ repo: flags.package, version: flags.specifier });
+        await this._resolveVersion(requestedPackageConfig, flags.verbose);
 
-        const existingPackage = projectConfig.getPackageConfig(packageConfig.getPackageName());
-        if (existingPackage) {
-            if (existingPackage.version !== packageConfig.version) {
-                projectConfig.updatePackageConfig(packageConfig);
-                this.log(`... Updating '${packageConfig.getPackageName()}' to version '${packageConfig.version}' in .velocitas.json`);
-            }
+        const packageUpdated = projectConfig.updatePackageConfig(requestedPackageConfig);
+        if (packageUpdated) {
+            this.log(`... Updating '${requestedPackageConfig.getPackageName()}' to version '${requestedPackageConfig.version}' in .velocitas.json`);
         } else {
-            projectConfig.addPackageConfig(packageConfig);
-            this.log(`... Package '${packageConfig.getPackageName()}:${packageConfig.version}' added to .velocitas.json`);
+            projectConfig.addPackageConfig(requestedPackageConfig);
+            this.log(`... Package '${requestedPackageConfig.getPackageName()}:${requestedPackageConfig.version}' added to .velocitas.json`);
         }
 
-        await this._ensurePackagesAreDownloaded([packageConfig], flags);
-        this._finalizeSinglePackageInit(packageConfig, projectConfig);
+        await this._ensurePackagesAreDownloaded([requestedPackageConfig], flags);
+        this._finalizeSinglePackageInit(requestedPackageConfig, projectConfig);
 
-        return packageConfig;
+        if (!flags['no-hooks']) {
+            let components = projectConfig.getComponentsForPackageConfig(requestedPackageConfig);
+            await this._runPostInitHooks(components, projectConfig, flags.verbose);
+        }
     }
 
     private _finalizeSinglePackageInit(requestedPackageConfig: PackageConfig, projectConfig: ProjectConfig): void {
@@ -166,7 +157,7 @@ export default class Init extends Command {
         return projectConfig;
     }
 
-    private async _resolveVersion(packageConfig: PackageConfig, verbose: boolean) {
+    private async _resolveVersion(packageConfig: PackageConfig, verbose: boolean): Promise<void> {
         const packageVersions = await packageConfig.getPackageVersions();
         const packageVersion = resolveVersionIdentifier(packageVersions, packageConfig.version);
 
@@ -218,7 +209,9 @@ export default class Init extends Command {
         }
     }
 
-    private async _runPostInitHooks(components: ComponentContext[], projectConfig: ProjectConfig, appManifest: any, verbose: boolean) {
+    private async _runPostInitHooks(components: ComponentContext[], projectConfig: ProjectConfig, verbose: boolean): Promise<void> {
+        const appManifest = AppManifest.read(projectConfig.getVariableMappings().get(APP_MANIFEST_PATH_VARIABLE));
+
         for (const componentContext of components) {
             if (!componentContext.manifest.onPostInit || componentContext.manifest.onPostInit.length === 0) {
                 continue;
