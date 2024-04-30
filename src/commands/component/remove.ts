@@ -21,7 +21,7 @@ export default class Remove extends Command {
     static examples = [`$ velocitas component remove <id>`];
 
     static args = {
-        id: Args.string({ description: 'ID of the component to add', required: true }),
+        id: Args.string({ description: 'ID of the component to remove', required: true }),
     };
 
     async run(): Promise<void> {

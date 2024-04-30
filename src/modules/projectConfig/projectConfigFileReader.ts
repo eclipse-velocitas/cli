@@ -52,7 +52,7 @@ export class MultiFormatConfigReader implements IProjectConfigReader {
                     break;
                 }
             } catch (error: any) {
-                console.warn(`Warning: Reading ${path} using ${reader.constructor.name}: ${error.message}`);
+                console.warn(`Warning: ${path} not in expected format: ${error.message}, falling back to legacy format reading.`);
             }
         }
 
