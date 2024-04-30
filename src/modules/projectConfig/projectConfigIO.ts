@@ -32,7 +32,7 @@ export class ProjectConfigIO {
      * Reads the project configuration using readers for multiple formats.
      * @param cliVersion The version of the CLI.
      * @param path The path to the configuration file.
-     * @param ignoreLock Whether to ignore the project configuration lock file.
+     * @param ignoreLock Whether to ignore the project configuration lock file or not.
      * @returns The project configuration.
      * @throws Error if unable to read the configuration file in any format.
      */
