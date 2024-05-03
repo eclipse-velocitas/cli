@@ -19,7 +19,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { DEFAULT_BUFFER_ENCODING } from '../../src/modules/constants';
 import { ProjectCache } from '../../src/modules/project-cache';
-import { ProjectConfig, ProjectConfigLock } from '../../src/modules/project-config';
+import { ProjectConfigIO } from '../../src/modules/projectConfig/projectConfigIO';
 import { TEST_ROOT, VELOCITAS_HOME, VELOCITAS_PROCESS } from '../utils/systemTestConfig';
 
 const isDirectoryEmpty = (directoryPath: string): boolean => {
@@ -44,8 +44,8 @@ describe('CLI command', () => {
             expect(initOutput.status).to.equal(0);
 
             const packageIndex = JSON.parse(readFileSync('./.velocitas.json', DEFAULT_BUFFER_ENCODING));
-            const projectConfig = ProjectConfig.read(packageIndex.cliVersion, './.velocitas.json');
-            const projectConfigLock = ProjectConfigLock.read('./.velocitas-lock.json');
+            const projectConfig = ProjectConfigIO.read(packageIndex.cliVersion, './.velocitas.json');
+            const projectConfigLock = ProjectConfigIO.readLock('./.velocitas-lock.json');
 
             expect(projectConfigLock).to.not.be.null;
             expect(existsSync(join(ProjectCache.getCacheDir(), 'vehicle_model'))).to.be.true;
@@ -56,14 +56,14 @@ describe('CLI command', () => {
                 expect(isDirectoryEmpty(projectPackage.getPackageDirectoryWithVersion())).to.be.false;
             }
         });
-        it('should be able to clean init a project with an older version of .velocitas.json', async () => {
-            copySync('./.velocitasOld.json', './.velocitas.json');
+        it('should be able to clean init a project with a legacy version of .velocitas.json', async () => {
+            copySync('./.velocitasLegacy.json', './.velocitas.json');
             const initOutput = spawnSync(VELOCITAS_PROCESS, ['init'], { encoding: DEFAULT_BUFFER_ENCODING });
             expect(initOutput.status).to.equal(0);
 
             const packageIndex = JSON.parse(readFileSync('./.velocitas.json', DEFAULT_BUFFER_ENCODING));
-            const projectConfig = ProjectConfig.read(packageIndex.cliVersion, './.velocitas.json');
-            const projectConfigLock = ProjectConfigLock.read('./.velocitas-lock.json');
+            const projectConfig = ProjectConfigIO.read(packageIndex.cliVersion, './.velocitas.json');
+            const projectConfigLock = ProjectConfigIO.readLock('./.velocitas-lock.json');
 
             expect(projectConfigLock).to.not.be.null;
             expect(existsSync('./gen')).to.be.true;

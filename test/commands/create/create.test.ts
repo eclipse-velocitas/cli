@@ -17,10 +17,11 @@ import * as gitModule from 'simple-git';
 import { AppManifest } from '../../../src/modules/app-manifest';
 import * as exec from '../../../src/modules/exec';
 import { CoreComponent, ExtensionComponent } from '../../../src/modules/package-index';
-import { ProjectConfig } from '../../../src/modules/project-config';
+import { ProjectConfigIO } from '../../../src/modules/projectConfig/projectConfigIO';
 import { simpleGitInstanceMock } from '../../helpers/simpleGit';
-import { packageIndexMock } from '../../utils/mockConfig';
-import { installedCorePackage, installedRuntimePackage, mockFolders } from '../../utils/mockfs';
+import { corePackageInfoMock, packageIndexMock, runtimePackageInfoMock } from '../../utils/mockConfig';
+import { mockFolders } from '../../utils/mockfs';
+
 const inquirer = require('inquirer');
 
 const TEST_APP_NAME = 'TestApp';
@@ -39,12 +40,12 @@ const TEST_EXPOSED_INTERFACE_PARAMETER_NAME_2 = TEST_COMPONENT_EXTENSION.paramet
 const TEST_EXPOSED_INTERFACE_PARAMETER_DEFAULT_2 = TEST_COMPONENT_EXTENSION.parameters![1].default as string;
 
 const TEST_PACKAGE_URI = packageIndexMock[0].package;
-const TEST_PACKAGE_NAME = installedRuntimePackage.repo;
-const TEST_PACKAGE_VERSION = installedRuntimePackage.version;
+const TEST_PACKAGE_NAME = runtimePackageInfoMock.repo;
+const TEST_PACKAGE_VERSION = runtimePackageInfoMock.resolvedVersion;
 
 const TEST_MAIN_PACKAGE_URI = packageIndexMock[1].package;
-const TEST_MAIN_PACKAGE_NAME = installedCorePackage.repo;
-const TEST_MAIN_PACKAGE_VERSION = installedCorePackage.version;
+const TEST_MAIN_PACKAGE_NAME = corePackageInfoMock.repo;
+const TEST_MAIN_PACKAGE_VERSION = corePackageInfoMock.resolvedVersion;
 
 enum CoreOption {
     fromExample = 0,
@@ -79,10 +80,9 @@ describe('create', () => {
         .command(['create', '-n', TEST_APP_NAME, '-c', TEST_COMPONENT_CORE_ID])
         .it('creates a project with provided flags and generates .velocitas.json and AppManifest', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_NON_INTERACTIVE_STDOUT);
-            expect(ProjectConfig.isAvailable()).to.be.true;
+            expect(ProjectConfigIO.isConfigAvailable()).to.be.true;
             expect(AppManifest.read()).to.not.be.undefined;
-
-            const velocitasConfig = ProjectConfig.read('v0.0.0');
+            const velocitasConfig = ProjectConfigIO.read('v0.0.0');
             expect(velocitasConfig.getPackages()[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
             expect(velocitasConfig.getPackages()[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
             expect(velocitasConfig.getPackages()[1].repo).to.be.equal(TEST_PACKAGE_URI);
@@ -149,10 +149,9 @@ describe('create', () => {
             'creates a project in interactive mode without example and generates .velocitas.json and AppManifest without defaults',
             (ctx) => {
                 expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT(TEST_APP_NAME, TEST_COMPONENT_EXTENSION_ID));
-                expect(ProjectConfig.isAvailable()).to.be.true;
+                expect(ProjectConfigIO.isConfigAvailable()).to.be.true;
                 expect(AppManifest.read()).to.not.be.undefined;
-
-                const velocitasConfig = ProjectConfig.read('v0.0.0');
+                const velocitasConfig = ProjectConfigIO.read('v0.0.0');
                 expect(velocitasConfig.getPackages()[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
                 expect(velocitasConfig.getPackages()[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
                 expect(velocitasConfig.getPackages()[1].repo).to.be.equal(TEST_PACKAGE_URI);
@@ -189,10 +188,9 @@ describe('create', () => {
         .command(['create'])
         .it('creates a project in interactive mode without example and generates .velocitas.json and AppManifest correctly', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT(TEST_APP_NAME));
-            expect(ProjectConfig.isAvailable()).to.be.true;
+            expect(ProjectConfigIO.isConfigAvailable()).to.be.true;
             expect(AppManifest.read()).to.not.be.undefined;
-
-            const velocitasConfig = ProjectConfig.read('v0.0.0');
+            const velocitasConfig = ProjectConfigIO.read('v0.0.0');
             expect(velocitasConfig.getPackages()[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
             expect(velocitasConfig.getPackages()[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
             expect(velocitasConfig.getPackages()[1].repo).to.be.equal(TEST_PACKAGE_URI);
@@ -229,10 +227,10 @@ describe('create', () => {
         .command(['create'])
         .it('creates a project in interactive mode with example and generates .velocitas.json and AppManifest correctly', (ctx) => {
             expect(ctx.stdout).to.equal(EXPECTED_INTERACTIVE_STDOUT(TEST_COMPONENT_CORE_EXAMPLE));
-            expect(ProjectConfig.isAvailable()).to.be.true;
+            expect(ProjectConfigIO.isConfigAvailable()).to.be.true;
             expect(AppManifest.read()).to.not.be.undefined;
 
-            const velocitasConfig = ProjectConfig.read('v0.0.0');
+            const velocitasConfig = ProjectConfigIO.read('v0.0.0');
             expect(velocitasConfig.getPackages()[0].repo).to.be.equal(TEST_MAIN_PACKAGE_URI);
             expect(velocitasConfig.getPackages()[0].version).to.be.equal(TEST_MAIN_PACKAGE_VERSION);
             expect(velocitasConfig.getPackages()[1].repo).to.be.equal(TEST_PACKAGE_URI);

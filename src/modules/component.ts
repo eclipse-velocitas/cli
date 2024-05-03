@@ -94,7 +94,7 @@ export class ComponentConfig {
     id: string;
 
     // component-wide variable configuration
-    variables?: Map<string, any>;
+    variables: Map<string, any> = new Map<string, any>();
 
     constructor(id: string) {
         this.id = id;

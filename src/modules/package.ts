@@ -27,37 +27,30 @@ export interface PackageManifest {
 
 export interface PackageConfigAttributes {
     repo: string;
-
-    // @deprecated: do not use anymore
-    name?: string;
-
     version: string;
-
     variables?: Map<string, any>;
 }
 
 export class PackageConfig {
     // name of the package to the package repository
-    repo: string = '';
+    repo: string;
 
     // version of the package to use
-    version: string = '';
+    version: string;
 
     // package-wide variable configuration
-    variables?: Map<string, any>;
+    variables: Map<string, any> = new Map<string, any>();
 
     constructor(attributes: PackageConfigAttributes) {
         this.repo = attributes.repo;
-        if (attributes.name) {
-            this.repo = attributes.name;
-        }
         this.version = attributes.version;
-        this.variables = attributes.variables;
+        this.variables = attributes.variables ? attributes.variables : this.variables;
     }
 
     private _isCustomPackage(): boolean {
         return this.repo.endsWith('.git');
     }
+
     /**
      * Return the fully qualified URL to the package repository.
      * In case of Eclipse Velocitas repos which can be referenced by name only,

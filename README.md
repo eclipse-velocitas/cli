@@ -67,27 +67,24 @@ An exemplary project configuration (`.velocitas.json`) looks like this:
 
 ```json
 {
-  "packages": [
-    {
-      "repo": "package-A",
-      "version": "v1.0.0"
-    },
-    {
-      "repo": "package-B",
-      "version": "v2.3.1-dev"
-    }
-  ],
+  "packages": {
+      "package-A": "v1.0.0",
+      "package-B": "v2.3.1-dev"
+  },
+  "components": [ "component-A", "component-B" ],
   "variables": {
     "repoUrl": "https://github.com/eclipse-velocitas/cli",
     "copyrightYear": 2023,
-    "autoGenerateVehicleModel": true
+    "autoGenerateVehicleModel": true,
+    "variableA@package-A": "variableA",
+    "variableB@component-B": "variableB",
   }
 }
 ```
 
-As mentioned previously, a package simply is a git repository. The `repo` attribute of a package is used to identify the git repository which holds the package. `repo` is currently resolved to `https://github.com/eclipse-velocitas/<name>`. Alternatively, you can also supply a fully qualified Git repo URL e.g. `https://<your-host>/<your-repo>.git` or `git@<your-host>/<your-repo>.git`. Credentials for HTTPs and SSH based git repos are provided by your local git configuration (CLI is using Git under the hood). The `version` attribute specifies a tag, a branch or a SHA of the repository.
+As mentioned previously, a package simply is a git repository. The key inside the packages is used to identify the git repository which holds the package. It is currently resolved to `https://github.com/eclipse-velocitas/<name>`. Alternatively, you can also supply a fully qualified Git repo URL e.g. `https://<your-host>/<your-repo>.git` or `git@<your-host>/<your-repo>.git`. Credentials for HTTPs and SSH based git repos are provided by your local git configuration (CLI is using Git under the hood). The value of the package attribute specifies a tag, a branch or a SHA of the repository.
 
-The `variables` block holds user configured values for the packages and their contained components. It is a global variable definition. Should two components share the same variable name, both can be set with one line in this global block. Package-wide or component-wide variable configuration to avoid name clashes is also possible.
+The `variables` block holds configured values for a specific scope (project, package or component). A variable without separator acts as a global variable. Should two components share the same variable name, both can be set with one line in this global block. Package-wide or component-wide variable configuration can be used to avoid name clashes. For a package or component scope the variable needs to be assigned with an '@' followed by either package or component ID. In the example above, `variableA@package-A` and `variableB@component-B` showcase such a usage.
 
 Click [here](./docs/PROJECT-CONFIG.md) for an in-depth overview of the project configuration.
 

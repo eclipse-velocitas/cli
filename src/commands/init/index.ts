@@ -17,7 +17,8 @@ import { APP_MANIFEST_PATH_VARIABLE, AppManifest } from '../../modules/app-manif
 import { ComponentContext, ExecSpec } from '../../modules/component';
 import { ExecExitError, runExecSpec } from '../../modules/exec';
 import { PackageConfig } from '../../modules/package';
-import { ProjectConfig, ProjectConfigLock } from '../../modules/project-config';
+import { ProjectConfig } from '../../modules/projectConfig/projectConfig';
+import { ProjectConfigIO } from '../../modules/projectConfig/projectConfigIO';
 import { resolveVersionIdentifier } from '../../modules/semver';
 import { createEnvVars } from '../../modules/variables';
 
@@ -102,7 +103,7 @@ export default class Init extends Command {
         projectConfig.validateUsedComponents();
 
         if (!flags['no-hooks']) {
-            await this._runPostInitHooks(projectConfig.getComponents(), projectConfig, flags.verbose);
+            await this._runPostInitHooks(projectConfig.getComponentContexts(), projectConfig, flags.verbose);
         }
     }
 
@@ -128,13 +129,17 @@ export default class Init extends Command {
         this._finalizeSinglePackageInit(requestedPackageConfig, projectConfig);
 
         if (!flags['no-hooks']) {
-            await this._runPostInitHooks(projectConfig.getComponentsForPackageConfig(requestedPackageConfig), projectConfig, flags.verbose);
+            await this._runPostInitHooks(
+                projectConfig.getComponentContextsForPackageConfig(requestedPackageConfig),
+                projectConfig,
+                flags.verbose,
+            );
         }
     }
 
     private _finalizeSinglePackageInit(requestedPackageConfig: PackageConfig, projectConfig: ProjectConfig): void {
         const providedComponents = requestedPackageConfig.readPackageManifest().components;
-        const enabledComponentIds = projectConfig.getComponents(undefined, true).map((comp) => comp.config.id);
+        const enabledComponentIds = projectConfig.getComponentContexts(undefined, true).map((comp) => comp.config.id);
         const areComponentsExisting = providedComponents.some((comp) => enabledComponentIds.includes(comp.id));
 
         if (!areComponentsExisting) {
@@ -143,18 +148,18 @@ export default class Init extends Command {
             });
         }
 
-        projectConfig.write();
+        ProjectConfigIO.write(projectConfig);
     }
 
     private _initializeOrReadProject(): ProjectConfig {
         let projectConfig: ProjectConfig;
 
-        if (!ProjectConfig.isAvailable()) {
+        if (!ProjectConfigIO.isConfigAvailable()) {
             this.log('... Directory is no velocitas project. Creating .velocitas.json at the root of your repository.');
             projectConfig = new ProjectConfig(`v${this.config.version}`);
-            projectConfig.write();
+            ProjectConfigIO.write(projectConfig);
         } else {
-            projectConfig = ProjectConfig.read(`v${this.config.version}`, undefined, true);
+            projectConfig = ProjectConfigIO.read(`v${this.config.version}`, undefined, true);
         }
         return projectConfig;
     }
@@ -238,9 +243,9 @@ export default class Init extends Command {
     }
 
     private _createProjectLockFile(projectConfig: ProjectConfig, verbose: boolean): void {
-        if (verbose && !ProjectConfigLock.isAvailable()) {
+        if (verbose && !ProjectConfigIO.isLockAvailable()) {
             this.log('... No .velocitas-lock.json found. Creating it at the root of your repository.');
         }
-        ProjectConfigLock.write(projectConfig);
+        ProjectConfigIO.writeLock(projectConfig);
     }
 }

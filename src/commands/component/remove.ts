@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Args, Command } from '@oclif/core';
-import { ProjectConfig } from '../../modules/project-config';
+import { ProjectConfigIO } from '../../modules/projectConfig/projectConfigIO';
 
 export default class Remove extends Command {
     static description = 'Remove project components.';
@@ -21,15 +21,15 @@ export default class Remove extends Command {
     static examples = [`$ velocitas component remove <id>`];
 
     static args = {
-        id: Args.string({ description: 'ID of the component to add', required: true }),
+        id: Args.string({ description: 'ID of the component to remove', required: true }),
     };
 
     async run(): Promise<void> {
         const { args } = await this.parse(Remove);
 
-        const projectConfig = ProjectConfig.read(`v${this.config.version}`);
+        const projectConfig = ProjectConfigIO.read(`v${this.config.version}`);
 
-        const foundComponent = projectConfig.getComponents(false).find((compContext) => compContext.manifest.id === args.id);
+        const foundComponent = projectConfig.getComponentContexts(false).find((compContext) => compContext.manifest.id === args.id);
 
         if (!foundComponent) {
             throw Error(
@@ -42,6 +42,6 @@ export default class Remove extends Command {
         }
 
         projectConfig.removeComponent(foundComponent?.manifest.id);
-        projectConfig.write();
+        ProjectConfigIO.write(projectConfig);
     }
 }

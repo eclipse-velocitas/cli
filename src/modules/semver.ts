@@ -15,6 +15,8 @@
 import { SemVer, gt, maxSatisfying, satisfies, valid } from 'semver';
 import { TagResult } from 'simple-git';
 
+export const BRANCH_PREFIX = '@';
+
 export function getLatestVersion(versions: string[]): string {
     let latestVersion: SemVer | undefined = undefined;
     for (const version of versions) {
@@ -40,9 +42,8 @@ export function getLatestVersion(versions: string[]): string {
 }
 
 export function resolveVersionIdentifier(versions: TagResult, versionIdentifier: string): string {
-    const branchPrefix = '@';
-    if (versionIdentifier.startsWith(branchPrefix)) {
-        return versionIdentifier.substring(1);
+    if (versionIdentifier.startsWith(BRANCH_PREFIX)) {
+        return versionIdentifier;
     }
 
     if (versionIdentifier === 'latest') {
@@ -53,7 +54,7 @@ export function resolveVersionIdentifier(versions: TagResult, versionIdentifier:
 
     if (matchedVersion === null) {
         throw new Error(
-            `Can't find matching version for ${versionIdentifier}. Prefix with '${branchPrefix}' for a branch or use a valid semantic version.`,
+            `Can't find matching version for ${versionIdentifier}. Prefix with '${BRANCH_PREFIX}' for a branch or use a valid semantic version.`,
         );
     }
 

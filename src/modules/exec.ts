@@ -17,7 +17,7 @@ import { exec } from 'node:child_process';
 import { join, resolve } from 'node:path';
 import { ExecSpec, ProgramSpec } from './component';
 import { ProjectCache } from './project-cache';
-import { ProjectConfig } from './project-config';
+import { ProjectConfig } from './projectConfig/projectConfig';
 import { stdOutParser } from './stdout-parser';
 
 const lineCapturer = (projectCache: ProjectCache, writeStdout: boolean, data: string) => {

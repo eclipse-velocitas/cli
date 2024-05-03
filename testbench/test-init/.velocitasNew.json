@@ -1,57 +1,22 @@
 {
-    "packages": [
-        {
-            "repo": "https://github.com/eclipse-velocitas/pkg-velocitas-main.git",
-            "version": "v0.0.2"
-        },
-        {
-            "repo": "https://github.com/eclipse-velocitas/devenv-devcontainer-setup.git",
-            "version": "v2.0.0"
-        },
-        {
-            "repo": "https://github.com/eclipse-velocitas/devenv-runtimes.git",
-            "version": "v3.0.0"
-        },
-        {
-            "repo": "https://github.com/eclipse-velocitas/devenv-github-templates.git",
-            "version": "v1.0.3"
-        },
-        {
-            "repo": "https://github.com/eclipse-velocitas/devenv-github-workflows.git",
-            "version": "v5.0.0"
-        }
-    ],
+    "packages": {
+        "https://github.com/eclipse-velocitas/pkg-velocitas-main.git": "v0.0.2",
+        "https://github.com/eclipse-velocitas/devenv-devcontainer-setup.git": "v2.0.0",
+        "https://github.com/eclipse-velocitas/devenv-runtimes.git": "v3.0.0",
+        "https://github.com/eclipse-velocitas/devenv-github-templates.git": "v1.0.3",
+        "https://github.com/eclipse-velocitas/devenv-github-workflows.git": "v5.0.0"
+    },
     "components": [
-        {
-            "id": "vapp-core-python"
-        },
-        {
-            "id": "vehicle-signal-interface"
-        },
-        {
-            "id": "devcontainer-setup"
-        },
-        {
-            "id": "sdk-installer"
-        },
-        {
-            "id": "runtime-local"
-        },
-        {
-            "id": "runtime-kanto"
-        },
-        {
-            "id": "deployment-kanto"
-        },
-        {
-            "id": "pantaris-integration"
-        },
-        {
-            "id": "github-templates"
-        },
-        {
-            "id": "github-workflows"
-        }
+        "vapp-core-python",
+        "vehicle-signal-interface",
+        "devcontainer-setup",
+        "sdk-installer",
+        "runtime-local",
+        "runtime-kanto",
+        "deployment-kanto",
+        "pantaris-integration",
+        "github-templates",
+        "github-workflows"
     ],
     "variables": {
         "appManifestPath": "./app/AppManifest.json",

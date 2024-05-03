@@ -1,0 +1,17 @@
+{
+    "packages": {
+        "test-packageOne": "test-version",
+        "test-packageTwo": "test-version"
+    },
+    "components": [
+        "test-componentOne",
+        "test-componentTwo"
+    ],
+    "variables": {
+        "projectVariable": "projectTest",
+        "packageVariable@test-packageOne": "packageTestOne",
+        "packageVariable@test-packageTwo": "packageTestTwo",
+        "componentVariable@test-componentOne": 1,
+        "componentVariable@test-componentTwo": 2
+    }
+}

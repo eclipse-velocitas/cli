@@ -13,7 +13,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
-import { installedRuntimePackage, mockFolders, userHomeDir } from '../../utils/mockfs';
+import { runtimePackageInfoMock } from '../../utils/mockConfig';
+import { mockFolders, userHomeDir } from '../../utils/mockfs';
 
 describe('package', () => {
     test.do(() => {
@@ -30,10 +31,10 @@ describe('package', () => {
         mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true });
     })
         .stdout()
-        .command(['package', '-p', `${installedRuntimePackage.repo}`])
+        .command(['package', '-p', `${runtimePackageInfoMock.repo}`])
         .it('prints the path of specified package', (ctx) => {
             expect(ctx.stdout).to.contain(
-                `${userHomeDir}/.velocitas/packages/${installedRuntimePackage.repo}/${installedRuntimePackage.version}`,
+                `${userHomeDir}/.velocitas/packages/${runtimePackageInfoMock.repo}/${runtimePackageInfoMock.resolvedVersion}`,
             );
         });
 
@@ -42,7 +43,7 @@ describe('package', () => {
     })
         .stdout()
         .command(['package'])
-        .catch(`Cannot find package ${installedRuntimePackage.repo}:${installedRuntimePackage.version}`)
+        .catch(`Cannot find package ${runtimePackageInfoMock.repo}:${runtimePackageInfoMock.resolvedVersion}`)
         .it('throws error when configured package cannot be found');
 
     test.do(() => {

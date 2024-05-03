@@ -15,60 +15,42 @@
 import { CoreComponent, ExtensionComponent, PackageAttributes } from '../../src/modules/package-index';
 import { ScopeIdentifier } from '../../src/modules/variables';
 
+export const runtimePackageInfoMock = {
+    repo: 'test-runtime',
+    versionIdentifier: 'v1.1.*',
+    resolvedVersion: 'v1.1.1',
+};
+export const setupPackageInfoMock = {
+    repo: 'test-setup',
+    versionIdentifier: 'v1.1.*',
+    resolvedVersion: 'v1.1.1',
+};
+export const corePackageInfoMock = {
+    repo: 'test-package-main',
+    versionIdentifier: 'v1.1.*',
+    resolvedVersion: 'v1.1.1',
+};
+
 export const velocitasConfigMock = {
-    packages: [
-        {
-            repo: 'test-runtime',
-            version: 'v1.1.*',
-            variables: { test: 'test' },
-        },
-        {
-            repo: 'test-setup',
-            version: 'v1.1.*',
-        },
-        {
-            repo: 'test-package-main',
-            version: 'v1.1.*',
-        },
-    ],
-    components: [
-        {
-            id: 'test-runtime-local',
-        },
-        {
-            id: 'test-runtime-deploy-local',
-        },
-        {
-            id: 'github-workflows',
-        },
-        {
-            id: 'core-test',
-        },
-        {
-            id: 'test-extension-mandatory',
-        },
-    ],
+    packages: {
+        [runtimePackageInfoMock.repo]: runtimePackageInfoMock.versionIdentifier,
+        [setupPackageInfoMock.repo]: setupPackageInfoMock.versionIdentifier,
+        [corePackageInfoMock.repo]: corePackageInfoMock.versionIdentifier,
+    },
+    components: ['test-runtime-local', 'test-runtime-deploy-local', 'github-workflows', 'core-test', 'test-extension-mandatory'],
     variables: {
         appManifestPath: './app/AppManifest.json',
         githubRepoId: 'myRepo',
+        [`test@${runtimePackageInfoMock.repo}`]: 'test',
     },
 };
 
 export const velocitasConfigLockMock = {
-    packages: [
-        {
-            repo: 'test-runtime',
-            version: 'v1.1.1',
-        },
-        {
-            repo: 'test-setup',
-            version: 'v1.1.1',
-        },
-        {
-            repo: 'test-package-main',
-            version: 'v1.1.1',
-        },
-    ],
+    packages: {
+        [runtimePackageInfoMock.repo]: runtimePackageInfoMock.resolvedVersion,
+        [setupPackageInfoMock.repo]: setupPackageInfoMock.resolvedVersion,
+        [corePackageInfoMock.repo]: corePackageInfoMock.resolvedVersion,
+    },
 };
 
 export const packageIndexMock: PackageAttributes[] = [
