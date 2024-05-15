@@ -201,7 +201,12 @@ export default class Create extends Command {
             corePromptResult.appName,
             corePromptResult.example,
             appManifestInterfaceAttributes,
-            packageIndex.getMandatoryExtensionsByCoreId(corePromptResult.chosenCore.id).map((ext: ExtensionComponent) => ext.id),
+            [
+                ...(corePromptResult.example
+                    ? packageIndex.getMandatoryExtensionsByExampleForCore(corePromptResult.chosenCore.id, corePromptResult.appName)
+                    : []),
+                ...packageIndex.getMandatoryExtensionsByCoreId(corePromptResult.chosenCore.id).map((ext: ExtensionComponent) => ext.id),
+            ],
         );
         return createData;
     }
