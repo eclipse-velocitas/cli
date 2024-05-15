@@ -2,19 +2,19 @@
     "packages": [
         {
             "repo": "devenv-runtimes",
-            "version": "v2.2.6"
+            "version": "v3.1.1"
         },
         {
             "repo": "devenv-github-workflows",
-            "version": "v4.1.4"
+            "version": "v6.0.1"
         },
         {
             "repo": "devenv-github-templates",
-            "version": "v1.0.3"
+            "version": "v1.0.5"
         },
         {
             "repo": "devenv-devcontainer-setup",
-            "version": "v1.4.7"
+            "version": "v2.2.0"
         }
     ],
     "variables": {
