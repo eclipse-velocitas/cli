@@ -41,8 +41,6 @@ describe('CLI command', () => {
         it('should be able to clean init a project with an actual version of .velocitas.json', async () => {
             copySync('./.velocitasNew.json', './.velocitas.json');
             const initOutput = spawnSync(VELOCITAS_PROCESS, ['init'], { encoding: DEFAULT_BUFFER_ENCODING });
-            console.log(initOutput.output);
-            console.log(initOutput.stdout);
             expect(initOutput.status).to.equal(0);
 
             const packageIndex = JSON.parse(readFileSync('./.velocitas.json', DEFAULT_BUFFER_ENCODING));
