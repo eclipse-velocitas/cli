@@ -9,6 +9,16 @@
                     "dst": "testFile2.sh"
                 }
             ]
+        },
+        {
+            "id": "test-componentFour",
+            "type": "setup",
+            "files": [
+                {
+                    "src": "Dockerfile",
+                    "dst": "Dockerfile"
+                }
+            ]
         }
     ]
 }

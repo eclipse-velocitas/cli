@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Stats } from 'node:fs';
-import { extname, join } from 'node:path';
+import { basename, extname, join } from 'node:path';
 import { cwd } from 'node:process';
 import { Transform, TransformCallback, TransformOptions } from 'node:stream';
 import copy from 'recursive-copy';
@@ -22,16 +22,18 @@ import { ComponentManifest } from './component';
 import { PackageConfig } from './package';
 import { VariableCollection } from './variables';
 
-const SUPPORTED_TEXT_FILES_ARRAY = ['.md', '.yaml', '.yml', '.txt', '.json', '.sh', '.html', '.htm', '.xml', '.tpl'];
+const SUPPORTED_TEXT_FILES_ARRAY = ['.md', '.yaml', '.yml', '.txt', '.json', '.sh', '.html', '.htm', '.xml', '.tpl', '.dockerfile'];
+const SPECIAL_FILES_ARRAY = ['Dockerfile'];
+const NOTICE_COMMENT = 'This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json';
 
-class ReplaceVariablesStream extends Transform {
-    private _fileExt: string;
+class ReplaceVariablesTransform extends Transform {
+    private _filename: string;
     private _variables: VariableCollection;
     private _firstChunk: boolean;
 
-    constructor(fileExt: string, variables: VariableCollection, opts?: TransformOptions | undefined) {
+    constructor(filename: string, variables: VariableCollection, opts?: TransformOptions | undefined) {
         super({ ...opts, readableObjectMode: true, writableObjectMode: true });
-        this._fileExt = fileExt;
+        this._filename = filename;
         this._variables = variables;
         this._firstChunk = true;
     }
@@ -41,30 +43,30 @@ class ReplaceVariablesStream extends Transform {
     _transform(chunk: any, _: string, callback: TransformCallback) {
         let result = this._variables.substitute(chunk.toString());
         let noticeComment: string;
-        const notice = 'This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json';
         const shebang = '#!/bin/bash';
         const xmlDeclarationRegExp = new RegExp(`\\<\\?xml\\s.*?\\s\\?\\>`);
+        const fileExt = extname(this._filename);
 
         if (this._firstChunk) {
-            if (['.txt'].includes(this._fileExt)) {
-                result = `${notice}\n${result}`;
-            } else if (['.md', '.html', '.htm', '.xml', '.tpl'].includes(this._fileExt)) {
-                noticeComment = `<!-- ${notice} -->`;
+            if (['.txt'].includes(fileExt)) {
+                result = `${NOTICE_COMMENT}\n${result}`;
+            } else if (['.md', '.html', '.htm', '.xml', '.tpl'].includes(fileExt)) {
+                noticeComment = `<!-- ${NOTICE_COMMENT} -->`;
                 const xmlDeclarationArray = xmlDeclarationRegExp.exec(result);
                 if (xmlDeclarationArray !== null && result.startsWith(xmlDeclarationArray[0])) {
                     result = this._injectNoticeAfterStartLine(result, xmlDeclarationArray[0], noticeComment);
                 } else {
                     result = `${noticeComment}\n${result}`;
                 }
-            } else if (['.yaml', '.yml', '.sh'].includes(this._fileExt)) {
-                noticeComment = `# ${notice}`;
+            } else if (['Dockerfile'].includes(this._filename) || ['.yaml', '.yml', '.sh', '.dockerfile'].includes(fileExt)) {
+                noticeComment = `# ${NOTICE_COMMENT}`;
                 if (result.startsWith(shebang)) {
                     result = this._injectNoticeAfterStartLine(result, shebang, noticeComment);
                 } else {
                     result = `${noticeComment}\n${result}`;
                 }
-            } else if (['.json'].includes(this._fileExt)) {
-                noticeComment = `// ${notice}`;
+            } else if (['.json'].includes(fileExt)) {
+                noticeComment = `// ${NOTICE_COMMENT}`;
                 result = `${noticeComment}\n${result}`;
             }
 
@@ -88,7 +90,12 @@ export function installComponent(packageConfig: PackageConfig, component: Compon
             let ifCondition = spec.condition ? variables.substitute(spec.condition) : 'true';
 
             if (eval(ifCondition)) {
-                const sourceFileOrDir = join(packageConfig.getPackageDirectory(), packageConfig.version, src);
+                const sourceFileOrDir = join(
+                    packageConfig.getPackageDirectory(),
+                    packageConfig.version,
+                    component.basePath ? component.basePath : '',
+                    src,
+                );
                 const destFileOrDir = join(cwd(), dst);
                 try {
                     if (CliFileSystem.existsSync(sourceFileOrDir)) {
@@ -96,11 +103,11 @@ export function installComponent(packageConfig: PackageConfig, component: Compon
                             dot: true,
                             overwrite: true,
                             transform: function (src: string, _: string, stats: Stats) {
-                                if (!SUPPORTED_TEXT_FILES_ARRAY.includes(extname(src))) {
+                                if (!SPECIAL_FILES_ARRAY.includes(basename(src)) && !SUPPORTED_TEXT_FILES_ARRAY.includes(extname(src))) {
                                     return null;
                                 }
 
-                                return new ReplaceVariablesStream(extname(src), variables);
+                                return new ReplaceVariablesTransform(extname(src), variables);
                             },
                         });
                     }

@@ -75,6 +75,9 @@ export interface ComponentManifest {
     // Human readable description of the component, if any.
     description?: string;
 
+    // A base path within the package where all files and programs are located to relatively.
+    basePath?: string;
+
     // A list of files that need to be copied from source to target when running `velocitas sync`.
     files?: FileSpec[];
 
