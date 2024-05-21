@@ -2,7 +2,6 @@
     "components": [
         {
             "id": "test-component",
-            "type": "setup",
             "programs": [
                 {
                     "id": "echo-env",
@@ -11,37 +10,68 @@
                 {
                     "id": "executable-on-path",
                     "executable": "python3",
-                    "args": ["./hello-world.py"]
+                    "args": [
+                        "./hello-world.py"
+                    ]
                 },
                 {
                     "id": "set-cache",
                     "executable": "python3",
-                    "args": ["./set-cache.py"]
+                    "args": [
+                        "./set-cache.py"
+                    ]
                 },
                 {
                     "id": "get-cache",
                     "executable": "python3",
-                    "args": ["./get-cache.py"]
+                    "args": [
+                        "./get-cache.py"
+                    ]
                 },
                 {
                     "id": "tty",
                     "executable": "docker",
-                    "args": ["run", "-it", "hello-world"]
+                    "args": [
+                        "run",
+                        "-it",
+                        "hello-world"
+                    ]
                 },
                 {
                     "id": "print-args",
                     "executable": "python3",
-                    "args": ["./print-args.py", "default", "foo"]
+                    "args": [
+                        "./print-args.py",
+                        "default",
+                        "foo"
+                    ]
                 },
                 {
                     "id": "print-args-no-default",
                     "executable": "python3",
-                    "args": ["./print-args.py"]
+                    "args": [
+                        "./print-args.py"
+                    ]
                 },
                 {
                     "id": "exit",
                     "executable": "python3",
-                    "args": ["./exit.py"]
+                    "args": [
+                        "./exit.py"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "test-component2",
+            "basePath": "components/test-component2",
+            "programs": [
+                {
+                    "id": "exit",
+                    "executable": "python3",
+                    "args": [
+                        "./nested.py"
+                    ]
                 }
             ]
         }

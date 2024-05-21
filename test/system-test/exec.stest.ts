@@ -179,6 +179,13 @@ describe('CLI command', () => {
             });
             expect(result.status).to.be.equal(1);
         });
+
+        it('should execute programs with relative paths', async () => {
+            const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component2', 'nested'], {
+                encoding: DEFAULT_BUFFER_ENCODING,
+            });
+            expect(result.stdout).to.be.equal("hello nested\n");
+        });
     });
 });
 
