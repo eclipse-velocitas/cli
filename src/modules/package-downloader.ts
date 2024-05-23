@@ -34,7 +34,7 @@ export class PackageDownloader {
         const localRepoExists = await this.git.checkIsRepo(checkRepoAction);
 
         if (localRepoExists) {
-            await this.git.fetch(['--all']);
+            await this.git.fetch(['--force', '--tags', '--prune', '--prune-tags']);
         } else {
             await this.git.clone(this.packageConfig.getPackageRepo(), packageDir, cloneOpts);
         }
