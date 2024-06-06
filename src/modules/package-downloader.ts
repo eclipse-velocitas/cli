@@ -26,61 +26,57 @@ export class PackageDownloader {
         this.packageConfig = packageConfig;
     }
 
-    async cloneRepository(packageDir: string, cloneOpts: string[]): Promise<void> {
+    private async _cloneRepository(packageDir: string, cloneOpts: string[]): Promise<void> {
         await this.git.clone(this.packageConfig.getPackageRepo(), packageDir, cloneOpts);
     }
 
-    async isValidRepo(): Promise<boolean> {
-        return await simpleGit(this.packageConfig.getPackageDirectoryWithVersion()).checkIsRepo();
-    }
-
-    async updateRepository(checkRepoAction: CheckRepoActions, packageDir: string, cloneOpts: string[]): Promise<void> {
+    private async _updateRepository(checkRepoAction: CheckRepoActions): Promise<void> {
         const localRepoExists = await this.git.checkIsRepo(checkRepoAction);
 
         if (localRepoExists) {
             await this.git.fetch(['--force', '--tags', '--prune', '--prune-tags']);
-        } else {
-            await this.git.clone(this.packageConfig.getPackageRepo(), packageDir, cloneOpts);
         }
     }
 
-    async checkoutVersion(): Promise<void> {
-        await this.git.checkout(
-            this.packageConfig.version.startsWith(BRANCH_PREFIX)
-                ? this.packageConfig.version.substring(BRANCH_PREFIX.length)
-                : this.packageConfig.version,
-        );
+    private async _checkoutVersion(version: string): Promise<void> {
+        const branchOrTag = version.startsWith(BRANCH_PREFIX) ? version.substring(BRANCH_PREFIX.length) : version;
+        await this.git.checkout(branchOrTag);
     }
 
-    async downloadPackage(option: { checkVersionOnly: boolean }): Promise<SimpleGit> {
-        let packageDir: string = this.packageConfig.getPackageDirectory();
-        let cloneOpts: string[] = [];
-        let checkRepoAction: CheckRepoActions;
-
-        if (option.checkVersionOnly) {
-            packageDir = join(packageDir, '_cache');
-            cloneOpts.push('--bare');
-            checkRepoAction = CheckRepoActions.BARE;
-        } else {
-            packageDir = this.packageConfig.getPackageDirectoryWithVersion();
-            checkRepoAction = CheckRepoActions.IS_REPO_ROOT;
+    private async _checkForValidRepo(packageDir: string, cloneOpts: string[], checkRepoAction: CheckRepoActions): Promise<void> {
+        let directoryExists = CliFileSystem.existsSync(packageDir);
+        if (directoryExists && !(await this.isValidRepo(packageDir, checkRepoAction))) {
+            CliFileSystem.removeSync(packageDir);
+            directoryExists = false;
         }
 
-        if (!CliFileSystem.existsSync(packageDir)) {
-            await this.cloneRepository(packageDir, cloneOpts);
+        if (!directoryExists) {
+            await this._cloneRepository(packageDir, cloneOpts);
         }
+    }
 
+    public async isValidRepo(packageDir: string, checkRepoAction?: CheckRepoActions): Promise<boolean> {
+        return await simpleGit(packageDir).checkIsRepo(checkRepoAction);
+    }
+
+    public async downloadPackage(option: { checkVersionOnly: boolean }): Promise<SimpleGit> {
+        const basePackageDir = this.packageConfig.getPackageDirectory();
+        const packageDir = option.checkVersionOnly ? join(basePackageDir, '_cache') : this.packageConfig.getPackageDirectoryWithVersion();
+        const cloneOpts: string[] = option.checkVersionOnly ? ['--bare'] : [];
+        const checkRepoAction = option.checkVersionOnly ? CheckRepoActions.BARE : CheckRepoActions.IS_REPO_ROOT;
+
+        await this._checkForValidRepo(packageDir, cloneOpts, checkRepoAction);
         this.git = simpleGit(packageDir);
-        await this.updateRepository(checkRepoAction, packageDir, cloneOpts);
+        await this._updateRepository(checkRepoAction);
 
         if (!option.checkVersionOnly) {
-            await this.checkoutVersion();
+            await this._checkoutVersion(this.packageConfig.version);
         }
 
         return this.git;
     }
 }
 
-export const packageDownloader = (packageConfig: PackageConfig) => {
+export const packageDownloader = (packageConfig: PackageConfig): PackageDownloader => {
     return new PackageDownloader(packageConfig);
 };

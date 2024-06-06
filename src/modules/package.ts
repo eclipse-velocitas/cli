@@ -120,7 +120,11 @@ export class PackageConfig {
     }
 
     async isPackageValidRepo(): Promise<boolean> {
-        return await packageDownloader(this).isValidRepo();
+        const isValid = await packageDownloader(this).isValidRepo(this.getPackageDirectoryWithVersion());
+        if (!isValid) {
+            console.log(`... Corrupted .git directory found for: '${this.getPackageName()}:${this.version}'`);
+        }
+        return isValid;
     }
 
     readPackageManifest(): PackageManifest {
