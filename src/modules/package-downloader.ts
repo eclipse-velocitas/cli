@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { posix as pathPosix } from 'node:path';
+import { join } from 'node:path';
 import { CheckRepoActions, SimpleGit, simpleGit } from 'simple-git';
 import { CliFileSystem } from '../utils/fs-bridge';
 import { PackageConfig } from './package';
@@ -28,6 +28,10 @@ export class PackageDownloader {
 
     async cloneRepository(packageDir: string, cloneOpts: string[]): Promise<void> {
         await this.git.clone(this.packageConfig.getPackageRepo(), packageDir, cloneOpts);
+    }
+
+    async isValidRepo(): Promise<boolean> {
+        return await simpleGit(this.packageConfig.getPackageDirectoryWithVersion()).checkIsRepo();
     }
 
     async updateRepository(checkRepoAction: CheckRepoActions, packageDir: string, cloneOpts: string[]): Promise<void> {
@@ -54,11 +58,11 @@ export class PackageDownloader {
         let checkRepoAction: CheckRepoActions;
 
         if (option.checkVersionOnly) {
-            packageDir = pathPosix.join(packageDir, '_cache');
+            packageDir = join(packageDir, '_cache');
             cloneOpts.push('--bare');
             checkRepoAction = CheckRepoActions.BARE;
         } else {
-            packageDir = pathPosix.join(packageDir, this.packageConfig.version);
+            packageDir = this.packageConfig.getPackageDirectoryWithVersion();
             checkRepoAction = CheckRepoActions.IS_REPO_ROOT;
         }
 

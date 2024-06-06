@@ -116,10 +116,11 @@ export class PackageConfig {
     }
 
     isPackageInstalled(): boolean {
-        if (!CliFileSystem.existsSync(this.getPackageDirectoryWithVersion())) {
-            return false;
-        }
-        return true;
+        return CliFileSystem.existsSync(this.getPackageDirectoryWithVersion());
+    }
+
+    async isPackageValidRepo(): Promise<boolean> {
+        return await packageDownloader(this).isValidRepo();
     }
 
     readPackageManifest(): PackageManifest {
