@@ -97,7 +97,7 @@ describe('init', () => {
         .stdout()
         .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock(undefined, false)))
         .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
-        .command(['init'])
+        .command(['init', '-v'])
         .it('downloads corrupted packages again', (ctx) => {
             expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
             expect(ctx.stdout).to.contain(

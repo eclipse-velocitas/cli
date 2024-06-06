@@ -119,9 +119,9 @@ export class PackageConfig {
         return CliFileSystem.existsSync(this.getPackageDirectoryWithVersion());
     }
 
-    async isPackageValidRepo(): Promise<boolean> {
+    async isPackageValidRepo(verbose?: boolean): Promise<boolean> {
         const isValid = await packageDownloader(this).isValidRepo(this.getPackageDirectoryWithVersion());
-        if (!isValid) {
+        if (!isValid && verbose) {
             console.log(`... Corrupted .git directory found for: '${this.getPackageName()}:${this.version}'`);
         }
         return isValid;

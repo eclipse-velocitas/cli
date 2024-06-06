@@ -60,10 +60,18 @@ export class PackageDownloader {
     }
 
     public async downloadPackage(option: { checkVersionOnly: boolean }): Promise<SimpleGit> {
-        const basePackageDir = this.packageConfig.getPackageDirectory();
-        const packageDir = option.checkVersionOnly ? join(basePackageDir, '_cache') : this.packageConfig.getPackageDirectoryWithVersion();
-        const cloneOpts: string[] = option.checkVersionOnly ? ['--bare'] : [];
-        const checkRepoAction = option.checkVersionOnly ? CheckRepoActions.BARE : CheckRepoActions.IS_REPO_ROOT;
+        let packageDir: string = this.packageConfig.getPackageDirectory();
+        let checkRepoAction: CheckRepoActions;
+        const cloneOpts: string[] = [];
+
+        if (option.checkVersionOnly) {
+            packageDir = join(packageDir, '_cache');
+            cloneOpts.push('--bare');
+            checkRepoAction = CheckRepoActions.BARE;
+        } else {
+            packageDir = join(packageDir, this.packageConfig.version);
+            checkRepoAction = CheckRepoActions.IS_REPO_ROOT;
+        }
 
         await this._checkForValidRepo(packageDir, cloneOpts, checkRepoAction);
         this.git = simpleGit(packageDir);
