@@ -92,6 +92,26 @@ describe('init', () => {
         });
 
     test.do(() => {
+        mockFolders({ velocitasConfig: true, packageIndex: true, installedComponents: true });
+    })
+        .stdout()
+        .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock(undefined, false)))
+        .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
+        .command(['init'])
+        .it('downloads corrupted packages again', (ctx) => {
+            expect(ctx.stdout).to.contain('Initializing Velocitas packages ...');
+            expect(ctx.stdout).to.contain(
+                `... Corrupted .git directory found for: '${corePackageInfoMock.repo}:${corePackageInfoMock.resolvedVersion}'`,
+            );
+            expect(ctx.stdout).to.contain(`... Downloading package: '${corePackageInfoMock.repo}:${corePackageInfoMock.resolvedVersion}'`);
+            expect(
+                CliFileSystem.existsSync(
+                    `${userHomeDir}/.velocitas/packages/${corePackageInfoMock.repo}/${corePackageInfoMock.resolvedVersion}`,
+                ),
+            ).to.be.true;
+        });
+
+    test.do(() => {
         mockFolders({ velocitasConfig: true, velocitasConfigLock: true, installedComponents: true, appManifest: false });
     })
         .stdout()
@@ -144,9 +164,9 @@ describe('init', () => {
         .stdout()
         .stub(gitModule, 'simpleGit', (stub) => stub.returns(simpleGitInstanceMock()))
         .stub(exec, 'runExecSpec', (stub) => stub.returns({}))
-        .command(['init', '--package', 'devenv-runtime'])
+        .command(['init', '--package', 'devenv-runtimes'])
         .it('adds a new entry to .velocitas.json if the package does not exist', (ctx) => {
-            expect(ctx.stdout).to.contain(`... Package 'devenv-runtime:v1.1.1' added to .velocitas.json`);
+            expect(ctx.stdout).to.contain(`... Package 'devenv-runtimes:v1.1.1' added to .velocitas.json`);
         });
 
     test.do(() => {
