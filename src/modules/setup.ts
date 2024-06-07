@@ -18,7 +18,7 @@ import { cwd } from 'node:process';
 import { Transform, TransformCallback, TransformOptions } from 'node:stream';
 import copy from 'recursive-copy';
 import { CliFileSystem } from '../utils/fs-bridge';
-import { ComponentManifest } from './component';
+import { ComponentContext, ComponentManifest } from './component';
 import { PackageConfig } from './package';
 import { VariableCollection } from './variables';
 
@@ -80,15 +80,15 @@ class ReplaceVariablesStream extends Transform {
     }
 }
 
-export function installComponent(packageConfig: PackageConfig, component: ComponentManifest, variables: VariableCollection) {
-    if (component.files) {
-        for (const spec of component.files) {
+export function installComponent(component: ComponentContext, variables: VariableCollection) {
+    if (component.manifest.files) {
+        for (const spec of component.manifest.files) {
             const src = variables.substitute(spec.src);
             const dst = variables.substitute(spec.dst);
             let ifCondition = spec.condition ? variables.substitute(spec.condition) : 'true';
 
             if (eval(ifCondition)) {
-                const sourceFileOrDir = join(packageConfig.getPackageDirectory(), packageConfig.version, src);
+                const sourceFileOrDir = join(component.getComponentPath(), src);
                 const destFileOrDir = join(cwd(), dst);
                 try {
                     if (CliFileSystem.existsSync(sourceFileOrDir)) {

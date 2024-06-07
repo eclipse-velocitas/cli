@@ -30,13 +30,13 @@ Syncing Velocitas components!
         this.log(`Syncing Velocitas components!`);
         const projectConfig = ProjectConfigIO.read(`v${this.config.version}`);
 
-        for (const component of projectConfig.getComponentContexts()) {
-            if (!component.manifest.files || component.manifest.files.length === 0) {
+        for (const componentContext of projectConfig.getComponentContexts()) {
+            if (!componentContext.manifest.files || componentContext.manifest.files.length === 0) {
                 continue;
             }
 
-            this.log(`... syncing '${component.manifest.id}'`);
-            installComponent(component.packageConfig, component.manifest, projectConfig.getVariableCollection(component));
+            this.log(`... syncing '${componentContext.manifest.id}'`);
+            installComponent(componentContext, projectConfig.getVariableCollection(componentContext));
         }
     }
 }

@@ -58,10 +58,8 @@ export default class Package extends Command {
         if (args.name) {
             packagesToPrint.push(projectConfig.getPackages().find((pkgCfg: PackageConfig) => pkgCfg.getPackageName() === args.name)!);
 
-            const componentDir = join(packagesToPrint[0].getPackageDirectory(), packagesToPrint[0].version);
-
             if (flags.getPath) {
-                this.log(componentDir);
+                this.log(packagesToPrint[0].getPackageDirectoryWithVersion());
                 return;
             }
         } else {
