@@ -143,7 +143,7 @@ export function getVelocitasRoot(): string {
     return join(process.env.VELOCITAS_HOME ? process.env.VELOCITAS_HOME : homedir(), '.velocitas');
 }
 
-function getPackageFolderPath(): string {
+export function getPackageFolderPath(): string {
     return join(getVelocitasRoot(), 'packages');
 }
 

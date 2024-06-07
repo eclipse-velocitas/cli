@@ -2,11 +2,20 @@
     "components": [
         {
             "id": "test-componentTwo",
-            "type": "setup",
             "files": [
                 {
                     "src": "testFile.sh",
                     "dst": "testFile2.sh"
+                }
+            ]
+        },
+        {
+            "id": "test-componentThree",
+            "basePath": "nested",
+            "files": [
+                {
+                    "src": "dummy",
+                    "dst": "dummy"
                 }
             ]
         }

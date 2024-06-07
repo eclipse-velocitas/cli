@@ -12,6 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+import { join } from 'node:path';
 import { PackageConfig } from './package';
 import { VariableDefinition } from './variables';
 
@@ -75,6 +76,9 @@ export interface ComponentManifest {
     // Human readable description of the component, if any.
     description?: string;
 
+    // A base path within the package where all files and programs are located to relatively.
+    basePath?: string;
+
     // A list of files that need to be copied from source to target when running `velocitas sync`.
     files?: FileSpec[];
 
@@ -113,5 +117,13 @@ export class ComponentContext {
         this.manifest = manifest;
         this.config = config;
         this.usedInProject = usedInProject;
+    }
+
+    getComponentPath(): string {
+        const componentPath = this.packageConfig.getPackageDirectoryWithVersion();
+        if (this.manifest.basePath) {
+            return join(componentPath, this.manifest.basePath);
+        }
+        return componentPath;
     }
 }
