@@ -184,7 +184,7 @@ describe('CLI command', () => {
             const result = spawnSync(VELOCITAS_PROCESS, ['exec', 'test-component2', 'nested'], {
                 encoding: DEFAULT_BUFFER_ENCODING,
             });
-            expect(result.stdout).to.be.equal("hello nested\n");
+            expect(result.stdout.trim()).to.be.equal("hello nested");
         });
     });
 });

@@ -67,7 +67,7 @@
             "basePath": "components/test-component2",
             "programs": [
                 {
-                    "id": "exit",
+                    "id": "nested",
                     "executable": "python3",
                     "args": [
                         "./nested.py"
