@@ -116,10 +116,15 @@ export class PackageConfig {
     }
 
     isPackageInstalled(): boolean {
-        if (!CliFileSystem.existsSync(this.getPackageDirectoryWithVersion())) {
-            return false;
+        return CliFileSystem.existsSync(this.getPackageDirectoryWithVersion());
+    }
+
+    async isPackageValidRepo(verbose?: boolean): Promise<boolean> {
+        const isValid = await packageDownloader(this).isValidRepo(this.getPackageDirectoryWithVersion());
+        if (!isValid && verbose) {
+            console.log(`... Corrupted .git directory found for: '${this.getPackageName()}:${this.version}'`);
         }
-        return true;
+        return isValid;
     }
 
     readPackageManifest(): PackageManifest {

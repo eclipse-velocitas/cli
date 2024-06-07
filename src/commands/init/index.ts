@@ -179,7 +179,7 @@ export default class Init extends Command {
         for (const packageConfig of packageConfigs) {
             await this._resolveVersion(packageConfig, flags.verbose);
 
-            if (!flags.force && packageConfig.isPackageInstalled()) {
+            if (!flags.force && packageConfig.isPackageInstalled() && (await packageConfig.isPackageValidRepo(flags.verbose))) {
                 this.log(`... '${packageConfig.getPackageName()}:${packageConfig.version}' already installed.`);
                 continue;
             }

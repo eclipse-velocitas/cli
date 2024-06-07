@@ -15,7 +15,7 @@
 import { CliFileSystem } from '../../src/utils/fs-bridge';
 import { corePackageManifestMock, runtimePackageManifestMock, setupPackageManifestMock } from '../utils/mockConfig';
 
-export const simpleGitInstanceMock = (mockedNewVersionTag?: string) => {
+export const simpleGitInstanceMock = (mockedNewVersionTag?: string, checkRepo: boolean = true) => {
     return {
         clone: async (repoPath: string, localPath: string, options?: any) => {
             await CliFileSystem.promisesMkdir(localPath);
@@ -30,7 +30,7 @@ export const simpleGitInstanceMock = (mockedNewVersionTag?: string) => {
             }
         },
         checkIsRepo: () => {
-            return true;
+            return checkRepo;
         },
         fetch: () => {},
         checkout: () => {
