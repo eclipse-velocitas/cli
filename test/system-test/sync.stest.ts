@@ -28,6 +28,8 @@ const packageManifestTwo = JSON.parse(
 
 const fileOneDestination = packageManifestOne.components[0].files[0].dst;
 const fileTwoDestination = packageManifestTwo.components[0].files[0].dst;
+const fileThreeDestination = packageManifestTwo.components[1].files[0].dst;
+const fileFourDestination = packageManifestTwo.components[2].files[0].dst;
 
 describe('CLI command', () => {
     describe('sync', () => {
@@ -38,6 +40,7 @@ describe('CLI command', () => {
         afterEach(() => {
             removeSync(`./${fileOneDestination}`);
             removeSync(`./${fileTwoDestination}`);
+            removeSync(`./${fileThreeDestination}`);
         });
         it('should sync configured setup components and replace variables accordingly', async () => {
             const syncOutput = spawnSync(VELOCITAS_PROCESS, ['sync'], { encoding: DEFAULT_BUFFER_ENCODING });
@@ -56,6 +59,16 @@ describe('CLI command', () => {
             expect(resultTwo.stdout).to.contain('projectTest');
             expect(resultTwo.stdout).to.contain('packageTestTwo');
             expect(resultTwo.stdout).to.contain(2);
+
+            const resultThree = readFileSync(`./${fileThreeDestination}`, {
+                encoding: DEFAULT_BUFFER_ENCODING,
+            });
+            expect(resultThree).to.equal('A nested file\n');
+
+            const resultFour = readFileSync(`./${fileFourDestination}`, {
+                encoding: DEFAULT_BUFFER_ENCODING,
+            });
+            expect(resultFour).to.equal('projectTest');
         });
     });
 });

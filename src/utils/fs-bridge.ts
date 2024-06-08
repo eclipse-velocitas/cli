@@ -44,6 +44,13 @@ interface IFileSystem {
     mkdirSync(path: fs.PathLike): string | undefined;
 
     /**
+     * Removes a file or directory. The directory can have contents.
+     * If the path does not exist, silently does nothing.
+     * @param path A path to the file or directory as string.
+     */
+    removeSync(path: string): void;
+
+    /**
      * Synchronously writes data to a file, replacing the file if it already exists.
      * @param path A path to the file to write to.
      * @param data The data to write to the file.
@@ -100,6 +107,10 @@ class RealFileSystem implements IFileSystem {
         return fs.mkdirSync(path, { recursive: true });
     }
 
+    removeSync(path: string): void {
+        fse.removeSync(path);
+    }
+
     writeFileSync(path: fs.PathOrFileDescriptor, data: string | NodeJS.ArrayBufferView): void {
         fs.writeFileSync(path, data, { encoding: DEFAULT_BUFFER_ENCODING });
     }
@@ -141,6 +152,10 @@ export class MockFileSystem implements IFileSystem, IFileSystemTests {
 
     mkdirSync(path: fs.PathLike): string | undefined {
         return (this._fileSystemObj[path.toString()] = '');
+    }
+
+    removeSync(path: string): void {
+        delete this._fileSystemObj[path];
     }
 
     writeFileSync(path: fs.PathOrFileDescriptor, data: any): void {
@@ -201,6 +216,15 @@ export class CliFileSystem {
      */
     static mkdirSync(path: fs.PathLike): string | undefined {
         return this._impl.mkdirSync(path);
+    }
+
+    /**
+     * Removes a file or directory. The directory can have contents.
+     * If the path does not exist, silently does nothing.
+     * @param path A path to the file or directory as string.
+     */
+    static removeSync(path: string): void {
+        return this._impl.removeSync(path);
     }
 
     /**

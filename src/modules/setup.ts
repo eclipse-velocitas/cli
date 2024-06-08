@@ -18,84 +18,177 @@ import { cwd } from 'node:process';
 import { Transform, TransformCallback, TransformOptions } from 'node:stream';
 import copy from 'recursive-copy';
 import { CliFileSystem } from '../utils/fs-bridge';
-import { ComponentManifest } from './component';
-import { PackageConfig } from './package';
+import { ComponentContext } from './component';
 import { VariableCollection } from './variables';
 
-const SUPPORTED_TEXT_FILES_ARRAY = ['.md', '.yaml', '.yml', '.txt', '.json', '.sh', '.html', '.htm', '.xml', '.tpl', '.dockerfile'];
-const SPECIAL_FILES_ARRAY = ['Dockerfile'];
 const NOTICE_COMMENT = 'This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json';
+
+interface FileTypeInformation {
+    ext?: string[] | string;
+    filename?: string[] | string;
+    commentTemplate?: string;
+    insertAfterLineMatcher?: string | RegExp;
+}
+
+const transformableFiletypes: FileTypeInformation[] = [
+    {
+        ext: '.txt',
+    },
+    {
+        ext: ['.md'],
+        commentTemplate: '<!-- %COMMENT% -->',
+    },
+    {
+        ext: ['.html', '.htm', '.xml', '.tpl'],
+        commentTemplate: '<!-- %COMMENT% -->',
+        insertAfterLineMatcher: new RegExp(`\\<\\?xml\\s.*?\\s\\?\\>`),
+    },
+    {
+        ext: '.json',
+        commentTemplate: '// %COMMENT%',
+    },
+    {
+        ext: ['.yml', '.yaml'],
+        commentTemplate: '# %COMMENT%',
+    },
+    {
+        ext: '.sh',
+        commentTemplate: '# %COMMENT%',
+        insertAfterLineMatcher: '#!/bin/bash',
+    },
+    {
+        ext: '.dockerfile',
+        filename: 'Dockerfile',
+        commentTemplate: '# %COMMENT%',
+    },
+];
+
+function maybeCreateReplaceVariablesTransform(filename: string, variables: VariableCollection): ReplaceVariablesTransform | null {
+    const transform = new ReplaceVariablesTransform(filename, variables);
+    if (transform.canHandleFile()) {
+        return transform;
+    }
+    return null;
+}
 
 class ReplaceVariablesTransform extends Transform {
     private _filename: string;
+    private _fileExt: string;
     private _variables: VariableCollection;
     private _firstChunk: boolean;
 
     constructor(filename: string, variables: VariableCollection, opts?: TransformOptions | undefined) {
         super({ ...opts, readableObjectMode: true, writableObjectMode: true });
         this._filename = filename;
+        this._fileExt = extname(this._filename);
         this._variables = variables;
         this._firstChunk = true;
+    }
+
+    private _hasMatchingFileExtension(transformableFiletype: FileTypeInformation): boolean {
+        let extensionMatches = false;
+        if (transformableFiletype.ext) {
+            const ext = transformableFiletype.ext;
+            extensionMatches = (ext instanceof String && ext === this._fileExt) || (Array.isArray(ext) && ext.includes(this._fileExt));
+        }
+        return extensionMatches;
+    }
+
+    private _hasMatchingFilename(transformableFiletype: FileTypeInformation): boolean {
+        let filenameMatches = false;
+        if (transformableFiletype.filename) {
+            const filename = transformableFiletype.filename;
+            filenameMatches =
+                (filename instanceof String && filename === this._filename) ||
+                (Array.isArray(filename) && filename.includes(this._filename));
+        }
+        return filenameMatches;
+    }
+
+    private _isKnownFile(transformableFiletype: FileTypeInformation): boolean {
+        return this._hasMatchingFileExtension(transformableFiletype) || this._hasMatchingFilename(transformableFiletype);
+    }
+
+    canHandleFile(): boolean {
+        for (const transformableFiletype of transformableFiletypes) {
+            if (this._isKnownFile(transformableFiletype)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private _findInsertionLine(textChunk: string, transformableFiletype: FileTypeInformation): string | undefined {
+        let insertionLine: string | undefined;
+        if (transformableFiletype.insertAfterLineMatcher) {
+            const needle = transformableFiletype.insertAfterLineMatcher;
+            if (needle instanceof String) {
+                const lines = textChunk.split('\n');
+                for (const line in lines) {
+                    if (needle === line) {
+                        insertionLine = line;
+                        break;
+                    }
+                }
+            } else if (needle instanceof RegExp) {
+                const regexResult = needle.exec(textChunk);
+                if (regexResult) {
+                    insertionLine = regexResult[0];
+                }
+            }
+        }
+        return insertionLine;
+    }
+
+    private _insertCommentAfterLine(textChunk: string, startingLine: string, noticeComment: string) {
+        return `${textChunk.slice(0, startingLine.length)}\n${noticeComment}${textChunk.slice(startingLine.length)}`;
+    }
+
+    private _tryInsertNoticeComment(textChunk: string): string {
+        for (const transformableFiletype of transformableFiletypes) {
+            if (!transformableFiletype.commentTemplate) {
+                continue;
+            }
+
+            if (!this._isKnownFile(transformableFiletype)) {
+                continue;
+            }
+
+            const insertionLine = this._findInsertionLine(textChunk, transformableFiletype);
+
+            if (insertionLine) {
+                const comment = transformableFiletype.commentTemplate?.replace('%COMMENT%', NOTICE_COMMENT);
+                textChunk = this._insertCommentAfterLine(textChunk, insertionLine, comment);
+            }
+        }
+
+        return textChunk;
     }
 
     // we are overwriting the method from transform, hence we need to disable the name warning
     // eslint-disable-next-line @typescript-eslint/naming-convention
     _transform(chunk: any, _: string, callback: TransformCallback) {
-        let result = this._variables.substitute(chunk.toString());
-        let noticeComment: string;
-        const shebang = '#!/bin/bash';
-        const xmlDeclarationRegExp = new RegExp(`\\<\\?xml\\s.*?\\s\\?\\>`);
-        const fileExt = extname(this._filename);
+        let textChunk = this._variables.substitute(chunk.toString());
 
         if (this._firstChunk) {
-            if (['.txt'].includes(fileExt)) {
-                result = `${NOTICE_COMMENT}\n${result}`;
-            } else if (['.md', '.html', '.htm', '.xml', '.tpl'].includes(fileExt)) {
-                noticeComment = `<!-- ${NOTICE_COMMENT} -->`;
-                const xmlDeclarationArray = xmlDeclarationRegExp.exec(result);
-                if (xmlDeclarationArray !== null && result.startsWith(xmlDeclarationArray[0])) {
-                    result = this._injectNoticeAfterStartLine(result, xmlDeclarationArray[0], noticeComment);
-                } else {
-                    result = `${noticeComment}\n${result}`;
-                }
-            } else if (['Dockerfile'].includes(this._filename) || ['.yaml', '.yml', '.sh', '.dockerfile'].includes(fileExt)) {
-                noticeComment = `# ${NOTICE_COMMENT}`;
-                if (result.startsWith(shebang)) {
-                    result = this._injectNoticeAfterStartLine(result, shebang, noticeComment);
-                } else {
-                    result = `${noticeComment}\n${result}`;
-                }
-            } else if (['.json'].includes(fileExt)) {
-                noticeComment = `// ${NOTICE_COMMENT}`;
-                result = `${noticeComment}\n${result}`;
-            }
-
+            textChunk = this._tryInsertNoticeComment(textChunk);
             this._firstChunk = false;
         }
 
-        this.push(result);
+        this.push(textChunk);
         callback();
-    }
-
-    private _injectNoticeAfterStartLine(result: string, startingLine: string, noticeComment: string) {
-        return `${result.slice(0, startingLine.length)}\n${noticeComment}${result.slice(startingLine.length)}`;
     }
 }
 
-export function installComponent(packageConfig: PackageConfig, component: ComponentManifest, variables: VariableCollection) {
-    if (component.files) {
-        for (const spec of component.files) {
+export function installComponent(component: ComponentContext, variables: VariableCollection) {
+    if (component.manifest.files) {
+        for (const spec of component.manifest.files) {
             const src = variables.substitute(spec.src);
             const dst = variables.substitute(spec.dst);
             let ifCondition = spec.condition ? variables.substitute(spec.condition) : 'true';
 
             if (eval(ifCondition)) {
-                const sourceFileOrDir = join(
-                    packageConfig.getPackageDirectory(),
-                    packageConfig.version,
-                    component.basePath ? component.basePath : '',
-                    src,
-                );
+                const sourceFileOrDir = join(component.getComponentPath(), src);
                 const destFileOrDir = join(cwd(), dst);
                 try {
                     if (CliFileSystem.existsSync(sourceFileOrDir)) {
@@ -103,11 +196,7 @@ export function installComponent(packageConfig: PackageConfig, component: Compon
                             dot: true,
                             overwrite: true,
                             transform: function (src: string, _: string, stats: Stats) {
-                                if (!SPECIAL_FILES_ARRAY.includes(basename(src)) && !SUPPORTED_TEXT_FILES_ARRAY.includes(extname(src))) {
-                                    return null;
-                                }
-
-                                return new ReplaceVariablesTransform(extname(src), variables);
+                                return maybeCreateReplaceVariablesTransform(basename(src), variables);
                             },
                         });
                     }

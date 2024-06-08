@@ -14,7 +14,7 @@
 
 import { IPty, spawn } from 'node-pty';
 import { exec } from 'node:child_process';
-import { join, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { ExecSpec, ProgramSpec } from './component';
 import { ProjectCache } from './project-cache';
 import { ProjectConfig } from './projectConfig/projectConfig';
@@ -112,7 +112,7 @@ export async function runExecSpec(
         throw new Error(`No program found for item '${execSpec.ref}' referenced in program list of '${componentId}'`);
     }
 
-    const cwd = join(componentContext.packageConfig.getPackageDirectory(), componentContext.packageConfig.version, componentContext.manifest.basePath ? componentContext.manifest.basePath : "");
+    const cwd = componentContext.getComponentPath();
 
     let programArgs = programSpec.args ? programSpec.args : [];
     if (execSpec.args && execSpec.args.length > 0) {

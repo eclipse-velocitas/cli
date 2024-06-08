@@ -12,6 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+import { join } from 'node:path';
 import { PackageConfig } from './package';
 import { VariableDefinition } from './variables';
 
@@ -116,5 +117,13 @@ export class ComponentContext {
         this.manifest = manifest;
         this.config = config;
         this.usedInProject = usedInProject;
+    }
+
+    getComponentPath(): string {
+        const componentPath = this.packageConfig.getPackageDirectoryWithVersion();
+        if (this.manifest.basePath) {
+            return join(componentPath, this.manifest.basePath);
+        }
+        return componentPath;
     }
 }
