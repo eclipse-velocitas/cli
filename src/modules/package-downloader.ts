@@ -30,11 +30,17 @@ export class PackageDownloader {
         await this.git.clone(this.packageConfig.getPackageRepo(), packageDir, cloneOpts);
     }
 
-    private async _updateRepository(checkRepoAction: CheckRepoActions): Promise<void> {
+    private async _updateRepository(checkRepoAction: CheckRepoActions, verbose: boolean): Promise<void> {
         const localRepoExists = await this.git.checkIsRepo(checkRepoAction);
 
         if (localRepoExists) {
-            await this.git.fetch(['--force', '--tags', '--prune', '--prune-tags']);
+            try {
+                await this.git.fetch(['--force', '--tags', '--prune', '--prune-tags']);
+            } catch (error) {
+                if (verbose) {
+                    console.log(`... Could not check the server version for ${this.packageConfig.repo}`);
+                }
+            }
         }
     }
 
@@ -59,12 +65,13 @@ export class PackageDownloader {
         return await simpleGit(packageDir).checkIsRepo(checkRepoAction);
     }
 
-    public async downloadPackage(option: { checkVersionOnly: boolean }): Promise<SimpleGit> {
+    public async downloadPackage(option: { checkVersionOnly?: boolean; verbose?: boolean }): Promise<SimpleGit> {
+        const { checkVersionOnly = false, verbose = false } = option;
         let packageDir: string = this.packageConfig.getPackageDirectory();
         let checkRepoAction: CheckRepoActions;
         const cloneOpts: string[] = [];
 
-        if (option.checkVersionOnly) {
+        if (checkVersionOnly) {
             packageDir = join(packageDir, '_cache');
             cloneOpts.push('--bare');
             checkRepoAction = CheckRepoActions.BARE;
@@ -75,9 +82,9 @@ export class PackageDownloader {
 
         await this._checkForValidRepo(packageDir, cloneOpts, checkRepoAction);
         this.git = simpleGit(packageDir);
-        await this._updateRepository(checkRepoAction);
+        await this._updateRepository(checkRepoAction, verbose);
 
-        if (!option.checkVersionOnly) {
+        if (!checkVersionOnly) {
             await this._checkoutVersion(this.packageConfig.version);
         }
 

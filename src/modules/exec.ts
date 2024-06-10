@@ -14,7 +14,7 @@
 
 import { IPty, spawn } from 'node-pty';
 import { exec } from 'node:child_process';
-import { join, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { ExecSpec, ProgramSpec } from './component';
 import { ProjectCache } from './project-cache';
 import { ProjectConfig } from './projectConfig/projectConfig';
