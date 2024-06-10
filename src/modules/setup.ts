@@ -109,15 +109,6 @@ class ReplaceVariablesTransform extends Transform {
         return this._hasMatchingFileExtension(transformableFiletype) || this._hasMatchingFilename(transformableFiletype);
     }
 
-    canHandleFile(): boolean {
-        for (const transformableFiletype of transformableFiletypes) {
-            if (this._isKnownFile(transformableFiletype)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private _findInsertionLine(textChunk: string, transformableFiletype: FileTypeInformation): string | undefined {
         let insertionLine: string | undefined;
         if (transformableFiletype.insertAfterLineMatcher) {
@@ -140,7 +131,7 @@ class ReplaceVariablesTransform extends Transform {
         return insertionLine;
     }
 
-    private _insertCommentAfterLine(textChunk: string, startingLine: string, noticeComment: string) {
+    private _insertCommentAfterLine(textChunk: string, startingLine: string, noticeComment: string): string {
         return `${textChunk.slice(0, startingLine.length)}\n${noticeComment}${textChunk.slice(startingLine.length)}`;
     }
 
@@ -177,6 +168,15 @@ class ReplaceVariablesTransform extends Transform {
 
         this.push(textChunk);
         callback();
+    }
+
+    public canHandleFile(): boolean {
+        for (const transformableFiletype of transformableFiletypes) {
+            if (this._isKnownFile(transformableFiletype)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
