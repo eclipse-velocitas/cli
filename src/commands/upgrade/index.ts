@@ -81,7 +81,7 @@ export default class Upgrade extends Command {
         flags: any,
     ): Promise<boolean> {
         const initialVersionSpecifier = packageConfig.version;
-        const availableVersions = await packageConfig.getPackageVersions();
+        const availableVersions = await packageConfig.getPackageVersions(flags.verbose);
         const matchedVersion = flags['ignore-bounds']
             ? getLatestVersion(availableVersions.all)
             : resolveVersionIdentifier(availableVersions, packageConfig.version);

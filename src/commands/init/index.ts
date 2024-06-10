@@ -165,7 +165,7 @@ export default class Init extends Command {
     }
 
     private async _resolveVersion(packageConfig: PackageConfig, verbose: boolean): Promise<void> {
-        const packageVersions = await packageConfig.getPackageVersions();
+        const packageVersions = await packageConfig.getPackageVersions(verbose);
         const packageVersion = resolveVersionIdentifier(packageVersions, packageConfig.version);
 
         if (verbose) {
