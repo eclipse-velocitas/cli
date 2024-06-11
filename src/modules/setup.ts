@@ -112,23 +112,16 @@ class ReplaceVariablesTransform extends Transform {
     }
 
     private _findInsertionLine(textChunk: string, transformableFiletype: CommentInsertionHint): string | undefined {
+        const needle = transformableFiletype.insertAfterLineMatcher;
+        if (!needle) {
+            return undefined;
+        }
+
         let insertionLine: string | undefined;
-        if (transformableFiletype.insertAfterLineMatcher) {
-            const needle = transformableFiletype.insertAfterLineMatcher;
-            if (typeof needle === 'string') {
-                const lines = textChunk.split('\n');
-                for (const line of lines) {
-                    if (needle === line) {
-                        insertionLine = line;
-                        break;
-                    }
-                }
-            } else if (needle instanceof RegExp) {
-                const regexResult = needle.exec(textChunk);
-                if (regexResult) {
-                    insertionLine = regexResult[0];
-                }
-            }
+        if (typeof needle === 'string') {
+            insertionLine = textChunk.split('\n').find((line) => line === needle);
+        } else if (needle instanceof RegExp) {
+            insertionLine = needle.exec(textChunk)?.[0];
         }
         return insertionLine;
     }
