@@ -92,9 +92,9 @@ export class PackageConfig {
         this.version = version;
     }
 
-    async getPackageVersions(): Promise<TagResult> {
+    async getPackageVersions(verbose?: boolean): Promise<TagResult> {
         try {
-            const packageInformation = await packageDownloader(this).downloadPackage({ checkVersionOnly: true });
+            const packageInformation = await packageDownloader(this).downloadPackage({ checkVersionOnly: true, verbose: verbose });
             const packageVersionTags = await packageInformation.tags();
             return packageVersionTags;
         } catch (error) {
@@ -108,7 +108,7 @@ export class PackageConfig {
 
     async downloadPackageVersion(verbose?: boolean): Promise<void> {
         try {
-            await packageDownloader(this).downloadPackage({ checkVersionOnly: false });
+            await packageDownloader(this).downloadPackage({ verbose: verbose });
         } catch (error) {
             console.error(error);
         }
