@@ -96,23 +96,15 @@ class ReplaceVariablesTransform extends Transform {
     }
 
     private _hasMatchingFileExtension(transformableFiletype: CommentInsertionHint): boolean {
-        let extensionMatches = false;
-        if (transformableFiletype.ext) {
-            const ext = transformableFiletype.ext;
-            extensionMatches = (typeof ext === 'string' && ext === this._fileExt) || (Array.isArray(ext) && ext.includes(this._fileExt));
-        }
-        return extensionMatches;
+        const ext = transformableFiletype.ext;
+        return (typeof ext === 'string' && ext === this._fileExt) || (Array.isArray(ext) && ext.includes(this._fileExt));
     }
 
     private _hasMatchingFilename(transformableFiletype: CommentInsertionHint): boolean {
-        let filenameMatches = false;
-        if (transformableFiletype.filename) {
-            const filename = transformableFiletype.filename;
-            filenameMatches =
-                (typeof filename === 'string' && filename === this._filename) ||
-                (Array.isArray(filename) && filename.includes(this._filename));
-        }
-        return filenameMatches;
+        const filename = transformableFiletype.filename;
+        return (
+            (typeof filename === 'string' && filename === this._filename) || (Array.isArray(filename) && filename.includes(this._filename))
+        );
     }
 
     private _isKnownFile(transformableFiletype: CommentInsertionHint): boolean {
