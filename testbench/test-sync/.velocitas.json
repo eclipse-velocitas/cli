@@ -6,7 +6,8 @@
     "components": [
         "test-componentOne",
         "test-componentTwo",
-        "test-componentThree"
+        "test-componentThree",
+        "test-componentFour"
     ],
     "variables": {
         "projectVariable": "projectTest",

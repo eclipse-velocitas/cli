@@ -13,70 +13,167 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Stats } from 'node:fs';
-import { extname, join } from 'node:path';
+import { basename, extname, join } from 'node:path';
 import { cwd } from 'node:process';
 import { Transform, TransformCallback, TransformOptions } from 'node:stream';
 import copy from 'recursive-copy';
 import { CliFileSystem } from '../utils/fs-bridge';
-import { ComponentContext, ComponentManifest } from './component';
-import { PackageConfig } from './package';
+import { ComponentContext } from './component';
 import { VariableCollection } from './variables';
 
-const SUPPORTED_TEXT_FILES_ARRAY = ['.md', '.yaml', '.yml', '.txt', '.json', '.sh', '.html', '.htm', '.xml', '.tpl'];
+const NOTICE_COMMENT = 'This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json';
 
-class ReplaceVariablesStream extends Transform {
+/**
+ * Interface for implementing comment insertion hints for supported text files.
+ */
+interface CommentInsertionHint {
+    // one or multiple extensions of the file
+    ext?: string[] | string;
+
+    // one or more special filenames of the file (e.g. Dockerfile)
+    filename?: string[] | string;
+
+    // a comment template which will be used for the comment line. Occurrences of %COMMENT% will be replaced by the actual comment literal.
+    commentTemplate?: string;
+
+    // a matcher which finds an appropriate position in the text to insert the comment **after**
+    insertAfterLineMatcher?: string | RegExp;
+}
+
+const filetypesForCommentInsertion: CommentInsertionHint[] = [
+    {
+        ext: '.txt',
+    },
+    {
+        ext: ['.md'],
+        commentTemplate: '<!-- %COMMENT% -->',
+    },
+    {
+        ext: ['.html', '.htm', '.xml', '.tpl'],
+        commentTemplate: '<!-- %COMMENT% -->',
+        insertAfterLineMatcher: new RegExp(`\\<\\?xml\\s.*?\\s\\?\\>`),
+    },
+    {
+        ext: '.json',
+        commentTemplate: '// %COMMENT%',
+    },
+    {
+        ext: ['.yml', '.yaml'],
+        commentTemplate: '# %COMMENT%',
+    },
+    {
+        ext: '.sh',
+        commentTemplate: '# %COMMENT%',
+        insertAfterLineMatcher: '#!/bin/bash',
+    },
+    {
+        ext: '.dockerfile',
+        filename: 'Dockerfile',
+        commentTemplate: '# %COMMENT%',
+    },
+];
+
+function maybeCreateReplaceVariablesTransform(filename: string, variables: VariableCollection): ReplaceVariablesTransform | null {
+    const transform = new ReplaceVariablesTransform(filename, variables);
+    if (transform.canHandleFile()) {
+        return transform;
+    }
+    return null;
+}
+
+class ReplaceVariablesTransform extends Transform {
+    private _filename: string;
     private _fileExt: string;
     private _variables: VariableCollection;
     private _firstChunk: boolean;
 
-    constructor(fileExt: string, variables: VariableCollection, opts?: TransformOptions | undefined) {
+    constructor(filename: string, variables: VariableCollection, opts?: TransformOptions | undefined) {
         super({ ...opts, readableObjectMode: true, writableObjectMode: true });
-        this._fileExt = fileExt;
+        this._filename = filename;
+        this._fileExt = extname(this._filename);
         this._variables = variables;
         this._firstChunk = true;
+    }
+
+    private _hasMatchingFileExtension(transformableFiletype: CommentInsertionHint): boolean {
+        const ext = transformableFiletype.ext;
+        return (typeof ext === 'string' && ext === this._fileExt) || (Array.isArray(ext) && ext.includes(this._fileExt));
+    }
+
+    private _hasMatchingFilename(transformableFiletype: CommentInsertionHint): boolean {
+        const filename = transformableFiletype.filename;
+        return (
+            (typeof filename === 'string' && filename === this._filename) || (Array.isArray(filename) && filename.includes(this._filename))
+        );
+    }
+
+    private _isKnownFile(transformableFiletype: CommentInsertionHint): boolean {
+        return this._hasMatchingFileExtension(transformableFiletype) || this._hasMatchingFilename(transformableFiletype);
+    }
+
+    private _findInsertionLine(textChunk: string, transformableFiletype: CommentInsertionHint): string | undefined {
+        const needle = transformableFiletype.insertAfterLineMatcher;
+        if (!needle) {
+            return undefined;
+        }
+
+        let insertionLine: string | undefined;
+        if (typeof needle === 'string') {
+            insertionLine = textChunk.split('\n').find((line) => line === needle);
+        } else if (needle instanceof RegExp) {
+            insertionLine = needle.exec(textChunk)?.[0];
+        }
+        return insertionLine;
+    }
+
+    private _insertCommentAfterLine(textChunk: string, startingLine: string, noticeComment: string): string {
+        return `${textChunk.slice(0, startingLine.length)}\n${noticeComment}${textChunk.slice(startingLine.length)}`;
+    }
+
+    private _tryInsertNoticeComment(textChunk: string): string {
+        for (const transformableFiletype of filetypesForCommentInsertion) {
+            if (!transformableFiletype.commentTemplate) {
+                continue;
+            }
+
+            if (!this._isKnownFile(transformableFiletype)) {
+                continue;
+            }
+
+            const comment = transformableFiletype.commentTemplate?.replace('%COMMENT%', NOTICE_COMMENT);
+            const insertionLine = this._findInsertionLine(textChunk, transformableFiletype);
+            if (insertionLine) {
+                textChunk = this._insertCommentAfterLine(textChunk, insertionLine, comment);
+            } else {
+                // no line found to insert after, hence insert at the very top
+                textChunk = `${comment}\n${textChunk}`;
+            }
+        }
+
+        return textChunk;
     }
 
     // we are overwriting the method from transform, hence we need to disable the name warning
     // eslint-disable-next-line @typescript-eslint/naming-convention
     _transform(chunk: any, _: string, callback: TransformCallback) {
-        let result = this._variables.substitute(chunk.toString());
-        let noticeComment: string;
-        const notice = 'This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json';
-        const shebang = '#!/bin/bash';
-        const xmlDeclarationRegExp = new RegExp(`\\<\\?xml\\s.*?\\s\\?\\>`);
+        let textChunk = this._variables.substitute(chunk.toString());
 
         if (this._firstChunk) {
-            if (['.txt'].includes(this._fileExt)) {
-                result = `${notice}\n${result}`;
-            } else if (['.md', '.html', '.htm', '.xml', '.tpl'].includes(this._fileExt)) {
-                noticeComment = `<!-- ${notice} -->`;
-                const xmlDeclarationArray = xmlDeclarationRegExp.exec(result);
-                if (xmlDeclarationArray !== null && result.startsWith(xmlDeclarationArray[0])) {
-                    result = this._injectNoticeAfterStartLine(result, xmlDeclarationArray[0], noticeComment);
-                } else {
-                    result = `${noticeComment}\n${result}`;
-                }
-            } else if (['.yaml', '.yml', '.sh'].includes(this._fileExt)) {
-                noticeComment = `# ${notice}`;
-                if (result.startsWith(shebang)) {
-                    result = this._injectNoticeAfterStartLine(result, shebang, noticeComment);
-                } else {
-                    result = `${noticeComment}\n${result}`;
-                }
-            } else if (['.json'].includes(this._fileExt)) {
-                noticeComment = `// ${notice}`;
-                result = `${noticeComment}\n${result}`;
-            }
-
+            textChunk = this._tryInsertNoticeComment(textChunk);
             this._firstChunk = false;
         }
 
-        this.push(result);
+        this.push(textChunk);
         callback();
     }
 
-    private _injectNoticeAfterStartLine(result: string, startingLine: string, noticeComment: string) {
-        return `${result.slice(0, startingLine.length)}\n${noticeComment}${result.slice(startingLine.length)}`;
+    public canHandleFile(): boolean {
+        for (const transformableFiletype of filetypesForCommentInsertion) {
+            if (this._isKnownFile(transformableFiletype)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
@@ -96,11 +193,7 @@ export function installComponent(component: ComponentContext, variables: Variabl
                             dot: true,
                             overwrite: true,
                             transform: function (src: string, _: string, stats: Stats) {
-                                if (!SUPPORTED_TEXT_FILES_ARRAY.includes(extname(src))) {
-                                    return null;
-                                }
-
-                                return new ReplaceVariablesStream(extname(src), variables);
+                                return maybeCreateReplaceVariablesTransform(basename(src), variables);
                             },
                         });
                     }

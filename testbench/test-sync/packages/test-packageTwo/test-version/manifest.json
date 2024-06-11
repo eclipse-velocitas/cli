@@ -18,6 +18,16 @@
                     "dst": "dummy"
                 }
             ]
+        },
+        {
+            "id": "test-componentFour",
+            "type": "setup",
+            "files": [
+                {
+                    "src": "Dockerfile",
+                    "dst": "Dockerfile"
+                }
+            ]
         }
     ]
 }
