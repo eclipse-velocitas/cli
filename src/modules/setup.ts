@@ -23,14 +23,24 @@ import { VariableCollection } from './variables';
 
 const NOTICE_COMMENT = 'This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json';
 
-interface FileTypeInformation {
+/**
+ * Interface for implementing comment insertion hints for supported text files.
+ */
+interface CommentInsertionHint {
+    // one or multiple extensions of the file
     ext?: string[] | string;
+
+    // one or more special filenames of the file (e.g. Dockerfile)
     filename?: string[] | string;
+
+    // a comment template which will be used for the comment line. Occurrences of %COMMENT% will be replaced by the actual comment literal.
     commentTemplate?: string;
+
+    // a matcher which finds an appropriate position in the text to insert the comment **after**
     insertAfterLineMatcher?: string | RegExp;
 }
 
-const transformableFiletypes: FileTypeInformation[] = [
+const filetypesForCommentInsertion: CommentInsertionHint[] = [
     {
         ext: '.txt',
     },
@@ -85,37 +95,37 @@ class ReplaceVariablesTransform extends Transform {
         this._firstChunk = true;
     }
 
-    private _hasMatchingFileExtension(transformableFiletype: FileTypeInformation): boolean {
+    private _hasMatchingFileExtension(transformableFiletype: CommentInsertionHint): boolean {
         let extensionMatches = false;
         if (transformableFiletype.ext) {
             const ext = transformableFiletype.ext;
-            extensionMatches = (ext instanceof String && ext === this._fileExt) || (Array.isArray(ext) && ext.includes(this._fileExt));
+            extensionMatches = (typeof ext === 'string' && ext === this._fileExt) || (Array.isArray(ext) && ext.includes(this._fileExt));
         }
         return extensionMatches;
     }
 
-    private _hasMatchingFilename(transformableFiletype: FileTypeInformation): boolean {
+    private _hasMatchingFilename(transformableFiletype: CommentInsertionHint): boolean {
         let filenameMatches = false;
         if (transformableFiletype.filename) {
             const filename = transformableFiletype.filename;
             filenameMatches =
-                (filename instanceof String && filename === this._filename) ||
+                (typeof filename === 'string' && filename === this._filename) ||
                 (Array.isArray(filename) && filename.includes(this._filename));
         }
         return filenameMatches;
     }
 
-    private _isKnownFile(transformableFiletype: FileTypeInformation): boolean {
+    private _isKnownFile(transformableFiletype: CommentInsertionHint): boolean {
         return this._hasMatchingFileExtension(transformableFiletype) || this._hasMatchingFilename(transformableFiletype);
     }
 
-    private _findInsertionLine(textChunk: string, transformableFiletype: FileTypeInformation): string | undefined {
+    private _findInsertionLine(textChunk: string, transformableFiletype: CommentInsertionHint): string | undefined {
         let insertionLine: string | undefined;
         if (transformableFiletype.insertAfterLineMatcher) {
             const needle = transformableFiletype.insertAfterLineMatcher;
-            if (needle instanceof String) {
+            if (typeof needle === 'string') {
                 const lines = textChunk.split('\n');
-                for (const line in lines) {
+                for (const line of lines) {
                     if (needle === line) {
                         insertionLine = line;
                         break;
@@ -136,7 +146,7 @@ class ReplaceVariablesTransform extends Transform {
     }
 
     private _tryInsertNoticeComment(textChunk: string): string {
-        for (const transformableFiletype of transformableFiletypes) {
+        for (const transformableFiletype of filetypesForCommentInsertion) {
             if (!transformableFiletype.commentTemplate) {
                 continue;
             }
@@ -145,11 +155,13 @@ class ReplaceVariablesTransform extends Transform {
                 continue;
             }
 
+            const comment = transformableFiletype.commentTemplate?.replace('%COMMENT%', NOTICE_COMMENT);
             const insertionLine = this._findInsertionLine(textChunk, transformableFiletype);
-
             if (insertionLine) {
-                const comment = transformableFiletype.commentTemplate?.replace('%COMMENT%', NOTICE_COMMENT);
                 textChunk = this._insertCommentAfterLine(textChunk, insertionLine, comment);
+            } else {
+                // no line found to insert after, hence insert at the very top
+                textChunk = `${comment}\n${textChunk}`;
             }
         }
 
@@ -171,7 +183,7 @@ class ReplaceVariablesTransform extends Transform {
     }
 
     public canHandleFile(): boolean {
-        for (const transformableFiletype of transformableFiletypes) {
+        for (const transformableFiletype of filetypesForCommentInsertion) {
             if (this._isKnownFile(transformableFiletype)) {
                 return true;
             }
