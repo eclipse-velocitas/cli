@@ -75,6 +75,7 @@ jobs:
         uses: uraimo/run-on-arch-action@v2
         with:
           distro: ubuntu22.04
+          # Workaround since the genereal manifest was not found
           base_image: arm64v8/node:${{ env.NODE_VERSION }}-bullseye@sha256:08bc7f3dee8fda489f0846b115dda34c867a16c1836844002eba071edfa810d6
           run: |
             npm install .
