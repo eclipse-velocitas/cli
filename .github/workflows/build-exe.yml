@@ -74,7 +74,8 @@ jobs:
         if: ${{ matrix.arch == 'arm64' }}
         uses: uraimo/run-on-arch-action@v2
         with:
-          base_image: arm64v8/node:${{ env.NODE_VERSION }}-bullseye
+          distro: ubuntu22.04
+          base_image: arm64v8/node:${{ env.NODE_VERSION }}-bullseye@sha256:08bc7f3dee8fda489f0846b115dda34c867a16c1836844002eba071edfa810d6
           run: |
             npm install .
 
