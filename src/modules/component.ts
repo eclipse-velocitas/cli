@@ -31,6 +31,9 @@ export interface ProgramSpec {
 
     // Default arguments passed to the invoked program upon execution.
     args?: string[];
+
+    // Flag if the exposed program is interactive.
+    interactive?: boolean;
 }
 
 /**

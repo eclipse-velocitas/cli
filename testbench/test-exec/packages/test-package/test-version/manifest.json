@@ -35,7 +35,8 @@
                         "run",
                         "-it",
                         "hello-world"
-                    ]
+                    ],
+                    "interactive": true
                 },
                 {
                     "id": "print-args",

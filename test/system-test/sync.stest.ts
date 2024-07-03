@@ -41,6 +41,7 @@ describe('CLI command', () => {
             removeSync(`./${fileOneDestination}`);
             removeSync(`./${fileTwoDestination}`);
             removeSync(`./${fileThreeDestination}`);
+            removeSync(`./${fileFourDestination}`);
         });
         it('should sync configured setup components and replace variables accordingly', async () => {
             const syncOutput = spawnSync(VELOCITAS_PROCESS, ['sync'], { encoding: DEFAULT_BUFFER_ENCODING });
