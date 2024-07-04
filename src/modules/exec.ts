@@ -33,7 +33,7 @@ export function setSpawnImplementation(func: (command: string, args: string | st
     ptySpawn = func;
 }
 
-var ptySpawn = (command: string, args: string | string[], options: any): IPty => spawn(command, args, options);
+let ptySpawn = (command: string, args: string | string[], options: any): IPty => spawn(command, args, options);
 
 export async function awaitSpawn(
     command: string,
@@ -41,15 +41,20 @@ export async function awaitSpawn(
     cwd: string,
     env: NodeJS.ProcessEnv,
     writeStdout: boolean,
+    interactive: boolean = false,
 ): Promise<{ exitCode: number; signal?: number } | null> {
     const projectCache = ProjectCache.read();
 
-    var ptyProcess = ptySpawn(command, args, {
+    const ptyProcess = ptySpawn(command, args, {
         cwd: cwd,
         env: env as any,
     });
 
     ptyProcess.onData((data) => lineCapturer(projectCache, writeStdout, data));
+
+    if (interactive) {
+        process.stdin.setRawMode(true);
+    }
 
     process.stdin.on('data', ptyProcess.write.bind(ptyProcess));
 
@@ -61,15 +66,16 @@ export async function awaitSpawn(
         };
         process.on('SIGINT', sigintCallback);
         ptyProcess.onExit((code) => {
-            if (process.stdin) {
-                process.stdin.unref();
+            if (interactive) {
+                process.stdin.setRawMode(false);
             }
+            process.stdin.pause();
             ptyProcess.kill();
             resolveFunc(code);
             projectCache.write();
+            process.removeListener('SIGINT', sigintCallback);
+            process.stdin.removeAllListeners('data');
         });
-        process.removeListener('SIGINT', sigintCallback);
-        process.stdin.removeAllListeners('data');
     });
 }
 
@@ -121,7 +127,7 @@ export async function runExecSpec(
 
     try {
         const command = programSpec.executable.includes('/') ? resolve(cwd, programSpec.executable) : programSpec.executable;
-        const result = await awaitSpawn(command, programArgs, cwd, envVars, loggingOptions.writeStdout);
+        const result = await awaitSpawn(command, programArgs, cwd, envVars, loggingOptions.writeStdout, programSpec.interactive);
         if (result && result.exitCode !== 0) {
             throw new ExecExitError(`Program returned exit code: ${result.exitCode}`, result.exitCode);
         }

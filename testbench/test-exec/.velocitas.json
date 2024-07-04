@@ -1,6 +1,6 @@
 {
     "packages": {
-        "devenv-runtimes": "v3.0.0",
+        "devenv-runtimes": "v4.0.3",
         "test-package": "test-version"
     },
     "variables": {

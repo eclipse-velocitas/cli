@@ -134,6 +134,10 @@ Either a relative path from the package's repository root to a script to execute
 
 A list of default arguments when invoking the program without parameters. This is required for Python scripts where `executable` will be just `python` and the first argument needs to be the path to the script.
 
+### `interactive` - boolean
+
+A flag to specify if the exposed program is interactive.
+
 ## `ExecSpec`
 
 An execution specification for one of the exposed programs via [`ProgramSpec`](#programspec). Used to invoke programs by the CLI when **not** using the `exec` command.
