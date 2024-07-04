@@ -56,7 +56,7 @@ export async function awaitSpawn(
         process.stdin.setRawMode(true);
     }
 
-    process.stdin.on('data', (data) => ptyProcess.write(data.toString()));
+    process.stdin.on('data', ptyProcess.write.bind(ptyProcess));
 
     return new Promise((resolveFunc) => {
         // Needed to kill all childprocesses inside the spawned tty to avoid having leftovers
