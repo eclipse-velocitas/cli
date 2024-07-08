@@ -86,6 +86,18 @@ describe('variables - module', () => {
                     description: 'A bool with a default value',
                     default: false,
                 },
+                {
+                    name: 'testLevelTwoNesting',
+                    type: 'string',
+                    description: 'A variable with a variable reference',
+                    default: 'I am unable to hold another level of reference ${{ testWithDefault }}',
+                },
+                {
+                    name: 'testVariableReference',
+                    type: 'string',
+                    description: 'A variable with a variable reference',
+                    default: 'I reference the value of ${{ testNumber }} and ${{ testLevelTwoNesting }}',
+                },
             ],
         };
         pkg2Comp1Manifest = {
@@ -240,6 +252,12 @@ describe('variables - module', () => {
             expect(envVars['builtin_package_github_repo']).to.equal('test-package');
             expect(envVars['builtin_package_github_ref']).to.equal('v1.1.1');
             expect(envVars['builtin_component_id']).to.equal('test-component');
+        });
+        it('should allow one level of variable references', () => {
+            const vars = VariableCollection.build([componentContext], variablesMapProjCfg, componentContext);
+            expect(vars.substitute('${{ testVariableReference }}')).to.equal(
+                'I reference the value of 1 and I am unable to hold another level of reference ${{ testWithDefault }}',
+            );
         });
         it('should not throw an error when trying to build VariableCollection with identical VariableDefinition names', () => {
             const buildVariableCollection = () => {
