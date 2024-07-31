@@ -91,6 +91,7 @@ Click [here](./docs/PROJECT-CONFIG.md) for an in-depth overview of the project c
 # Commands
 <!-- commands -->
 * [`velocitas cache clear`](#velocitas-cache-clear)
+* [`velocitas cache directory`](#velocitas-cache-directory)
 * [`velocitas cache get [KEY]`](#velocitas-cache-get-key)
 * [`velocitas cache set KEY VALUE`](#velocitas-cache-set-key-value)
 * [`velocitas component add ID`](#velocitas-component-add-id)
@@ -98,7 +99,6 @@ Click [here](./docs/PROJECT-CONFIG.md) for an in-depth overview of the project c
 * [`velocitas component remove ID`](#velocitas-component-remove-id)
 * [`velocitas create`](#velocitas-create)
 * [`velocitas exec COMPONENT REF [ARGS...]`](#velocitas-exec-component-ref-args)
-* [`velocitas help [COMMANDS]`](#velocitas-help-commands)
 * [`velocitas init`](#velocitas-init)
 * [`velocitas package [NAME]`](#velocitas-package-name)
 * [`velocitas sync`](#velocitas-sync)
@@ -120,6 +120,23 @@ EXAMPLES
 ```
 
 _See code: [src/commands/cache/clear.ts](src/commands/cache/clear.ts)_
+
+## `velocitas cache directory`
+
+Get the path to a project's cache directory.
+
+```
+USAGE
+  $ velocitas cache directory
+
+DESCRIPTION
+  Get the path to a project's cache directory.
+
+EXAMPLES
+  $ velocitas cache directory
+```
+
+_See code: [src/commands/cache/directory.ts](src/commands/cache/directory.ts)_
 
 ## `velocitas cache get [KEY]`
 
@@ -216,7 +233,7 @@ USAGE
   $ velocitas component remove ID
 
 ARGUMENTS
-  ID  ID of the component to add
+  ID  ID of the component to remove
 
 DESCRIPTION
   Remove project components.
@@ -233,7 +250,7 @@ Create a new Velocitas Vehicle App project.
 
 ```
 USAGE
-  $ velocitas create [-n <value>] [-c <value>] [-e <value>] [-i <value>]
+  $ velocitas create [-n <value>] [-c <value>] [-e <value>] [-i <value>...]
 
 FLAGS
   -c, --core=<value>          Which core to use for the project.
@@ -257,13 +274,13 @@ Executes a script contained in one of your installed components.
 
 ```
 USAGE
-  $ velocitas exec COMPONENT REF [ARGS...] [-v]
+  $ velocitas exec COMPONENT... REF... [ARGS......] [-v]
 
 ARGUMENTS
-  COMPONENT  The component which provides the program
-  REF        Reference to the ID of the program to execute
-  ARGS...    Args for the executed program. All arguments and flags provided after the ref are forwarded to the invoked
-             program.
+  COMPONENT...  The component which provides the program
+  REF...        Reference to the ID of the program to execute
+  ARGS......    Args for the executed program. All arguments and flags provided after the ref are forwarded to the
+                invoked program.
 
 FLAGS
   -v, --verbose  Enable verbose logging. The flag may be provided before or in between the 2 positional arguments of
@@ -275,30 +292,10 @@ DESCRIPTION
 
 EXAMPLES
   $ velocitas exec runtime-local up
-  Executing script...
+              Executing script...
 ```
 
 _See code: [src/commands/exec/index.ts](src/commands/exec/index.ts)_
-
-## `velocitas help [COMMANDS]`
-
-Display help for velocitas.
-
-```
-USAGE
-  $ velocitas help [COMMANDS] [-n]
-
-ARGUMENTS
-  COMMANDS  Command to show help for.
-
-FLAGS
-  -n, --nested-commands  Include all nested commands in the output.
-
-DESCRIPTION
-  Display help for velocitas.
-```
-
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.20/src/commands/help.ts)_
 
 ## `velocitas init`
 
@@ -306,38 +303,38 @@ Initializes Velocitas Vehicle App
 
 ```
 USAGE
-  $ velocitas init [-p PACKAGE] [-s VERSION_SPECIFIER] [-v] [-f] [--no-hooks]
+  $ velocitas init [-v] [-f] [--no-hooks] [-s <value> -p <value>]
 
 FLAGS
-  -p, --package   Package to initialize
-  -s, --specifier Version specifier for the specified package
-  -f, --force     Force (re-)download packages
-  -v, --verbose   Enable verbose logging
-  --no-hooks      Skip post init hooks
+  -f, --force              Force (re-)download packages
+  -p, --package=<value>    Package to initialize
+  -s, --specifier=<value>  Version specifier for the specified package
+  -v, --verbose            Enable verbose logging
+      --no-hooks           Skip post init hooks
 
 DESCRIPTION
   Initializes Velocitas Vehicle App
 
 EXAMPLES
   $ velocitas init
-  Initializing Velocitas packages ...
-  ... Downloading package: 'pkg-velocitas-main:vx.x.x'
-  ... Downloading package: 'devenv-devcontainer-setup:vx.x.x'
-  ... Downloading package: 'devenv-runtimes:vx.x.x'
-  ... Downloading package: 'devenv-github-templates:vx.x.x'
-  ... Downloading package: 'devenv-github-workflows:vx.x.x'
+          Initializing Velocitas packages ...
+          ... Downloading package: 'pkg-velocitas-main:vx.x.x'
+          ... Downloading package: 'devenv-devcontainer-setup:vx.x.x'
+          ... Downloading package: 'devenv-runtimes:vx.x.x'
+          ... Downloading package: 'devenv-github-templates:vx.x.x'
+          ... Downloading package: 'devenv-github-workflows:vx.x.x'
 
   $ velocitas init -p devenv-runtimes
-  Initializing Velocitas packages ...
-  ... Package 'devenv-runtimes:vx.x.x' added to .velocitas.json
-  ... Downloading package: 'devenv-runtimes:vx.x.x'
-  ... > Running post init hook for ...'
+          Initializing Velocitas packages ...
+          ... Package 'devenv-runtimes:vx.x.x' added to .velocitas.json
+          ... Downloading package: 'devenv-runtimes:vx.x.x'
+          ... > Running post init hook for ...'
 
   $ velocitas init -p devenv-runtimes -s v3.0.0
-  Initializing Velocitas packages ...
-  ... Package 'devenv-runtimes:v3.0.0' added to .velocitas.json
-  ... Downloading package: 'devenv-runtimes:v3.0.0'
-  ... > Running post init hook for ...
+          Initializing Velocitas packages ...
+          ... Package 'devenv-runtimes:v3.0.0' added to .velocitas.json
+          ... Downloading package: 'devenv-runtimes:v3.0.0'
+          ... > Running post init hook for ...
 ```
 
 _See code: [src/commands/init/index.ts](src/commands/init/index.ts)_
@@ -361,18 +358,18 @@ DESCRIPTION
 
 EXAMPLES
   $ velocitas package devenv-runtimes
-  devenv-runtimes:
-    version: v3.0.0
-    components:
-      - id: runtime-local
-        variables:
-        - runtimeFilePath:
-            type: string
-            description: "Path to the file describing your custom runtime configuration."
-            required: false
-            default: runtime.json
-  $ velocitas package --get-path devenv-runtimes
-  /home/vscode/.velocitas/packages/devenv-runtimes/v3.0.0
+              devenv-runtimes:
+                  version: v3.0.0
+                  components:
+                      - id: runtime-local
+                      variables:
+                      - runtimeFilePath:
+                          type: string
+                          description: "Path to the file describing your custom runtime configuration."
+                          required: false
+                          default: runtime.json
+          $ velocitas package --get-path devenv-runtimes
+              /home/vscode/.velocitas/packages/devenv-runtimes/v3.0.0
 ```
 
 _See code: [src/commands/package/index.ts](src/commands/package/index.ts)_
@@ -406,22 +403,23 @@ USAGE
   $ velocitas upgrade [--dry-run] [--ignore-bounds] [--init] [-v]
 
 FLAGS
-  -v, --verbose    Enable verbose logging
-  --dry-run        Check which packages can be upgraded
-  --ignore-bounds  Ignores specified version ranges and will result in upgrading to the latest available semantic version
-  --init           Initializes components after upgrading them.
+  -v, --verbose        Enable verbose logging
+      --dry-run        Check which packages can be upgraded
+      --ignore-bounds  Ignores specified version ranges and will result in upgrading to the latest available semantic
+                       version
+      --init           Initializes components after upgrading them
 
 DESCRIPTION
   Updates Velocitas components.
 
 EXAMPLES
   $ velocitas upgrade
-  Checking .velocitas.json for updates!
-  ... pkg-velocitas-main:vx.x.x → up to date!
-  ... devenv-devcontainer-setup:vx.x.x → up to date!
-  ... devenv-runtimes:vx.x.x → vx.x.x
-  ... devenv-github-templates:vx.x.x → up to date!
-  ... devenv-github-workflows:vx.x.x → up to date!
+          Checking .velocitas.json for updates!
+          ... pkg-velocitas-main:vx.x.x → up to date!
+          ... devenv-devcontainer-setup:vx.x.x → up to date!
+          ... devenv-runtimes:vx.x.x → vx.x.x
+          ... devenv-github-templates:vx.x.x → up to date!
+          ... devenv-github-workflows:vx.x.x → up to date!
 ```
 
 _See code: [src/commands/upgrade/index.ts](src/commands/upgrade/index.ts)_

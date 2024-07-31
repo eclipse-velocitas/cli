@@ -13,6 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
+import { getVelocitasRoot } from '../../../src/modules/package';
 import { getCacheData } from '../../helpers/cache';
 import { mockFolders } from '../../utils/mockfs';
 
@@ -51,5 +52,14 @@ describe('cache', () => {
         .command('cache clear')
         .it('clears all cache contents', (ctx) => {
             expect(getCacheData()).to.deep.eq({});
+        });
+
+    test.do(() => {
+        mockFolders({ velocitasConfig: true });
+    })
+        .stdout()
+        .command('cache directory')
+        .it('prints the cache directory', (ctx) => {
+            expect(ctx.stdout.trim().startsWith(`${getVelocitasRoot()}/.velocitas/projects`)).to.be.true;
         });
 });
