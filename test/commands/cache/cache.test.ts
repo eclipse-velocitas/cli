@@ -40,6 +40,15 @@ describe('cache', () => {
         mockFolders({ velocitasConfig: true });
     })
         .stdout()
+        .command(['cache get', '--path'])
+        .it('prints the cache path', (ctx) => {
+            expect(ctx.stdout.trim().startsWith(`${getVelocitasRoot()}/projects`)).to.be.true;
+        });
+
+    test.do(() => {
+        mockFolders({ velocitasConfig: true });
+    })
+        .stdout()
         .command(['cache set', 'foo', 'bar'])
         .it('sets a cache field', (ctx) => {
             expect(getCacheData()).to.deep.eq({ myField: 'myValue', foo: 'bar' });
@@ -52,14 +61,5 @@ describe('cache', () => {
         .command('cache clear')
         .it('clears all cache contents', (ctx) => {
             expect(getCacheData()).to.deep.eq({});
-        });
-
-    test.do(() => {
-        mockFolders({ velocitasConfig: true });
-    })
-        .stdout()
-        .command('cache directory')
-        .it('prints the cache directory', (ctx) => {
-            expect(ctx.stdout.trim().startsWith(`${getVelocitasRoot()}/.velocitas/projects`)).to.be.true;
         });
 });

@@ -91,7 +91,6 @@ Click [here](./docs/PROJECT-CONFIG.md) for an in-depth overview of the project c
 # Commands
 <!-- commands -->
 * [`velocitas cache clear`](#velocitas-cache-clear)
-* [`velocitas cache directory`](#velocitas-cache-directory)
 * [`velocitas cache get [KEY]`](#velocitas-cache-get-key)
 * [`velocitas cache set KEY VALUE`](#velocitas-cache-set-key-value)
 * [`velocitas component add ID`](#velocitas-component-add-id)
@@ -121,33 +120,19 @@ EXAMPLES
 
 _See code: [src/commands/cache/clear.ts](src/commands/cache/clear.ts)_
 
-## `velocitas cache directory`
-
-Get the path to a project's cache directory.
-
-```
-USAGE
-  $ velocitas cache directory
-
-DESCRIPTION
-  Get the path to a project's cache directory.
-
-EXAMPLES
-  $ velocitas cache directory
-```
-
-_See code: [src/commands/cache/directory.ts](src/commands/cache/directory.ts)_
-
 ## `velocitas cache get [KEY]`
 
 Get the complete cache contents as JSON string or the value of a single key.
 
 ```
 USAGE
-  $ velocitas cache get [KEY]
+  $ velocitas cache get [KEY] [-p]
 
 ARGUMENTS
   KEY  The key of a single cache entry to get.
+
+FLAGS
+  -p, --printPath  Print the cache path instead of the contents.
 
 DESCRIPTION
   Get the complete cache contents as JSON string or the value of a single key.
@@ -158,6 +143,9 @@ EXAMPLES
 
   $ velocitas cache get foo
   bar
+
+  $ velocitas cache get --path
+  /home/user/.velocitas/projects/...
 ```
 
 _See code: [src/commands/cache/get.ts](src/commands/cache/get.ts)_

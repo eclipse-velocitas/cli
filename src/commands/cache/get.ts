@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { Args, Command } from '@oclif/core';
+import { Args, Command, Flags } from '@oclif/core';
 import { mapReplacer } from '../../modules/helpers';
 import { ProjectCache } from '../../modules/project-cache';
 import { ProjectConfigIO } from '../../modules/projectConfig/projectConfigIO';
@@ -25,18 +25,34 @@ export default class Get extends Command {
 {"foo":"bar"}`,
         `$ velocitas cache get foo
 bar`,
+        `$ velocitas cache get --path
+/home/user/.velocitas/projects/...`,
     ];
+
+    static flags = {
+        path: Flags.boolean({
+            description: 'Print the cache path instead of the contents.',
+            aliases: ['path'],
+            char: 'p',
+            default: false,
+        }),
+    };
 
     static args = {
         key: Args.string({ description: 'The key of a single cache entry to get.', required: false }),
     };
 
     async run(): Promise<void> {
-        const { args } = await this.parse(Get);
+        const { args, flags } = await this.parse(Get);
 
         // although we are not reading the project config, we want to
         // ensure the command is run in a project directory only.
         ProjectConfigIO.read(`v${this.config.version}`);
+
+        if (flags.path) {
+            this.log(ProjectCache.getCacheDir());
+            return;
+        }
 
         const cache = ProjectCache.read();
 
