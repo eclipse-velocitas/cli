@@ -132,7 +132,7 @@ ARGUMENTS
   KEY  The key of a single cache entry to get.
 
 FLAGS
-  -p, --printPath  Print the cache path instead of the contents.
+  -p, --path  Print the cache path instead of the contents.
 
 DESCRIPTION
   Get the complete cache contents as JSON string or the value of a single key.
