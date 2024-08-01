@@ -13,6 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@oclif/test';
+import { getVelocitasRoot } from '../../../src/modules/package';
 import { getCacheData } from '../../helpers/cache';
 import { mockFolders } from '../../utils/mockfs';
 
@@ -33,6 +34,15 @@ describe('cache', () => {
         .command(['cache get', 'myField'])
         .it('returns the value of a single cache key', (ctx) => {
             expect(ctx.stdout).to.equal('myValue\n');
+        });
+
+    test.do(() => {
+        mockFolders({ velocitasConfig: true });
+    })
+        .stdout()
+        .command(['cache get', '--path'])
+        .it('prints the cache path', (ctx) => {
+            expect(ctx.stdout.trim().startsWith(`${getVelocitasRoot()}/projects`)).to.be.true;
         });
 
     test.do(() => {

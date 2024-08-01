@@ -162,9 +162,16 @@ export class VariableCollection {
     }
 
     substitute(str: string): string {
-        for (const kv of this._variables.entries()) {
-            str = str.replaceAll(`\$\{\{ ${kv[0]} \}\}`, kv[1]);
+        // Number of variable nestings allowed.
+        // E.g. a variable can include a reference to another variable value
+        const ALLOWED_VARIABLE_REFERENCE_LEVELS = 1;
+
+        for (let i = 0; i <= ALLOWED_VARIABLE_REFERENCE_LEVELS; ++i) {
+            for (const kv of this._variables.entries()) {
+                str = str.replaceAll(`\$\{\{ ${kv[0]} \}\}`, kv[1]);
+            }
         }
+
         return str;
     }
 
