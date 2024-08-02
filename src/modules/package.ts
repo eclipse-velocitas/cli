@@ -18,6 +18,7 @@ import { TagResult } from 'simple-git';
 import { CliFileSystem } from '../utils/fs-bridge';
 import { ComponentManifest } from './component';
 import { packageDownloader } from './package-downloader';
+import { getLatestVersion } from './semver';
 
 export const MANIFEST_FILE_NAME = 'manifest.json';
 
@@ -80,7 +81,16 @@ export class PackageConfig {
         return join(getPackageFolderPath(), this.getPackageName());
     }
 
+    getPackageDirectoryWithLatestVersion(): string {
+        const filesAndFolders = CliFileSystem.readdirSync(this.getPackageDirectory());
+        const latestVersion = getLatestVersion(filesAndFolders);
+        return join(this.getPackageDirectory(), latestVersion);
+    }
+
     getPackageDirectoryWithVersion(): string {
+        if (this.version === 'latest') {
+            return this.getPackageDirectoryWithLatestVersion();
+        }
         return join(this.getPackageDirectory(), this.version);
     }
 
