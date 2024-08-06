@@ -111,6 +111,11 @@ export class PackageConfig {
             await packageDownloader(this).downloadPackage({ verbose: verbose });
         } catch (error) {
             console.error(error);
+            // If repo exist but not version we will end up with default-version
+            // of that repo, and on subsequent runs tooling will say that the missing version
+            // actually exists! To prevent this we remove the directory of the missing version!
+            CliFileSystem.removeSync(this.getPackageDirectoryWithVersion());
+            throw new Error(`Cannot find package ${this.getPackageName()}:${this.version}`);
         }
         return;
     }
@@ -128,13 +133,20 @@ export class PackageConfig {
     }
 
     readPackageManifest(): PackageManifest {
+        let data;
         try {
             const path = this.getManifestFilePath();
-            const config: PackageManifest = deserializePackageJSON(CliFileSystem.readFileSync(path));
-            return config;
+            data = CliFileSystem.readFileSync(path);
         } catch (error) {
             console.log(`Cannot find package ${this.getPackageName()}:${this.version}. Please upgrade or init first!`);
             throw new Error(`Cannot find package ${this.getPackageName()}:${this.version}`);
+        }
+        try {
+            const config: PackageManifest = deserializePackageJSON(data);
+            return config;
+        } catch (error: any) {
+            const errorMessage = error?.message || 'Unknown error occurred';
+            throw new Error(`Cannot parse manifest file for ${this.getPackageName()}:${this.version}.\n${errorMessage}`);
         }
     }
 }
