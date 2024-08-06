@@ -144,10 +144,9 @@ export class PackageConfig {
         try {
             const config: PackageManifest = deserializePackageJSON(data);
             return config;
-        } catch (error) {
-            console.log(`Cannot parse manifest file for ${this.getPackageName()}:${this.version}.`);
-            console.log(error);
-            throw new Error(`Cannot parse manifest file for ${this.getPackageName()}:${this.version}.`);
+        } catch (error: any) {
+            const errorMessage = error?.message || 'Unknown error occurred';
+            throw new Error(`Cannot parse manifest file for ${this.getPackageName()}:${this.version}.\n${errorMessage}`);
         }
     }
 }
