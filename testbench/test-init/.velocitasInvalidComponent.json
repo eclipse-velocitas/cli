@@ -9,5 +9,5 @@
         "appManifestPath": "./app/AppManifest.json",
         "githubRepoId": "<myrepo>"
     },
-    "cliVersion": "v0.6.3"
+    "cliVersion": "v0.10.0"
 }
