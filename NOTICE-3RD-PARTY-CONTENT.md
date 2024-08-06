@@ -63,7 +63,7 @@
 |@types/jsonfile|6.1.4|MIT|
 |@types/lodash|4.17.7|MIT|
 |@types/mocha|10.0.7|MIT|
-|@types/node|20.14.13|MIT|
+|@types/node|20.14.14|MIT|
 |@types/semver|7.5.8|MIT|
 |@types/sinon|17.0.3|MIT|
 |@types/sinonjs__fake-timers|8.1.5|MIT|
