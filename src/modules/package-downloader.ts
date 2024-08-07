@@ -45,7 +45,7 @@ export class PackageDownloader {
     }
 
     private async _checkoutVersion(version: string): Promise<void> {
-        const branchOrTag = version.startsWith(BRANCH_PREFIX) ? version.substring(BRANCH_PREFIX.length) : version;
+        const branchOrTag = version.startsWith(BRANCH_PREFIX) ? `origin/${version.substring(BRANCH_PREFIX.length)}` : version;
         await this.git.checkout(branchOrTag);
     }
 
