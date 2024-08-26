@@ -126,7 +126,10 @@ export async function runExecSpec(
     }
 
     try {
-        const command = programSpec.executable.includes('/') ? resolve(cwd, programSpec.executable) : programSpec.executable;
+        let command = programSpec.executable.includes('/') ? resolve(cwd, programSpec.executable) : programSpec.executable;
+
+        command = await ensureVenvIfPython(command, envVars, cwd, loggingOptions);
+
         const result = await awaitSpawn(command, programArgs, cwd, envVars, loggingOptions.writeStdout, programSpec.interactive);
         if (result && result.exitCode !== 0) {
             throw new ExecExitError(`Program returned exit code: ${result.exitCode}`, result.exitCode);
@@ -134,4 +137,28 @@ export async function runExecSpec(
     } catch (error) {
         throw error;
     }
+}
+
+async function ensureVenvIfPython(
+    command: string,
+    envVars: NodeJS.ProcessEnv,
+    cwd: string,
+    loggingOptions: { writeStdout?: boolean; verbose?: boolean },
+) {
+    if (['pip', 'pip3', 'python', 'python3'].includes(command)) {
+        let venvDir = `${envVars.VELOCITAS_CACHE_DIR}/pyvenv/${envVars.builtin_component_id}`;
+        let venvCreateCmd = command;
+        if (command === 'pip') {
+            venvCreateCmd = 'python';
+        } else if (command === 'pip3') {
+            venvCreateCmd = 'python3';
+        }
+
+        const result = await awaitSpawn(venvCreateCmd, ['-m', 'venv', venvDir], cwd, envVars, loggingOptions.writeStdout);
+        if (result && result.exitCode !== 0) {
+            throw new ExecExitError(`Failed creating Python venv: ${result.exitCode}`, result.exitCode);
+        }
+        command = `${venvDir}/bin/${command}`;
+    }
+    return command;
 }
