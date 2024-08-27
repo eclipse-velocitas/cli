@@ -154,6 +154,10 @@ async function ensureVenvIfPython(
             venvCreateCmd = 'python3';
         }
 
+        if (loggingOptions.writeStdout === undefined) {
+            loggingOptions.writeStdout = true;
+        }
+
         const result = await awaitSpawn(venvCreateCmd, ['-m', 'venv', venvDir], cwd, envVars, loggingOptions.writeStdout);
         if (result && result.exitCode !== 0) {
             throw new ExecExitError(`Failed creating Python venv: ${result.exitCode}`, result.exitCode);
