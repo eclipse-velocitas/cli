@@ -151,7 +151,7 @@ async function createPythonVenv(
     cwd: string,
     loggingOptions: { writeStdout?: boolean; verbose?: boolean },
 ) {
-    let venvDir = `${ProjectCache.getCacheDir()}/pyvenv/${componentId}`;
+    const venvDir = `${ProjectCache.getCacheDir()}/pyvenv/${componentId}`;
     let venvCreateCmd = command;
     if (command === 'pip') {
         venvCreateCmd = 'python';
