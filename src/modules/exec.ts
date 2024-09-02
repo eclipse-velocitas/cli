@@ -126,7 +126,11 @@ export async function runExecSpec(
     }
 
     try {
-        const command = programSpec.executable.includes('/') ? resolve(cwd, programSpec.executable) : programSpec.executable;
+        let command = programSpec.executable.includes('/') ? resolve(cwd, programSpec.executable) : programSpec.executable;
+        if (isPython(command)) {
+            command = await createPythonVenv(componentId, command, envVars, cwd, loggingOptions);
+        }
+
         const result = await awaitSpawn(command, programArgs, cwd, envVars, loggingOptions.writeStdout, programSpec.interactive);
         if (result && result.exitCode !== 0) {
             throw new ExecExitError(`Program returned exit code: ${result.exitCode}`, result.exitCode);
@@ -134,4 +138,34 @@ export async function runExecSpec(
     } catch (error) {
         throw error;
     }
+}
+
+function isPython(command: string): boolean {
+    return ['pip', 'pip3', 'python', 'python3'].includes(command);
+}
+
+async function createPythonVenv(
+    componentId: string,
+    command: string,
+    envVars: NodeJS.ProcessEnv,
+    cwd: string,
+    loggingOptions: { writeStdout?: boolean; verbose?: boolean },
+) {
+    const venvDir = `${ProjectCache.getCacheDir()}/pyvenv/${componentId}`;
+    let venvCreateCmd = command;
+    if (command === 'pip') {
+        venvCreateCmd = 'python';
+    } else if (command === 'pip3') {
+        venvCreateCmd = 'python3';
+    }
+
+    if (loggingOptions.writeStdout === undefined) {
+        loggingOptions.writeStdout = true;
+    }
+
+    const result = await awaitSpawn(venvCreateCmd, ['-m', 'venv', venvDir], cwd, envVars, loggingOptions.writeStdout);
+    if (result && result.exitCode !== 0) {
+        throw new ExecExitError(`Failed creating Python venv: ${result.exitCode}`, result.exitCode);
+    }
+    return `${venvDir}/bin/${command}`;
 }

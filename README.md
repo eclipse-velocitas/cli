@@ -285,6 +285,9 @@ EXAMPLES
 
 _See code: [src/commands/exec/index.ts](src/commands/exec/index.ts)_
 
+**Hint:** The execution of Python-based scripts is done in seperated Python venvs per COMPONENT;
+see section [ProgramSpec in docs/features/PACKAGES.md](docs/features/PACKAGES.md#programspec).
+
 ## `velocitas init`
 
 Initializes Velocitas Vehicle App

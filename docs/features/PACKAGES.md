@@ -122,6 +122,22 @@ Specifies a program exposed by a component and its default parameters when invok
 }
 ```
 
+**Note:** If the `executable` is `python[3]` (or `pip[3]`) the execution of the Python program is automatically done
+within a [Python venv (virtual environment)](https://docs.python.org/3/tutorial/venv.html) specific to the component.
+I.e. the CLI will setup a separate venv per component. All Python programs of that component will be executed within
+that component-specific virtual environment. With this separation of execution environments it is possible to handle
+different versions of depenencies per component without generating version conflicts.
+
+This automatism can be avoided by specifying the Python interpreter explicitly, e.g. by using an absolute path like
+`/usr/bin/python`.
+
+Other Python processes spawned from a Python-based program will **not** be automatically executed in a Python venv.
+(Because the dependencies of that scripts will probably differ from those of the calling program's component.)
+
+The venv of each component is created within the project cache directory in the folder `pyvenv`. For example the
+component `Foo`s venv would be located in `/home/vscode/.velocitas/projects/<hash>/pyvenv/foo/`. This also contains
+the installed dependencies of that component.
+
 ### `id` - string
 
 Unique ID within this component to identify the program.
