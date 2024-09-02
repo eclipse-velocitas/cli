@@ -481,13 +481,13 @@
 ## Workflows
 | Dependency | Version | License |
 |:-----------|:-------:|--------:|
-|actions/checkout|v4|MIT License|
-|actions/download-artifact|v4|MIT License|
-|actions/setup-node|v4|MIT License|
-|actions/upload-artifact|v4|MIT License|
-|docker/setup-qemu-action|v3|Apache License 2.0|
-|irongut/CodeCoverageSummary|v1.3.0|MIT License|
-|ncipollo/release-action|v1|MIT License|
-|pre-commit/action|v3.0.1|MIT License|
-|TriPSs/conventional-changelog-action|v5|MIT License|
-|uraimo/run-on-arch-action|v2|BSD 3-Clause "New" or "Revised" License|
+|actions/checkout|v4||
+|actions/download-artifact|v4||
+|actions/setup-node|v4||
+|actions/upload-artifact|v4||
+|docker/setup-qemu-action|v3||
+|irongut/CodeCoverageSummary|v1.3.0||
+|ncipollo/release-action|v1||
+|pre-commit/action|v3.0.1||
+|TriPSs/conventional-changelog-action|v5||
+|uraimo/run-on-arch-action|v2||
