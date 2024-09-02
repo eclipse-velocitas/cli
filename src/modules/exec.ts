@@ -127,8 +127,9 @@ export async function runExecSpec(
 
     try {
         let command = programSpec.executable.includes('/') ? resolve(cwd, programSpec.executable) : programSpec.executable;
-
-        command = await ensureVenvIfPython(command, envVars, cwd, loggingOptions);
+        if (isPython(command)) {
+            command = await createPythonVenv(componentId, command, envVars, cwd, loggingOptions);
+        }
 
         const result = await awaitSpawn(command, programArgs, cwd, envVars, loggingOptions.writeStdout, programSpec.interactive);
         if (result && result.exitCode !== 0) {
@@ -139,30 +140,32 @@ export async function runExecSpec(
     }
 }
 
-async function ensureVenvIfPython(
+function isPython(command: string): boolean {
+    return ['pip', 'pip3', 'python', 'python3'].includes(command);
+}
+
+async function createPythonVenv(
+    componentId: string,
     command: string,
     envVars: NodeJS.ProcessEnv,
     cwd: string,
     loggingOptions: { writeStdout?: boolean; verbose?: boolean },
 ) {
-    if (['pip', 'pip3', 'python', 'python3'].includes(command)) {
-        let venvDir = `${envVars.VELOCITAS_CACHE_DIR}/pyvenv/${envVars.builtin_component_id}`;
-        let venvCreateCmd = command;
-        if (command === 'pip') {
-            venvCreateCmd = 'python';
-        } else if (command === 'pip3') {
-            venvCreateCmd = 'python3';
-        }
-
-        if (loggingOptions.writeStdout === undefined) {
-            loggingOptions.writeStdout = true;
-        }
-
-        const result = await awaitSpawn(venvCreateCmd, ['-m', 'venv', venvDir], cwd, envVars, loggingOptions.writeStdout);
-        if (result && result.exitCode !== 0) {
-            throw new ExecExitError(`Failed creating Python venv: ${result.exitCode}`, result.exitCode);
-        }
-        command = `${venvDir}/bin/${command}`;
+    let venvDir = `${ProjectCache.getCacheDir()}/pyvenv/${componentId}`;
+    let venvCreateCmd = command;
+    if (command === 'pip') {
+        venvCreateCmd = 'python';
+    } else if (command === 'pip3') {
+        venvCreateCmd = 'python3';
     }
-    return command;
+
+    if (loggingOptions.writeStdout === undefined) {
+        loggingOptions.writeStdout = true;
+    }
+
+    const result = await awaitSpawn(venvCreateCmd, ['-m', 'venv', venvDir], cwd, envVars, loggingOptions.writeStdout);
+    if (result && result.exitCode !== 0) {
+        throw new ExecExitError(`Failed creating Python venv: ${result.exitCode}`, result.exitCode);
+    }
+    return `${venvDir}/bin/${command}`;
 }
