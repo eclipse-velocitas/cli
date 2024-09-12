@@ -221,7 +221,7 @@ describe('projectConfigIO - module', () => {
         it('should handle errors when parsing .velocitas.json file', () => {
             const readFileStub = sinon.stub(CliFileSystem, 'readFileSync').throws();
             const projectConfigFileReader = () => ProjectConfigIO.read('', configFilePath, true);
-            expect(projectConfigFileReader).to.throw(`Unable to read ${configFilePath}: unknown format!`);
+            expect(projectConfigFileReader).to.throw(`Unable to successfully read and interpret ${configFilePath}`);
             readFileStub.restore();
         });
 

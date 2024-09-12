@@ -13,9 +13,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CliFileSystem } from '../../src/utils/fs-bridge';
-import { corePackageManifestMock, runtimePackageManifestMock, setupPackageManifestMock } from '../utils/mockConfig';
+import { corePackageManifestMock, runtimePackageInfoMock, runtimePackageManifestMock, setupPackageManifestMock } from '../utils/mockConfig';
+import { userHomeDir } from '../utils/mockfs';
 
-export const simpleGitInstanceMock = (mockedNewVersionTag?: string, checkRepo: boolean = true) => {
+export const simpleGitInstanceMock = (mockedNewVersionTag?: string, checkRepo: boolean = true, resetRuntime: boolean = false) => {
     return {
         clone: async (repoPath: string, localPath: string, options?: any) => {
             await CliFileSystem.promisesMkdir(localPath);
@@ -33,6 +34,16 @@ export const simpleGitInstanceMock = (mockedNewVersionTag?: string, checkRepo: b
             return checkRepo;
         },
         fetch: () => {},
+        reset: async () => {
+            // This is to recover in test case "refreshing corrupted package"
+            // In the case we have "corrupted" the repo by removing the manifest
+            if (resetRuntime) {
+                await CliFileSystem.promisesWriteFile(
+                    `${userHomeDir}/.velocitas/packages/${runtimePackageInfoMock.repo}/${runtimePackageInfoMock.resolvedVersion}/manifest.json`,
+                    JSON.stringify(runtimePackageManifestMock),
+                );
+            }
+        },
         checkout: () => {
             // Function implementation
         },
