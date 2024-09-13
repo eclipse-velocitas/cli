@@ -93,29 +93,23 @@ export class PackageConfig {
     }
 
     async getPackageVersions(verbose?: boolean): Promise<TagResult> {
-        try {
-            const packageInformation = await packageDownloader(this).downloadPackage({ checkVersionOnly: true, verbose: verbose });
-            const packageVersionTags = await packageInformation.tags();
-            return packageVersionTags;
-        } catch (error) {
-            console.log(error);
-        }
-        return {
-            all: [],
-            latest: '',
-        };
+        const packageInformation = await packageDownloader(this).downloadPackage({ checkVersionOnly: true, verbose: verbose });
+        const packageVersionTags = await packageInformation.tags();
+        return packageVersionTags;
     }
 
     async downloadPackageVersion(verbose?: boolean): Promise<void> {
         try {
             await packageDownloader(this).downloadPackage({ verbose: verbose });
         } catch (error) {
-            console.error(error);
+            if (verbose) {
+                console.error(error);
+            }
             // If repo exist but not version we will end up with default-version
             // of that repo, and on subsequent runs tooling will say that the missing version
             // actually exists! To prevent this we remove the directory of the missing version!
             CliFileSystem.removeSync(this.getPackageDirectoryWithVersion());
-            throw new Error(`Cannot find package ${this.getPackageName()}:${this.version}`);
+            throw new Error(`Downloading package ${this.getPackageName()}:${this.version} failed!`);
         }
         return;
     }
@@ -125,7 +119,20 @@ export class PackageConfig {
     }
 
     async isPackageValidRepo(verbose?: boolean): Promise<boolean> {
-        const isValid = await packageDownloader(this).isValidRepo(this.getPackageDirectoryWithVersion());
+        // When this is called we have likely already done _resolveVersion so the first check is not likely to fail
+        let isValid = await packageDownloader(this).isValidRepo(this.getPackageDirectoryWithVersion());
+        if (isValid) {
+            // Lets do a sanity check that there actually is a manifest file
+            const path = this.getManifestFilePath();
+            try {
+                let data = CliFileSystem.readFileSync(path);
+            } catch (error) {
+                if (verbose) {
+                    console.log(`Cannot find manifest file ${path}`);
+                }
+                isValid = false;
+            }
+        }
         if (!isValid && verbose) {
             console.log(`... Corrupted .git directory found for: '${this.getPackageName()}:${this.version}'`);
         }
@@ -138,7 +145,9 @@ export class PackageConfig {
             const path = this.getManifestFilePath();
             data = CliFileSystem.readFileSync(path);
         } catch (error) {
-            console.log(`Cannot find package ${this.getPackageName()}:${this.version}. Please upgrade or init first!`);
+            console.log(
+                `Cannot find package ${this.getPackageName()}:${this.version}. Please verify that it is a valid Velocitas package and do upgrade/init!`,
+            );
             throw new Error(`Cannot find package ${this.getPackageName()}:${this.version}`);
         }
         try {

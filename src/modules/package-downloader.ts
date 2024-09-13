@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { join } from 'node:path';
-import { CheckRepoActions, SimpleGit, simpleGit } from 'simple-git';
+import { CheckRepoActions, ResetMode, SimpleGit, simpleGit } from 'simple-git';
 import { CliFileSystem } from '../utils/fs-bridge';
 import { PackageConfig } from './package';
 import { BRANCH_PREFIX } from './semver';
@@ -26,8 +26,11 @@ export class PackageDownloader {
         this.packageConfig = packageConfig;
     }
 
-    private async _cloneRepository(packageDir: string, cloneOpts: string[]): Promise<void> {
-        await this.git.clone(this.packageConfig.getPackageRepo(), packageDir, cloneOpts);
+    private async _cloneRepository(packageDir: string, cloneOpts: string[], verbose?: boolean): Promise<void> {
+        const response = await this.git.clone(this.packageConfig.getPackageRepo(), packageDir, cloneOpts);
+        if (verbose) {
+            console.log(`Clone response:  ${response}`);
+        }
     }
 
     private async _updateRepository(checkRepoAction: CheckRepoActions, verbose: boolean): Promise<void> {
@@ -46,10 +49,17 @@ export class PackageDownloader {
 
     private async _checkoutVersion(version: string): Promise<void> {
         const branchOrTag = version.startsWith(BRANCH_PREFIX) ? `origin/${version.substring(BRANCH_PREFIX.length)}` : version;
+        // Make sure that repo is clean to avoid that checkout fails!
+        await this.git.reset(ResetMode.HARD);
         await this.git.checkout(branchOrTag);
     }
 
-    private async _checkForValidRepo(packageDir: string, cloneOpts: string[], checkRepoAction: CheckRepoActions): Promise<void> {
+    private async _checkForValidRepo(
+        packageDir: string,
+        cloneOpts: string[],
+        checkRepoAction: CheckRepoActions,
+        verbose?: boolean,
+    ): Promise<void> {
         let directoryExists = CliFileSystem.existsSync(packageDir);
         if (directoryExists && !(await this.isValidRepo(packageDir, checkRepoAction))) {
             CliFileSystem.removeSync(packageDir);
@@ -57,7 +67,22 @@ export class PackageDownloader {
         }
 
         if (!directoryExists) {
-            await this._cloneRepository(packageDir, cloneOpts);
+            try {
+                // simple-git typically throws an error if clone fails
+                // but not all errors reult in an exception, for instance blocked clone due to rate limitation
+                // does not result in an exception
+                await this._cloneRepository(packageDir, cloneOpts, verbose);
+            } catch (error) {
+                if (verbose) {
+                    console.error(error);
+                }
+                throw new Error(`Cloning of ${this.packageConfig.getPackageRepo()} failed!`);
+            }
+
+            // Do a second check to verify if clone seems to have succeeded
+            if (!(await this.isValidRepo(packageDir, checkRepoAction))) {
+                throw new Error(`Problem detected when cloning ${this.packageConfig.getPackageRepo()}!`);
+            }
         }
     }
 
@@ -80,7 +105,7 @@ export class PackageDownloader {
             checkRepoAction = CheckRepoActions.IS_REPO_ROOT;
         }
 
-        await this._checkForValidRepo(packageDir, cloneOpts, checkRepoAction);
+        await this._checkForValidRepo(packageDir, cloneOpts, checkRepoAction, verbose);
         this.git = simpleGit(packageDir);
         await this._updateRepository(checkRepoAction, verbose);
 

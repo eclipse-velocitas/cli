@@ -32,7 +32,7 @@ export class ProjectConfigLock implements ProjectConfigLockAttributes {
     public findVersion(packageName: string): string {
         const packageVersion = this.packages.get(packageName);
         if (!packageVersion) {
-            throw new Error(`Package '${packageName}' not found in lock file.`);
+            throw new Error(`Package '${packageName}' not found in lock file. Have you performed "velocitas init"?`);
         }
         return packageVersion;
     }
