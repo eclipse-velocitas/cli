@@ -70,6 +70,12 @@ interface IFileSystem {
      * @returns The absolute path.
      */
     realpathSync(path: fs.PathLike): string;
+
+    /**
+     * Reads a directory synchronously.
+     * @param path A path to a file or directory.
+     */
+    readdirSync(path: fs.PathLike): string[];
 }
 
 /**
@@ -122,6 +128,10 @@ class RealFileSystem implements IFileSystem {
     realpathSync(path: fs.PathLike): string {
         return fs.realpathSync(path);
     }
+
+    readdirSync(path: fs.PathLike): string[] {
+        return fs.readdirSync(path);
+    }
 }
 
 export type MockFileSystemObj = Record<string, string>;
@@ -168,6 +178,10 @@ export class MockFileSystem implements IFileSystem, IFileSystemTests {
 
     realpathSync(path: fs.PathLike): string {
         return path.toString();
+    }
+
+    readdirSync(path: fs.PathLike): string[] {
+        return [this._fileSystemObj[path.toString()]];
     }
 
     async promisesMkdir(path: string): Promise<void> {
@@ -252,6 +266,14 @@ export class CliFileSystem {
      */
     static realpathSync(path: fs.PathLike): string {
         return this._impl.realpathSync(path);
+    }
+
+    /**
+     * Reads a directory synchronously.
+     * @param path A path to a file or directory.
+     */
+    static readdirSync(path: fs.PathLike): string[] {
+        return this._impl.readdirSync(path);
     }
 
     /**
