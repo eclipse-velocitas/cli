@@ -135,7 +135,7 @@ Other Python processes spawned from a Python-based program will **not** be autom
 (Because the dependencies of that scripts will probably differ from those of the calling program's component.)
 
 The venv of each component is created within the project cache directory in the folder `pyvenv`. For example the
-component `Foo`s venv would be located in `/home/vscode/.velocitas/projects/<hash>/pyvenv/foo/`. This also contains
+component `Foo`s venv would be located in `/home/vscode/.velocitas/packages/.pyvenvs/foo/`. This also contains
 the installed dependencies of that component.
 
 ### `id` - string
