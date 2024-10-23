@@ -51,7 +51,7 @@ const filetypesForCommentInsertion: CommentInsertionHint[] = [
     {
         ext: ['.html', '.htm', '.xml', '.tpl'],
         commentTemplate: '<!-- %COMMENT% -->',
-        insertAfterLineMatcher: new RegExp(`\\<\\?xml\\s.*?\\s\\?\\>`),
+        insertAfterLineMatcher: new RegExp(`\\<\\?xml\\s.*?\\?\\>`),
     },
     {
         ext: '.json',
