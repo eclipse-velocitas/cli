@@ -34,7 +34,7 @@
     "@types/semver": "^7.5.8",
     "@typescript-eslint/eslint-plugin": "7.18.0",
     "@typescript-eslint/parser": "7.18.0",
-    "@yao-pkg/pkg": "5.13.0",
+    "@yao-pkg/pkg": "5.16.1",
     "chai": "4.5.0",
     "eslint": "8.57.0",
     "mocha": "10.7.3",
