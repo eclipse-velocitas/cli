@@ -52,12 +52,14 @@ export class MultiFormatConfigReader implements IProjectConfigReader {
                     break;
                 }
             } catch (error: any) {
-                console.warn(`Warning: ${path} not in expected format: ${error.message}, falling back to legacy format reading.`);
+                // This could be format error, but it could also be that repo/tag-settings are faulty, repo cannot be reached and
+                // similar, for example that "velocitas init" did not succeed!
+                console.warn(`Error reported by config reader ${reader.constructor.name}: ${error.message}`);
             }
         }
 
         if (config === null) {
-            throw new Error(`Unable to read ${path}: unknown format!`);
+            throw new Error(`Unable to successfully read and interpret ${path}!`);
         }
 
         return config;
