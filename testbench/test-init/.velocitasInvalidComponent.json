@@ -1,6 +1,6 @@
 {
     "packages": {
-        "https://github.com/eclipse-velocitas/devenv-devcontainer-setup.git": "v1.5.0"
+        "https://github.com/eclipse-velocitas/devenv-devcontainer-setup.git": "latest"
     },
     "components": [
         "invalid-component"
@@ -8,6 +8,5 @@
     "variables": {
         "appManifestPath": "./app/AppManifest.json",
         "githubRepoId": "<myrepo>"
-    },
-    "cliVersion": "v0.10.0"
+    }
 }

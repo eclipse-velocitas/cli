@@ -29,8 +29,6 @@ export function getLatestVersion(versions: string[]): string {
                     latestVersion = currentVersion;
                 }
             }
-        } else {
-            console.log('Not valid');
         }
     }
 
