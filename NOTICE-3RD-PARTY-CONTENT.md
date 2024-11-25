@@ -151,7 +151,7 @@
 |convert-source-map|2.0.0|MIT|
 |core-util-is|1.0.3|MIT|
 |create-require|1.1.1|MIT|
-|cross-spawn|7.0.3|MIT|
+|cross-spawn|7.0.6|MIT|
 |debug|4.3.7|MIT|
 |decamelize|1.2.0|MIT|
 |decamelize|4.0.0|MIT|

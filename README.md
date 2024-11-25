@@ -449,3 +449,28 @@ chmod -x /usr/bin/velocitas
 - [GitHub Issues](https://github.com/eclipse-velocitas/cli/issues)
 - [Mailing List](https://accounts.eclipse.org/mailing-list/velocitas-dev)
 - [Contribution](CONTRIBUTING.md)
+
+## Updating dependencies
+
+Sometimes dependencies needs to be updated to address vulnerabilities.
+If the vulnerability is known by npm (and a fix is published) you can typically request npm to update all existing vulnerabilities:
+
+```bash
+sudo npm audit fix
+```
+
+If the vulnerability is not (yet) considered as a vulnerability by npm you can update it manually:
+
+```bash
+sudo npm update cross-spawn
+```
+
+After updating you should do some basic checks that the tool is still working:
+
+```bash
+npm run build
+```
+
+After updating dependencies the file `NOTICE-3RD-PARTY-CONTENT.md` needs to be updated.
+The easiest way to do this is to create a Pull Request (preferably as draft),
+then the "Check Licenses" workflow will fail but as output produce content that you can add to the Pull Request.
