@@ -16,6 +16,7 @@ import { IPty, spawn } from 'node-pty';
 import { exec } from 'node:child_process';
 import { resolve } from 'node:path';
 import { ExecSpec, ProgramSpec } from './component';
+import { getPackageFolderPath } from './package';
 import { ProjectCache } from './project-cache';
 import { ProjectConfig } from './projectConfig/projectConfig';
 import { stdOutParser } from './stdout-parser';
@@ -151,7 +152,7 @@ async function createPythonVenv(
     cwd: string,
     loggingOptions: { writeStdout?: boolean; verbose?: boolean },
 ) {
-    const venvDir = `${ProjectCache.getCacheDir()}/pyvenv/${componentId}`;
+    const venvDir = `${getPackageFolderPath()}/.pyvenvs/${componentId}`;
     let venvCreateCmd = command;
     if (command === 'pip') {
         venvCreateCmd = 'python';
