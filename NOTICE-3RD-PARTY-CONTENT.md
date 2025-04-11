@@ -4,7 +4,7 @@
 | Dependency | Version | License |
 |:-----------|:-------:|--------:|
 |@ampproject/remapping|2.3.0|Apache 2.0|
-|@babel/code-frame|7.24.7|MIT|
+|@babel/code-frame|7.26.2|MIT|
 |@babel/compat-data|7.25.4|MIT|
 |@babel/core|7.25.2|MIT|
 |@babel/generator|7.23.0|MIT|
@@ -13,23 +13,20 @@
 |@babel/helper-module-imports|7.24.7|MIT|
 |@babel/helper-module-transforms|7.25.2|MIT|
 |@babel/helper-simple-access|7.24.7|MIT|
-|@babel/helper-string-parser|7.24.8|MIT|
-|@babel/helper-validator-identifier|7.24.7|MIT|
+|@babel/helper-string-parser|7.25.9|MIT|
+|@babel/helper-validator-identifier|7.25.9|MIT|
 |@babel/helper-validator-option|7.24.8|MIT|
-|@babel/helpers|7.25.6|MIT|
-|@babel/highlight|7.24.7|MIT|
-|@babel/parser|7.23.0|MIT|
-|@babel/parser|7.25.6|MIT|
-|@babel/template|7.25.0|MIT|
+|@babel/helpers|7.27.0|MIT|
+|@babel/parser|7.27.0|MIT|
+|@babel/template|7.27.0|MIT|
 |@babel/traverse|7.25.6|MIT|
-|@babel/types|7.23.0|MIT|
-|@babel/types|7.25.6|MIT|
+|@babel/types|7.27.0|MIT|
 |@cspotcode/source-map-support|0.8.1|MIT|
 |@eslint-community/eslint-utils|4.4.0|MIT|
 |@eslint-community/regexpp|4.11.0|MIT|
 |@eslint/eslintrc|2.1.4|MIT|
-|@eslint/js|8.57.0|MIT|
-|@humanwhocodes/config-array|0.11.14|Apache 2.0|
+|@eslint/js|8.57.1|MIT|
+|@humanwhocodes/config-array|0.13.0|Apache 2.0|
 |@humanwhocodes/module-importer|1.0.1|Apache 2.0|
 |@humanwhocodes/object-schema|2.0.3|New BSD|
 |@istanbuljs/load-nyc-config|1.1.0|ISC|
@@ -63,8 +60,8 @@
 |@types/fs-extra|11.0.4|MIT|
 |@types/jsonfile|6.1.4|MIT|
 |@types/lodash|4.17.7|MIT|
-|@types/mocha|10.0.7|MIT|
-|@types/node|20.16.5|MIT|
+|@types/mocha|10.0.10|MIT|
+|@types/node|20.17.30|MIT|
 |@types/semver|7.5.8|MIT|
 |@types/sinon|17.0.3|MIT|
 |@types/sinonjs__fake-timers|8.1.5|MIT|
@@ -77,8 +74,8 @@
 |@typescript-eslint/utils|7.18.0|MIT|
 |@typescript-eslint/visitor-keys|7.18.0|MIT|
 |@ungap/structured-clone|1.2.0|ISC|
-|@yao-pkg/pkg|5.13.0|MIT|
-|@yao-pkg/pkg-fetch|3.5.10|MIT|
+|@yao-pkg/pkg|5.16.1|MIT|
+|@yao-pkg/pkg-fetch|3.5.16|MIT|
 |acorn|8.12.1|MIT|
 |acorn-jsx|5.3.2|MIT|
 |acorn-walk|8.3.4|MIT|
@@ -88,7 +85,6 @@
 |ansi-colors|4.1.3|MIT|
 |ansi-escapes|4.3.2|MIT|
 |ansi-regex|5.0.1|MIT|
-|ansi-styles|3.2.1|MIT|
 |ansi-styles|4.3.0|MIT|
 |ansicolors|0.3.2|MIT|
 |anymatch|3.1.3|ISC|
@@ -106,7 +102,6 @@
 |assertion-error|1.1.0|MIT|
 |astral-regex|2.0.0|MIT|
 |async|3.2.6|MIT|
-|at-least-node|1.0.0|ISC|
 |balanced-match|1.0.2|MIT|
 |base64-js|1.5.1|MIT|
 |binary-extensions|2.3.0|MIT|
@@ -124,7 +119,6 @@
 |caniuse-lite|1.0.30001660|CC-BY-4.0|
 |cardinal|2.1.1|MIT|
 |chai|4.5.0|MIT|
-|chalk|2.4.2|MIT|
 |chalk|4.1.2|MIT|
 |chardet|0.7.0|MIT|
 |check-error|1.0.3|MIT|
@@ -140,9 +134,7 @@
 |cliui|7.0.4|ISC|
 |clone|1.0.4|MIT|
 |color|4.2.3|MIT|
-|color-convert|1.9.3|MIT|
 |color-convert|2.0.1|MIT|
-|color-name|1.1.3|MIT|
 |color-name|1.1.4|MIT|
 |color-string|1.9.1|MIT|
 |commondir|1.0.1|MIT|
@@ -175,7 +167,7 @@
 |escalade|3.2.0|MIT|
 |escape-string-regexp|1.0.5|MIT|
 |escape-string-regexp|4.0.0|MIT|
-|eslint|8.57.0|MIT|
+|eslint|8.57.1|MIT|
 |eslint-scope|7.2.2|Simplified BSD|
 |eslint-visitor-keys|3.4.3|Apache 2.0|
 |espree|9.6.1|Simplified BSD|
@@ -192,6 +184,7 @@
 |fast-json-stable-stringify|2.1.0|MIT|
 |fast-levenshtein|2.0.6|MIT|
 |fastq|1.17.1|ISC|
+|fdir|6.4.3|MIT|
 |figures|3.2.0|MIT|
 |file-entry-cache|6.0.1|MIT|
 |filelist|1.0.4|Apache 2.0|
@@ -207,7 +200,6 @@
 |fromentries|1.3.2|MIT|
 |fs-constants|1.0.0|MIT|
 |fs-extra|11.2.0|MIT|
-|fs-extra|9.1.0|MIT|
 |fs.realpath|1.0.0|ISC|
 |function-bind|1.1.2|MIT|
 |gensync|1.0.0-beta.2|MIT|
@@ -224,7 +216,6 @@
 |globby|11.1.0|MIT|
 |graceful-fs|4.2.11|ISC|
 |graphemer|1.4.0|MIT|
-|has-flag|3.0.0|MIT|
 |has-flag|4.0.0|MIT|
 |hasha|5.2.2|MIT|
 |hasown|2.0.2|MIT|
@@ -303,12 +294,11 @@
 |mimic-response|3.1.0|MIT|
 |minimatch|3.1.2|ISC|
 |minimatch|5.1.6|ISC|
-|minimatch|9.0.4|ISC|
 |minimatch|9.0.5|ISC|
 |minimist|1.2.8|MIT|
 |mkdirp|0.5.6|MIT|
 |mkdirp-classic|0.5.3|MIT|
-|mocha|10.7.3|MIT|
+|mocha|10.8.2|MIT|
 |mock-stdin|1.0.0|MIT|
 |ms|2.1.3|MIT|
 |multistream|4.1.0|MIT|
@@ -353,6 +343,7 @@
 |pathval|1.1.1|MIT|
 |picocolors|1.1.0|ISC|
 |picomatch|2.3.1|MIT|
+|picomatch|4.0.2|MIT|
 |pify|2.3.0|MIT|
 |pkg-dir|4.2.0|MIT|
 |prebuild-install|7.1.1|MIT|
@@ -420,18 +411,17 @@
 |strip-bom|4.0.0|MIT|
 |strip-json-comments|2.0.1|MIT|
 |strip-json-comments|3.1.1|MIT|
-|supports-color|5.5.0|MIT|
 |supports-color|7.2.0|MIT|
 |supports-color|8.1.1|MIT|
 |supports-hyperlinks|2.3.0|MIT|
 |supports-preserve-symlinks-flag|1.0.0|MIT|
-|tar-fs|2.1.1|MIT|
+|tar-fs|2.1.2|MIT|
 |tar-stream|2.2.0|MIT|
 |test-exclude|6.0.0|ISC|
 |text-table|0.2.0|MIT|
 |through|2.3.8|MIT|
+|tinyglobby|0.2.12|MIT|
 |tmp|0.0.33|MIT|
-|to-fast-properties|2.0.0|MIT|
 |to-regex-range|5.0.1|MIT|
 |tr46|0.0.3|MIT|
 |ts-api-utils|1.3.0|MIT|
@@ -445,7 +435,7 @@
 |type-fest|0.21.3|(MIT OR CC0-1.0)|
 |type-fest|0.8.1|(MIT OR CC0-1.0)|
 |typedarray-to-buffer|3.1.5|MIT|
-|typescript|5.5.4|Apache 2.0|
+|typescript|5.8.3|Apache 2.0|
 |undici-types|6.19.8|MIT|
 |universalify|2.0.1|MIT|
 |update-browserslist-db|1.1.0|MIT|
