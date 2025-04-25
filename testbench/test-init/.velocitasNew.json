@@ -1,10 +1,10 @@
 {
     "packages": {
-        "https://github.com/eclipse-velocitas/pkg-velocitas-main.git": "v0.0.2",
-        "https://github.com/eclipse-velocitas/devenv-devcontainer-setup.git": "v2.4.4",
-        "https://github.com/eclipse-velocitas/devenv-runtimes.git": "v4.0.3",
-        "https://github.com/eclipse-velocitas/devenv-github-templates.git": "v1.0.5",
-        "https://github.com/eclipse-velocitas/devenv-github-workflows.git": "v6.0.4"
+        "https://github.com/eclipse-velocitas/pkg-velocitas-main.git": "latest",
+        "https://github.com/eclipse-velocitas/devenv-devcontainer-setup.git": "latest",
+        "https://github.com/eclipse-velocitas/devenv-runtimes.git": "latest",
+        "https://github.com/eclipse-velocitas/devenv-github-templates.git": "latest",
+        "https://github.com/eclipse-velocitas/devenv-github-workflows.git": "latest"
     },
     "components": [
         "vapp-core-python",
@@ -21,6 +21,5 @@
     "variables": {
         "appManifestPath": "./app/AppManifest.json",
         "githubRepoId": "<myrepo>"
-    },
-    "cliVersion": "v0.10.0"
+    }
 }
