@@ -27,6 +27,7 @@
 |@humanwhocodes/config-array|0.13.0|Apache 2.0|
 |@humanwhocodes/module-importer|1.0.1|Apache 2.0|
 |@humanwhocodes/object-schema|2.0.3|New BSD|
+|@inquirer/external-editor|1.0.1|MIT|
 |@isaacs/fs-minipass|4.0.1|ISC|
 |@istanbuljs/load-nyc-config|1.1.0|ISC|
 |@istanbuljs/schema|0.1.3|MIT|
@@ -120,7 +121,7 @@
 |cardinal|2.1.1|MIT|
 |chai|4.5.0|MIT|
 |chalk|4.1.2|MIT|
-|chardet|0.7.0|MIT|
+|chardet|2.1.0|MIT|
 |check-error|1.0.3|MIT|
 |chokidar|3.6.0|MIT|
 |chownr|1.1.4|ISC|
@@ -179,7 +180,6 @@
 |estraverse|5.3.0|Simplified BSD|
 |esutils|2.0.3|Simplified BSD|
 |expand-template|2.0.3|(MIT OR WTFPL)|
-|external-editor|3.1.0|MIT|
 |fancy-test|3.0.16|MIT|
 |fast-deep-equal|3.1.3|MIT|
 |fast-glob|3.3.3|MIT|
@@ -225,7 +225,7 @@
 |html-escaper|2.0.2|MIT|
 |https-proxy-agent|5.0.1|MIT|
 |hyperlinker|1.0.0|MIT|
-|iconv-lite|0.4.24|MIT|
+|iconv-lite|0.6.3|MIT|
 |ieee754|1.2.1|New BSD|
 |ignore|5.3.2|MIT|
 |import-fresh|3.3.1|MIT|
@@ -234,7 +234,7 @@
 |inflight|1.0.6|ISC|
 |inherits|2.0.4|ISC|
 |ini|1.3.8|ISC|
-|inquirer|8.2.6|MIT|
+|inquirer|8.2.7|MIT|
 |interpret|1.4.0|MIT|
 |into-stream|6.0.0|MIT|
 |is-arrayish|0.3.2|MIT|
@@ -328,7 +328,6 @@
 |onetime|5.1.2|MIT|
 |optionator|0.9.4|MIT|
 |ora|5.4.1|MIT|
-|os-tmpdir|1.0.2|MIT|
 |p-is-promise|3.0.0|MIT|
 |p-limit|2.3.0|MIT|
 |p-limit|3.1.0|MIT|
@@ -428,7 +427,6 @@
 |text-table|0.2.0|MIT|
 |through|2.3.8|MIT|
 |tinyglobby|0.2.14|MIT|
-|tmp|0.0.33|MIT|
 |to-regex-range|5.0.1|MIT|
 |tr46|0.0.3|MIT|
 |ts-api-utils|1.4.3|MIT|
