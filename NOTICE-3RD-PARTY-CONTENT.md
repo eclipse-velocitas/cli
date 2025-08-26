@@ -107,8 +107,8 @@
 |binary-extensions|2.3.0|MIT|
 |bl|4.1.0|MIT|
 |bluebird|3.7.2|MIT|
-|brace-expansion|1.1.11|MIT|
-|brace-expansion|2.0.1|MIT|
+|brace-expansion|1.1.12|MIT|
+|brace-expansion|2.0.2|MIT|
 |braces|3.0.3|MIT|
 |browser-stdout|1.3.1|ISC|
 |browserslist|4.25.0|MIT|
