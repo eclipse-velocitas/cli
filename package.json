@@ -19,7 +19,7 @@
   "dependencies": {
     "@oclif/core": "3.27.0",
     "fs-extra": "11.2.0",
-    "inquirer": "8.2.6",
+    "inquirer": "8.2.7",
     "node-pty": "1.0.0",
     "recursive-copy": "2.0.14",
     "semver": "7.6.3",
