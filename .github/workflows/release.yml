@@ -51,5 +51,5 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "alpine-arm64/*,alpine-x64/*,linux-arm64/*,linux-x64/*"
+          artifacts: "alpine-arm64/*,alpine-x64/*,linux-arm64/*,linux-x64/*,macos-arm64/*,macos-x64/*"
           tag: v${{ needs.bump-version.outputs.packageVersion }}
